@@ -4,6 +4,7 @@ import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
+  base: "/kannabikes/",
   plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
   build: {
     cssCodeSplit: true,
