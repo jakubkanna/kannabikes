@@ -1,5 +1,4 @@
 import type { Route } from "./+types/_index";
-import { HomeGrid } from "../components/HomeGrid";
 import { SITE_NAME } from "~/root";
 
 export function meta({}: Route.MetaArgs) {
@@ -7,5 +6,13 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-  return <HomeGrid />;
+  return (
+    <main className="min-h-screen flex items-center justify-center px-6">
+      <img
+        src="/kannabikes_logotype.svg"
+        alt={SITE_NAME}
+        className="h-16 w-auto max-w-full md:h-24"
+      />
+    </main>
+  );
 }

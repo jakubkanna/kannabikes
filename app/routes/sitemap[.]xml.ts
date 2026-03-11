@@ -1,6 +1,6 @@
 import type { Route } from "./+types/sitemap[.]xml";
 
-const DEFAULT_SITE_URL = "https://kornelianowak.com";
+const DEFAULT_SITE_URL = "https://kannabikes.com";
 
 function normalizeBaseUrl(input: string) {
   return input.endsWith("/") ? input.slice(0, -1) : input;
@@ -38,4 +38,3 @@ ${pages
     },
   });
 }
-
