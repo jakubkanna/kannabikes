@@ -29,7 +29,7 @@ export default function Home() {
 
   return (
     <main
-      className="min-h-screen flex items-center justify-center px-6"
+      className="h-screen overflow-hidden px-6"
       style={{ "--kanna-yellow": "#ffd400" } as CSSProperties}
     >
       <div
@@ -38,7 +38,7 @@ export default function Home() {
         className="fixed inset-0 -z-10 pointer-events-none bg-cover bg-center will-change-transform translate-x-[var(--bg-x,0px)] translate-y-[var(--bg-y,0px)] scale-[1.05]"
         style={{ backgroundImage: `url(${bgSrc})` }}
       />
-      <div className="flex flex-col items-center">
+      <div className="fixed inset-0 flex flex-col items-center justify-center px-6 sm:px-0">
         <a
           href="https://instagram.com/kannabikes"
           target="_blank"
@@ -48,12 +48,12 @@ export default function Home() {
           <img
             src={`${baseUrl}kannabikes_logotype.svg`}
             alt={SITE_NAME}
-            className="h-16 w-auto max-w-full md:h-24 drop-shadow-[0_2px_6px_rgba(0,0,0,0.2)]"
+            className="h-16 w-auto max-w-full md:h-24 drop-shadow-[0_2px_6px_rgba(0,0,0,0.33)]"
           />
         </a>
         <a
           href="https://instagram.com/kannabikes"
-          className="mt-4 text-xs uppercase tracking-[0.35em] text-[var(--kanna-yellow)] drop-shadow-[0_2px_6px_rgba(0,0,0,0.25)]"
+          className="mt-4 text-xs uppercase tracking-[0.35em] text-[var(--kanna-yellow)] drop-shadow-[0_2px_6px_rgba(0,0,0,0.33)]"
           target="_blank"
           rel="noreferrer"
         >
