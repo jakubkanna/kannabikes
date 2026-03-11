@@ -3,8 +3,8 @@ import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
-export default defineConfig({
-  base: "/kannabikes/",
+export default defineConfig(({ mode }) => ({
+  base: mode === "production" ? "/kannabikes/" : "/",
   plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
   build: {
     cssCodeSplit: true,
@@ -33,4 +33,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));

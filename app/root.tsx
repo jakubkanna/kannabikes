@@ -15,12 +15,19 @@ const DEFAULT_SITE_DESCRIPTION = "Kanna Bikes";
 const SITE_URL = (
   import.meta.env.VITE_SITE_URL ?? "http://localhost:5173"
 ).replace(/\/$/, "");
-const OG_IMAGE = "/kannabikes_logo.svg";
+const BASE_URL = import.meta.env.BASE_URL;
+const OG_IMAGE = `${BASE_URL}kannabikes_logo.svg`;
 const OG_IMAGE_URL = `${SITE_URL}${OG_IMAGE}`;
 
 export const links: Route.LinksFunction = () => [
-  { rel: "icon", href: "/kannabikes_logo.svg", type: "image/svg+xml" },
-  { rel: "apple-touch-icon", href: "/kannabikes_logo.svg" },
+  { rel: "icon", href: `${BASE_URL}kannabikes_logo.svg`, type: "image/svg+xml" },
+  { rel: "apple-touch-icon", href: `${BASE_URL}kannabikes_logo.svg` },
+  {
+    rel: "preload",
+    as: "image",
+    href: `${BASE_URL}_DSF0937_low.jpg`,
+    type: "image/jpeg",
+  },
 ];
 
 export function meta({}: Route.MetaArgs) {
