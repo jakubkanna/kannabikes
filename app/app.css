@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+.font-kornelia {
+  font-family: "Rubik Bubbles", system-ui;
+}
+
+a {
+  transition: color 200ms ease;
+}
+
+a:hover {
+  color: blue;
+}
+
+@keyframes logo-pop-loop {
+  0%,
+  65% {
+    transform: scale(1);
+  }
+  80% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.logo-pop-on-load {
+  transform-origin: center;
+  animation: logo-pop-loop 2.4s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-pop-on-load {
+    animation: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .mobile-wrap-anywhere {
+    max-width: 90vw;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+}
