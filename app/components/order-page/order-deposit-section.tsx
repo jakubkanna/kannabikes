@@ -30,18 +30,10 @@ export function OrderDepositSection({
       return;
     }
 
-    const paidAt = new Date(depositPayment.paidAt).getTime();
-    const elapsed = Date.now() - paidAt;
-
-    if (elapsed >= DEPOSIT_SUCCESS_HIGHLIGHT_DELAY_MS) {
-      setHasSuccessHighlight(false);
-      return;
-    }
-
     setHasSuccessHighlight(true);
     const timeoutId = window.setTimeout(() => {
       setHasSuccessHighlight(false);
-    }, DEPOSIT_SUCCESS_HIGHLIGHT_DELAY_MS - elapsed);
+    }, DEPOSIT_SUCCESS_HIGHLIGHT_DELAY_MS);
 
     return () => window.clearTimeout(timeoutId);
   }, [depositPayment, isDepositConfirmed]);
@@ -69,15 +61,17 @@ export function OrderDepositSection({
                 Deposit
               </p>
               <div className="mt-1">
-                <h2 className="text-xl font-semibold text-slate-900">In review</h2>
+                <h2 className="text-xl font-semibold text-slate-900">
+                  In review
+                </h2>
               </div>
               <p
                 className={`mt-2 max-w-3xl text-sm leading-6 ${
                   useSuccessColors ? "text-slate-700" : "text-slate-600"
                 }`}
               >
-                We are reviewing your deposit and confirming that the payment has
-                been received correctly. In the meantime, you can add the
+                We are reviewing your deposit and confirming that the payment
+                has been received correctly. In the meantime, you can add the
                 measurements required for the design process below.
               </p>
             </div>
@@ -99,14 +93,16 @@ export function OrderDepositSection({
                   Deposit
                 </p>
                 <div className="mt-1">
-                  <h2 className="text-xl font-semibold text-slate-900">Received</h2>
+                  <h2 className="text-xl font-semibold text-slate-900">
+                    Received
+                  </h2>
                 </div>
                 <p
                   className={`mt-2 max-w-3xl text-sm leading-6 ${
                     useSuccessColors ? "text-slate-700" : "text-slate-600"
                   }`}
                 >
-                  Your deposit has been confirmed. The order is secured and will
+                  Deposit has been confirmed. The order is secured and will
                   continue through the remaining build stages.
                 </p>
               </div>
@@ -139,7 +135,9 @@ export function OrderDepositSection({
                     <span className="mb-2 block text-sm font-semibold text-slate-700">
                       Amount
                     </span>
-                    <p className="text-sm text-slate-900">{depositPayment.amount}</p>
+                    <p className="text-sm text-slate-900">
+                      {depositPayment.amount}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -161,23 +159,41 @@ export function OrderDepositSection({
             Waiting for deposit
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700">
-            We are waiting for the order deposit before review starts. This payment flow
-            is mocked for UI work only and does not process real transactions.
+            We are waiting for the order deposit before review starts. This
+            payment flow is mocked for UI work only and does not process real
+            transactions.
           </p>
           <div className="mt-4 rounded-lg border border-amber-200 bg-white/80 p-4 text-sm text-slate-700">
-            <p className="font-semibold text-slate-900">Included in this mock step</p>
+            <p className="font-semibold text-slate-900">
+              Included in this mock step
+            </p>
             <p className="mt-2">Deposit amount: 500 EUR</p>
-            <p className="mt-1">Accepted methods: card, bank transfer, PayPal</p>
-            <p className="mt-1">After payment the order moves to review automatically.</p>
+            <p className="mt-1">
+              Accepted methods: card, bank transfer, PayPal
+            </p>
+            <p className="mt-1">
+              After payment the order moves to review automatically.
+            </p>
           </div>
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-white p-4">
-          <p className="text-sm font-semibold text-slate-900">Payment options</p>
+          <p className="text-sm font-semibold text-slate-900">
+            Payment options
+          </p>
           <div className="mt-4 grid gap-2">
-            <PaymentOption title="Credit or debit card" helper="Instant confirmation in the mock flow" />
-            <PaymentOption title="Bank transfer" helper="Displayed as available but not connected yet" />
-            <PaymentOption title="PayPal" helper="Displayed as available but not connected yet" />
+            <PaymentOption
+              title="Credit or debit card"
+              helper="Instant confirmation in the mock flow"
+            />
+            <PaymentOption
+              title="Bank transfer"
+              helper="Displayed as available but not connected yet"
+            />
+            <PaymentOption
+              title="PayPal"
+              helper="Displayed as available but not connected yet"
+            />
           </div>
 
           <label className="mt-5 flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
@@ -188,8 +204,9 @@ export function OrderDepositSection({
               className="mt-0.5"
             />
             <span>
-              I accept the order agreement, deposit terms, and processing of my order data
-              for this bike build.
+              I accept the order agreement, deposit terms, and processing of my
+              order data for this bike build. I understand that, once the bike
+              enters production, the deposit becomes non-refundable.
             </span>
           </label>
 
@@ -199,7 +216,9 @@ export function OrderDepositSection({
             disabled={!agreementAccepted || isProcessingPayment}
             className="mt-5 inline-flex w-full items-center justify-center rounded-md bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
           >
-            {isProcessingPayment ? "Processing mock payment..." : "Mark deposit as paid"}
+            {isProcessingPayment
+              ? "Processing mock payment..."
+              : "Mark deposit as paid"}
           </button>
         </div>
       </div>

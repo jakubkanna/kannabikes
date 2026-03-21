@@ -4,6 +4,8 @@ export type OrderStage =
   | "waiting_for_specification"
   | "waiting_for_design"
   | "waiting_for_design_approval"
+  | "waiting_for_final_payment"
+  | "final_payment_in_review"
   | "in_production"
   | "waiting_for_delivery"
   | "delivered";
@@ -20,6 +22,8 @@ const DEPOSIT_PAYMENT_PREFIX = "kanna-order-deposit-payment";
 const BIKE_SPECIFICATION_PREFIX = "kanna-order-bike-specification";
 
 export const MOCK_DEPOSIT_AMOUNT = "500 EUR";
+export const MOCK_FINAL_PRICE_EXCLUDING_DEPOSIT = "3 200 EUR";
+export const MOCK_ESTIMATED_DELIVERY_TIME = "6-8 weeks";
 
 export type StoredBikeSpecificationDraft = {
   specificationMode: "guided_by_designer" | "self_specified" | "frame_only" | null;
@@ -37,6 +41,8 @@ export const ORDER_STAGES: OrderStage[] = [
   "waiting_for_specification",
   "waiting_for_design",
   "waiting_for_design_approval",
+  "waiting_for_final_payment",
+  "final_payment_in_review",
   "in_production",
   "waiting_for_delivery",
   "delivered",
@@ -67,6 +73,16 @@ export const ORDER_STAGE_DEFINITIONS: Record<OrderStage, OrderStageDefinition> =
     label: "Design waiting for approval",
     description: "The design is prepared and waiting for your approval before production starts.",
     badgeClassName: "border-indigo-200 bg-indigo-50 text-indigo-700",
+  },
+  waiting_for_final_payment: {
+    label: "Waiting for final payment",
+    description: "The design is approved and we are waiting for the remaining payment before production starts.",
+    badgeClassName: "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700",
+  },
+  final_payment_in_review: {
+    label: "In review",
+    description: "The final payment is being reviewed and production will begin after confirmation.",
+    badgeClassName: "border-sky-200 bg-sky-50 text-sky-700",
   },
   in_production: {
     label: "In production",

@@ -1,4 +1,7 @@
-import { ORDER_STAGE_DEFINITIONS } from "~/lib/mock-order";
+import {
+  MOCK_FINAL_PRICE_EXCLUDING_DEPOSIT,
+  ORDER_STAGE_DEFINITIONS,
+} from "~/lib/mock-order";
 import { OrderSubmittedSummarySection } from "./order-submitted-summary-section";
 import type { BikeDesignSectionProps } from "./types";
 
@@ -174,6 +177,7 @@ export function OrderBikeDesignSection({
   const isWaitingForDesign = currentStage === "waiting_for_design";
   const isWaitingForApproval = currentStage === "waiting_for_design_approval";
   const isApprovedDesign =
+    currentStage === "waiting_for_final_payment" ||
     currentStage === "in_production" ||
     currentStage === "waiting_for_delivery" ||
     currentStage === "delivered";
@@ -218,6 +222,11 @@ export function OrderBikeDesignSection({
     specificationFields.slice(0, visibleSpecificationFieldCount),
   );
   const progressPercent = Math.round((completedFields / totalFields) * 100);
+  const resolveSpecificationFieldValue = (fieldKey: string) =>
+    values[fieldKey] ||
+    (specificationMode === "guided_by_designer"
+      ? DESIGNER_LED_SAMPLE_SPECIFICATION[fieldKey]
+      : "");
   const renderRidingSection = () => (
     <div className="rounded-lg border border-slate-200 bg-white p-4">
       <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -530,9 +539,7 @@ export function OrderBikeDesignSection({
       </div>
     </div>
   );
-  const renderBuildDataSummary = (
-    resolveFieldValue?: (fieldKey: string) => string,
-  ) => (
+  const renderBuildDataSummary = () => (
     <>
       <div className="rounded-lg border border-slate-200 bg-white p-4">
         <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -561,15 +568,32 @@ export function OrderBikeDesignSection({
             </p>
           </div>
 
-          <div className="mt-5 rounded-lg border border-slate-200 bg-white p-4">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
-              Notes
-            </h3>
-            <p className="mt-3 text-sm leading-6 text-slate-600">
-              The designer will prepare the specification based on your
-              measurements, riding goals, and project direction.
-            </p>
-          </div>
+          {BIKE_COMPONENT_SECTIONS.map((section) => (
+            <div
+              key={section.title}
+              className="mt-5 rounded-lg border border-slate-200 bg-white p-4"
+            >
+              <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+                {section.title}
+              </h3>
+              <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+                {section.fields.map((field) => {
+                  const fieldKey = `${section.title}:${field}`;
+
+                  return (
+                    <div key={fieldKey}>
+                      <span className="mb-2 block text-sm font-semibold text-slate-700">
+                        {field}
+                      </span>
+                      <p className="text-sm text-slate-900">
+                        {resolveSpecificationFieldValue(fieldKey) || "-"}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </>
       ) : specificationMode === "frame_only" ? (
         <div className="mt-5 rounded-lg border border-slate-200 bg-white p-4">
@@ -602,9 +626,7 @@ export function OrderBikeDesignSection({
                         {field}
                       </span>
                       <p className="text-sm text-slate-900">
-                        {resolveFieldValue
-                          ? resolveFieldValue(fieldKey)
-                          : values[fieldKey] || "-"}
+                        {resolveSpecificationFieldValue(fieldKey) || "-"}
                       </p>
                     </div>
                   );
@@ -646,14 +668,21 @@ export function OrderBikeDesignSection({
       <p className="mt-4 text-sm font-semibold text-slate-900">Jakub Kanna</p>
     </div>
   );
+  const renderFinalPriceSummary = (title = "Amount left to pay") => (
+    <div className="rounded-lg border border-slate-200 bg-white p-4">
+      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+        {title}
+      </h3>
+      <p className="mt-3 text-sm text-slate-900">
+        {MOCK_FINAL_PRICE_EXCLUDING_DEPOSIT}
+      </p>
+      <p className="mt-2 text-sm leading-6 text-slate-600">
+        Final amount after deducting the deposit already paid.
+      </p>
+    </div>
+  );
 
   if (isWaitingForApproval) {
-    const resolveFieldValue = (fieldKey: string) =>
-      values[fieldKey] ||
-      (specificationMode === "guided_by_designer"
-        ? DESIGNER_LED_SAMPLE_SPECIFICATION[fieldKey]
-        : "");
-
     return (
       <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:p-6">
         <div className="mb-5 shrink-0">
@@ -691,7 +720,7 @@ export function OrderBikeDesignSection({
                   </p>
                 </div>
 
-                {renderBuildDataSummary(resolveFieldValue)}
+                {renderBuildDataSummary()}
               </div>
             </aside>
 
@@ -708,6 +737,7 @@ export function OrderBikeDesignSection({
                 </div>
 
                 {renderGeometrySummary()}
+                {renderFinalPriceSummary()}
 
                 {renderArtistMessage()}
               </div>
@@ -768,7 +798,10 @@ export function OrderBikeDesignSection({
           <div className="space-y-5 pt-3">
             <div>{renderBuildDataSummary()}</div>
             <div className="grid gap-5 md:grid-cols-2 md:items-start">
-              <div>{renderGeometrySummary()}</div>
+              <div className="space-y-5">
+                <div>{renderGeometrySummary()}</div>
+                <div>{renderFinalPriceSummary()}</div>
+              </div>
               <div>{renderArtistMessage()}</div>
             </div>
           </div>

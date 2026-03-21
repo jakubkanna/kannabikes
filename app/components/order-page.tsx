@@ -50,6 +50,7 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isSubmittingMeasurements, setIsSubmittingMeasurements] = useState(false);
   const [isSubmittingSpecification, setIsSubmittingSpecification] = useState(false);
+  const [isSubmittingFinalPayment, setIsSubmittingFinalPayment] = useState(false);
   const [isApprovingDesign, setIsApprovingDesign] = useState(false);
   const [isSpecificationSubmitted, setIsSpecificationSubmitted] = useState(false);
   const [isDepositConfirmed, setIsDepositConfirmed] = useState(false);
@@ -91,6 +92,8 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
     orderStage === "waiting_for_specification" ||
     orderStage === "waiting_for_design" ||
     orderStage === "waiting_for_design_approval" ||
+    orderStage === "waiting_for_final_payment" ||
+    orderStage === "final_payment_in_review" ||
     orderStage === "in_production" ||
     orderStage === "waiting_for_delivery" ||
     orderStage === "delivered";
@@ -103,6 +106,8 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
     (orderStage === "waiting_for_specification" ||
       orderStage === "waiting_for_design" ||
       orderStage === "waiting_for_design_approval" ||
+      orderStage === "waiting_for_final_payment" ||
+      orderStage === "final_payment_in_review" ||
       orderStage === "in_production" ||
       orderStage === "waiting_for_delivery" ||
       orderStage === "delivered");
@@ -110,6 +115,8 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
     isSpecificationSubmitted ||
     orderStage === "waiting_for_design" ||
     orderStage === "waiting_for_design_approval" ||
+    orderStage === "waiting_for_final_payment" ||
+    orderStage === "final_payment_in_review" ||
     orderStage === "in_production" ||
     orderStage === "waiting_for_delivery" ||
     orderStage === "delivered";
@@ -187,9 +194,17 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
   const handleApproveDesign = async () => {
     setIsApprovingDesign(true);
     await new Promise((resolve) => window.setTimeout(resolve, 700));
-    setStoredOrderStage(orderNumber, "in_production");
-    setOrderStage("in_production");
+    setStoredOrderStage(orderNumber, "waiting_for_final_payment");
+    setOrderStage("waiting_for_final_payment");
     setIsApprovingDesign(false);
+  };
+
+  const handleSubmitFinalPayment = async () => {
+    setIsSubmittingFinalPayment(true);
+    await new Promise((resolve) => window.setTimeout(resolve, 700));
+    setStoredOrderStage(orderNumber, "final_payment_in_review");
+    setOrderStage("final_payment_in_review");
+    setIsSubmittingFinalPayment(false);
   };
 
   const handleSpecificationModeChange = (
@@ -269,7 +284,11 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
               onSubmit={handleSubmitSpecification}
               onValueChange={handleBikeSpecificationChange}
             />
-            <OrderProductionPreviewSection />
+            <OrderProductionPreviewSection
+              currentStage={orderStage}
+              isSubmittingFinalPayment={isSubmittingFinalPayment}
+              onPayFinalAmount={handleSubmitFinalPayment}
+            />
           </>
         ) : null}
       </SectionStack>
