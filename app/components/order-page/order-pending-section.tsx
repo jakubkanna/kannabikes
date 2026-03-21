@@ -41,3 +41,13 @@ export function OrderBikeDesignPreviewSection() {
     />
   );
 }
+
+export function OrderProductionPreviewSection() {
+  return (
+    <OrderPendingSection
+      title="Next: production"
+      titleStyle="eyebrow"
+      description="Once the bike design is finalized and approved, the project will move into production."
+    />
+  );
+}

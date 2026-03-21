@@ -19,10 +19,21 @@ export type MeasurementsSectionProps = {
 };
 
 export type BikeDesignSectionProps = {
+  isApproving: boolean;
   bikeDrawingSrc: string;
   currentStage: import("~/lib/mock-order").OrderStage;
-  specificationMode: "guided_by_designer" | "self_specified" | null;
+  isSubmitting: boolean;
+  isSubmitted: boolean;
+  specificationMode:
+    | "guided_by_designer"
+    | "self_specified"
+    | "frame_only"
+    | null;
+  onApprove: () => void;
   values: Record<string, string>;
-  onModeChange: (mode: "guided_by_designer" | "self_specified") => void;
+  onModeChange: (
+    mode: "guided_by_designer" | "self_specified" | "frame_only",
+  ) => void;
+  onSubmit: () => void;
   onValueChange: (key: string, value: string) => void;
 };

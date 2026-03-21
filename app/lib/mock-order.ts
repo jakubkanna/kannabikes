@@ -1,7 +1,9 @@
 export type OrderStage =
   | "waiting_for_deposit"
   | "in_review"
+  | "waiting_for_specification"
   | "waiting_for_design"
+  | "waiting_for_design_approval"
   | "in_production"
   | "waiting_for_delivery"
   | "delivered";
@@ -14,11 +16,19 @@ type OrderStageDefinition = {
 
 const STORAGE_PREFIX = "kanna-order-stage";
 const DEPOSIT_CONFIRMED_PREFIX = "kanna-order-deposit-confirmed";
+const BIKE_SPECIFICATION_PREFIX = "kanna-order-bike-specification";
+
+export type StoredBikeSpecificationDraft = {
+  specificationMode: "guided_by_designer" | "self_specified" | "frame_only" | null;
+  values: Record<string, string>;
+};
 
 export const ORDER_STAGES: OrderStage[] = [
   "waiting_for_deposit",
   "in_review",
+  "waiting_for_specification",
   "waiting_for_design",
+  "waiting_for_design_approval",
   "in_production",
   "waiting_for_delivery",
   "delivered",
@@ -35,10 +45,20 @@ export const ORDER_STAGE_DEFINITIONS: Record<OrderStage, OrderStageDefinition> =
     description: "The deposit is being verified and we are reviewing your measurements and order details.",
     badgeClassName: "border-sky-200 bg-sky-50 text-sky-700",
   },
+  waiting_for_specification: {
+    label: "Waiting for specification",
+    description: "Measurements are received and the project is waiting for the bike specification to move into design.",
+    badgeClassName: "border-cyan-200 bg-cyan-50 text-cyan-700",
+  },
   waiting_for_design: {
     label: "Design in progress",
     description: "Review is complete and the order is queued for the design phase.",
     badgeClassName: "border-violet-200 bg-violet-50 text-violet-700",
+  },
+  waiting_for_design_approval: {
+    label: "Design waiting for approval",
+    description: "The design is prepared and waiting for your approval before production starts.",
+    badgeClassName: "border-indigo-200 bg-indigo-50 text-indigo-700",
   },
   in_production: {
     label: "In production",
@@ -63,6 +83,10 @@ function getStorageKey(orderNumber: string) {
 
 function getDepositConfirmedStorageKey(orderNumber: string) {
   return `${DEPOSIT_CONFIRMED_PREFIX}:${orderNumber}`;
+}
+
+function getBikeSpecificationStorageKey(orderNumber: string) {
+  return `${BIKE_SPECIFICATION_PREFIX}:${orderNumber}`;
 }
 
 export function getStoredOrderStage(orderNumber: string): OrderStage {
@@ -102,12 +126,61 @@ export function setStoredDepositConfirmed(orderNumber: string, confirmed: boolea
   window.localStorage.setItem(getDepositConfirmedStorageKey(orderNumber), String(confirmed));
 }
 
+export function getStoredBikeSpecificationDraft(
+  orderNumber: string,
+): StoredBikeSpecificationDraft {
+  if (typeof window === "undefined") {
+    return { specificationMode: null, values: {} };
+  }
+
+  const stored = window.localStorage.getItem(getBikeSpecificationStorageKey(orderNumber));
+
+  if (!stored) {
+    return { specificationMode: null, values: {} };
+  }
+
+  try {
+    const parsed = JSON.parse(stored) as Partial<StoredBikeSpecificationDraft>;
+    const specificationMode =
+      parsed.specificationMode === "guided_by_designer" ||
+      parsed.specificationMode === "self_specified" ||
+      parsed.specificationMode === "frame_only"
+        ? parsed.specificationMode
+        : null;
+
+    const values =
+      parsed.values && typeof parsed.values === "object" && !Array.isArray(parsed.values)
+        ? Object.fromEntries(
+            Object.entries(parsed.values).filter(
+              (entry): entry is [string, string] => typeof entry[1] === "string",
+            ),
+          )
+        : {};
+
+    return { specificationMode, values };
+  } catch {
+    return { specificationMode: null, values: {} };
+  }
+}
+
+export function setStoredBikeSpecificationDraft(
+  orderNumber: string,
+  draft: StoredBikeSpecificationDraft,
+) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(getBikeSpecificationStorageKey(orderNumber), JSON.stringify(draft));
+}
+
 export function resetStoredOrderStage(orderNumber: string) {
   if (typeof window === "undefined") {
     return;
   }
 
   window.localStorage.removeItem(getStorageKey(orderNumber));
+  window.localStorage.removeItem(getBikeSpecificationStorageKey(orderNumber));
 }
 
 export function getNextOrderStage(stage: OrderStage): OrderStage {
