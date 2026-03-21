@@ -1,1 +1,82 @@
 @import "tailwindcss";
+
+:root {
+  --kanna-yellow: #ffd400;
+}
+
+.measurement-svg-wrap {
+  align-items: center;
+  display: flex;
+  height: 100%;
+  justify-content: center;
+}
+
+.measurement-svg-stack {
+  height: 100%;
+  position: relative;
+  width: 100%;
+}
+
+.measurement-base-svg,
+.measurement-svg-overlay {
+  align-items: center;
+  display: flex;
+  height: 100%;
+  inset: 0;
+  justify-content: center;
+  position: absolute;
+  width: 100%;
+}
+
+.measurement-base-svg svg,
+.measurement-base-svg img,
+.measurement-svg-overlay svg {
+  display: block;
+  height: auto;
+  margin-inline: auto;
+  max-height: 100%;
+  max-width: 100%;
+  width: auto;
+}
+
+.measurement-base-svg #Layer_2,
+.measurement-base-svg #Layer_3,
+.measurement-base-svg #Layer_4,
+.measurement-base-svg #Layer_5,
+.measurement-base-svg #Layer_6,
+.measurement-base-svg #Layer_9 {
+  display: none;
+}
+
+.measurement-svg {
+  height: 100%;
+  width: 100%;
+}
+
+.measurement-svg-overlay {
+  pointer-events: none;
+}
+
+.measurement-svg-overlay #Layer_7 {
+  opacity: 0;
+}
+
+.measurement-svg #Layer_2,
+.measurement-svg #Layer_3,
+.measurement-svg #Layer_4,
+.measurement-svg #Layer_5,
+.measurement-svg #Layer_6,
+.measurement-svg #Layer_9 {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+.measurement-svg[data-active="A"] #Layer_3,
+.measurement-svg[data-active="B"] #Layer_4,
+.measurement-svg[data-active="C"] #Layer_5,
+.measurement-svg[data-active="D"] #Layer_2,
+.measurement-svg[data-active="E"] #Layer_6,
+.measurement-svg[data-active="F"] #Layer_9 {
+  opacity: 1;
+}

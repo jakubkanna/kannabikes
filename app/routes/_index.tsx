@@ -1,6 +1,5 @@
 import type { Route } from "./+types/_index";
 import { useEffect, useRef, useState } from "react";
-import type { CSSProperties } from "react";
 import { SITE_NAME } from "~/root";
 import { attachBackgroundParallax } from "~/lib/parallax";
 
@@ -28,10 +27,7 @@ export default function Home() {
   }, [baseUrl]);
 
   return (
-    <main
-      className="h-screen overflow-hidden px-6"
-      style={{ "--kanna-yellow": "#ffd400" } as CSSProperties}
-    >
+    <main className="h-screen overflow-hidden px-6">
       <div
         ref={backgroundRef}
         aria-hidden="true"
@@ -53,7 +49,7 @@ export default function Home() {
         </a>
         <a
           href="https://instagram.com/kannabikes"
-          className="mt-4 text-xs uppercase tracking-[0.35em] text-[var(--kanna-yellow)] drop-shadow-[0_2px_6px_rgba(0,0,0,0.33)]"
+          className="mt-4 text-xs uppercase tracking-[0.35em] text-(--kanna-yellow) drop-shadow-[0_2px_6px_rgba(0,0,0,0.33)]"
           target="_blank"
           rel="noreferrer"
         >
