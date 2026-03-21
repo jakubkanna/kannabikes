@@ -12,29 +12,63 @@ export function OrderMeasurementsSection({
   selectedBodySrc,
   values,
   onActivateMeasurement,
+  onDeactivateMeasurement,
   onBodyTypeChange,
   onBodyWeightChange,
   onMeasurementChange,
   onSubmit,
   onToggleGuidelines,
 }: MeasurementsSectionProps) {
+  const hasBodyWeight = bodyWeight.trim().length > 0;
+  const hasBodyData = hasBodyWeight && Boolean(bodyType);
+  const completedMeasurementCount = measurementKeys.findIndex(
+    (key) => values[key]?.trim().length === 0,
+  );
+  const visibleMeasurementCount =
+    completedMeasurementCount === -1 ? measurementKeys.length : completedMeasurementCount + 1;
+  const visibleMeasurementKeys = hasBodyData
+    ? measurementKeys.slice(0, visibleMeasurementCount)
+    : [];
+  const allMeasurementsComplete =
+    measurementKeys.length > 0 &&
+    measurementKeys.every((key) => values[key]?.trim().length > 0);
+  const completedSteps =
+    Number(hasBodyWeight) +
+    Number(Boolean(bodyType)) +
+    measurementKeys.filter((key) => values[key]?.trim().length > 0).length;
+  const totalSteps = 2 + measurementKeys.length;
+  const progressPercent = Math.round((completedSteps / totalSteps) * 100);
+
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:flex md:max-h-[80vh] md:flex-col md:overflow-hidden md:p-6">
+    <section
+      className={`rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:flex md:flex-col md:overflow-hidden md:p-6 ${
+        isSubmitted ? "md:max-h-[60vh]" : "md:h-[80vh]"
+      }`}
+    >
       <div className="mb-5 shrink-0">
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
           Measurements
         </p>
         <h2 className="mt-2 text-xl font-semibold text-slate-900">
-          Submit your body data
+          {isSubmitted ? "Received" : "Submit your body data"}
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-          During this stage we collect the body measurements required to review the order
-          and prepare the next design step.
+          {isSubmitted
+            ? "Your body measurements have been submitted and recorded for the design process."
+            : "During this stage we collect the body measurements required to review the order and prepare the next design step."}
         </p>
       </div>
 
-      <div className="grid gap-6 md:min-h-0 md:flex-1 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] md:items-stretch">
-        <div className="flex min-h-[44vh] flex-col rounded-lg border border-slate-200 bg-slate-100 p-4 md:h-full">
+      <div
+        className={`grid gap-6 md:min-h-0 md:flex-1 md:items-stretch ${
+          isSubmitted ? "md:grid-cols-2" : "md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]"
+        }`}
+      >
+        <div
+          className={`min-h-0 overflow-hidden flex flex-col rounded-lg border border-slate-200 bg-slate-100 p-4 ${
+            isSubmitted ? "min-h-[28vh] md:h-full" : "min-h-[44vh] md:h-full"
+          }`}
+        >
           <div className="measurement-svg-wrap min-h-0 flex-1">
             <div
               className="measurement-svg-stack"
@@ -56,145 +90,194 @@ export function OrderMeasurementsSection({
           </div>
         </div>
 
-        <aside className="rounded-lg border border-slate-200 bg-slate-50 p-3 md:h-full md:overflow-y-auto md:p-4">
-          <div className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-3">
-            <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">
-              Body Data
-            </h3>
+        <aside className="min-h-0 rounded-lg border border-slate-200 bg-slate-50 px-3 pb-3 pt-0 md:flex md:h-full md:flex-col md:px-4 md:pb-4 md:pt-0">
+          <div className="min-h-0 md:flex-1 md:overflow-y-auto">
+            <div className={isSubmitted ? "pt-3" : "pt-4"}>
+              <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+                Body Data
+              </h3>
 
-            <label className="mt-3 block">
-              <span className="mb-2 block text-sm font-semibold text-slate-700">
-                Body weight
-              </span>
               {isSubmitted ? (
-                <p className="text-sm text-slate-900">{bodyWeight || "-"}</p>
-              ) : (
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  placeholder="Enter body weight"
-                  value={bodyWeight}
-                  onChange={(event) => onBodyWeightChange(event.target.value)}
-                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
-                />
-              )}
-            </label>
-
-            <fieldset className="mt-4">
-              <legend className="mb-2 text-sm font-semibold text-slate-700">Body type</legend>
-              {isSubmitted ? (
-                <p className="text-sm text-slate-900">
-                  {bodyType === "female" ? "Female" : "Male"}
-                </p>
-              ) : (
-                <div className="grid grid-cols-2 gap-2">
-                  <label className="flex cursor-pointer items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800">
-                    <input
-                      type="radio"
-                      name="bodyType"
-                      value="male"
-                      checked={bodyType === "male"}
-                      onChange={() => onBodyTypeChange("male")}
-                    />
-                    <span>Male</span>
-                  </label>
-                  <label className="flex cursor-pointer items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800">
-                    <input
-                      type="radio"
-                      name="bodyType"
-                      value="female"
-                      checked={bodyType === "female"}
-                      onChange={() => onBodyTypeChange("female")}
-                    />
-                    <span>Female</span>
-                  </label>
+                <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-4">
+                  <div>
+                    <span className="mb-2 block text-sm font-semibold text-slate-700">
+                      Body weight
+                    </span>
+                    <p className="text-sm text-slate-900">{bodyWeight || "-"}</p>
+                  </div>
+                  <div>
+                    <span className="mb-2 block text-sm font-semibold text-slate-700">
+                      Body type
+                    </span>
+                    <p className="text-sm text-slate-900">
+                      {bodyType === "female" ? "Female" : "Male"}
+                    </p>
+                  </div>
                 </div>
-              )}
-            </fieldset>
-          </div>
-
-          <h3 className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
-            Measurements
-          </h3>
-
-          <div className="mt-4 space-y-4">
-            {measurementKeys.map((key) => {
-              const isActive = activeMeasurement === key;
-              const isGuidelineExpanded = expandedGuidelineKey === key;
-
-              return (
-                <label
-                  key={key}
-                  className="block rounded-lg border border-slate-200 bg-slate-50 p-3"
-                >
-                  <span className="mb-2 block text-sm font-semibold text-slate-700">
-                    {key}
-                  </span>
-                  {isSubmitted ? (
-                    <p className="text-sm text-slate-900">{values[key] || "-"}</p>
-                  ) : (
+              ) : (
+                <>
+                  <label className="mt-3 block">
+                    <span className="mb-2 block text-sm font-semibold text-slate-700">
+                      Body weight
+                    </span>
                     <input
                       type="text"
                       inputMode="decimal"
-                      placeholder={`Enter measurement ${key}`}
-                      value={values[key] ?? ""}
-                      onFocus={() => onActivateMeasurement(key)}
-                      onClick={() => onActivateMeasurement(key)}
-                      onChange={(event) => onMeasurementChange(key, event.target.value)}
+                      placeholder="Enter body weight"
+                      value={bodyWeight}
+                      onChange={(event) => onBodyWeightChange(event.target.value)}
                       className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                     />
-                  )}
-                  {isActive ? (
-                    <div className="mt-3">
-                      <button
-                        type="button"
-                        onClick={() => onToggleGuidelines(key)}
-                        className="flex w-full items-center justify-between rounded-md border border-slate-200 bg-white px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-600"
-                        aria-expanded={isGuidelineExpanded}
-                        aria-controls={`guidelines-${key}`}
-                      >
-                        <span>Guidelines</span>
-                        <svg
-                          aria-hidden="true"
-                          viewBox="0 0 20 20"
-                          className={`h-4 w-4 transition-transform duration-200 ${
-                            isGuidelineExpanded ? "rotate-180" : "rotate-0"
-                          }`}
-                        >
-                          <path
-                            d="M5 7.5L10 12.5L15 7.5"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
+                  </label>
+
+                  {hasBodyWeight ? (
+                    <fieldset className="mt-4">
+                      <legend className="mb-2 text-sm font-semibold text-slate-700">
+                        Body type
+                      </legend>
+                      <div className="grid grid-cols-2 gap-2">
+                        <label className="flex cursor-pointer items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800">
+                          <input
+                            type="radio"
+                            name="bodyType"
+                            value="male"
+                            checked={bodyType === "male"}
+                            onChange={() => onBodyTypeChange("male")}
                           />
-                        </svg>
-                      </button>
-                      {isGuidelineExpanded ? (
-                        <div
-                          id={`guidelines-${key}`}
-                          className="mt-2 flex aspect-video items-center justify-center overflow-hidden rounded-md border border-slate-200 bg-black/90 px-4 text-center text-sm text-slate-300"
-                        >
-                          Add a guideline video or image for {key}.
-                        </div>
-                      ) : null}
-                    </div>
+                          <span>Male</span>
+                        </label>
+                        <label className="flex cursor-pointer items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800">
+                          <input
+                            type="radio"
+                            name="bodyType"
+                            value="female"
+                            checked={bodyType === "female"}
+                            onChange={() => onBodyTypeChange("female")}
+                          />
+                          <span>Female</span>
+                        </label>
+                      </div>
+                    </fieldset>
                   ) : null}
-                </label>
-              );
-            })}
+                </>
+              )}
+            </div>
+
+            {isSubmitted ? (
+              <>
+                <h3 className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  Measurements
+                </h3>
+                <div className="mt-4 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {measurementKeys.map((key) => (
+                    <div
+                      key={key}
+                      onMouseEnter={() => onActivateMeasurement(key)}
+                      onMouseLeave={onDeactivateMeasurement}
+                    >
+                      <span className="mb-2 block text-sm font-semibold text-slate-700">
+                        {key}
+                      </span>
+                      <p className="text-sm text-slate-900">{values[key] || "-"}</p>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                {hasBodyData ? (
+                  <h3 className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    Measurements
+                  </h3>
+                ) : null}
+                <div className="mt-4 space-y-4 pb-4">
+                  {visibleMeasurementKeys.map((key) => {
+                    const isActive = activeMeasurement === key;
+                    const isGuidelineExpanded = expandedGuidelineKey === key;
+
+                    return (
+                      <label
+                        key={key}
+                        className="block rounded-lg border border-slate-200 bg-slate-50 p-3"
+                      >
+                        <span className="mb-2 block text-sm font-semibold text-slate-700">
+                          {key}
+                        </span>
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          placeholder={`Enter measurement ${key}`}
+                          value={values[key] ?? ""}
+                          onFocus={() => onActivateMeasurement(key)}
+                          onClick={() => onActivateMeasurement(key)}
+                          onChange={(event) => onMeasurementChange(key, event.target.value)}
+                          className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
+                        />
+                        {isActive ? (
+                          <div className="mt-3">
+                            <button
+                              type="button"
+                              onClick={() => onToggleGuidelines(key)}
+                              className="flex w-full items-center justify-between rounded-md border border-slate-200 bg-white px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-600"
+                              aria-expanded={isGuidelineExpanded}
+                              aria-controls={`guidelines-${key}`}
+                            >
+                              <span>Guidelines</span>
+                              <svg
+                                aria-hidden="true"
+                                viewBox="0 0 20 20"
+                                className={`h-4 w-4 transition-transform duration-200 ${
+                                  isGuidelineExpanded ? "rotate-180" : "rotate-0"
+                                }`}
+                              >
+                                <path
+                                  d="M5 7.5L10 12.5L15 7.5"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="1.8"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            </button>
+                            {isGuidelineExpanded ? (
+                              <div
+                                id={`guidelines-${key}`}
+                                className="mt-2 flex aspect-video items-center justify-center overflow-hidden rounded-md border border-slate-200 bg-black/90 px-4 text-center text-sm text-slate-300"
+                              >
+                                Add a guideline video or image for {key}.
+                              </div>
+                            ) : null}
+                          </div>
+                        ) : null}
+                      </label>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </div>
 
           {!isSubmitted ? (
-            <button
-              type="button"
-              onClick={onSubmit}
-              disabled={isSubmitting}
-              className="mt-5 inline-flex w-full items-center justify-center rounded-md bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
-            >
-              {isSubmitting ? "Submitting measurements..." : "Submit body data"}
-            </button>
+            <div className="shrink-0 border-t border-slate-200 bg-slate-50 pt-4">
+              {hasBodyData && allMeasurementsComplete ? (
+                <button
+                  type="button"
+                  onClick={onSubmit}
+                  disabled={isSubmitting}
+                  className="inline-flex w-full items-center justify-center rounded-md bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+                >
+                  {isSubmitting ? "Submitting measurements..." : "Submit body data"}
+                </button>
+              ) : (
+                <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+                  <div
+                    className="h-full rounded-full bg-slate-500 transition-all duration-300"
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
+              )}
+            </div>
           ) : null}
         </aside>
       </div>

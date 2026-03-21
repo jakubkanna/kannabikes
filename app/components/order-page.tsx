@@ -10,6 +10,7 @@ import {
   SectionStack,
 } from "~/components/order-page/index";
 import {
+  getStoredDepositConfirmed,
   getStoredOrderStage,
   mockProcessDeposit,
   ORDER_STAGE_DEFINITIONS,
@@ -41,6 +42,7 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
   const [bodyWeight, setBodyWeight] = useState<string>("");
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isSubmittingMeasurements, setIsSubmittingMeasurements] = useState(false);
+  const [isDepositConfirmed, setIsDepositConfirmed] = useState(false);
   const [orderStage, setOrderStage] = useState<OrderStage>("waiting_for_deposit");
   const [bikeSpecification, setBikeSpecification] = useState<Record<string, string>>({});
   const [specificationMode, setSpecificationMode] = useState<
@@ -59,6 +61,9 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
     setActiveMeasurement(key);
     setExpandedGuidelineKey((prev) => (prev === key ? prev : null));
   };
+  const deactivateMeasurement = () => {
+    setActiveMeasurement(null);
+  };
   const baseUrl = import.meta.env.BASE_URL;
   const selectedBodySrc =
     bodyType === "female"
@@ -71,11 +76,14 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
     orderStage === "in_production" ||
     orderStage === "waiting_for_delivery" ||
     orderStage === "delivered";
+  const visibleOrderStage =
+    orderStage === "waiting_for_design" && !isDepositConfirmed ? "in_review" : orderStage;
   const bikeDesignUnlocked =
-    orderStage === "waiting_for_design" ||
-    orderStage === "in_production" ||
-    orderStage === "waiting_for_delivery" ||
-    orderStage === "delivered";
+    isDepositConfirmed &&
+    (orderStage === "waiting_for_design" ||
+      orderStage === "in_production" ||
+      orderStage === "waiting_for_delivery" ||
+      orderStage === "delivered");
 
   useEffect(() => {
     document.title = `Order nb. ${orderNumber}`;
@@ -83,6 +91,7 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
 
   useEffect(() => {
     setOrderStage(getStoredOrderStage(orderNumber));
+    setIsDepositConfirmed(getStoredDepositConfirmed(orderNumber));
   }, [orderNumber]);
 
   const handleMeasurementChange = (key: string, value: string) => {
@@ -122,7 +131,7 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
               {`Order nb. ${orderNumber}`}
             </h1>
             <div className="flex items-center md:justify-end">
-              <OrderStatusBadge stage={orderStage} />
+              <OrderStatusBadge stage={visibleOrderStage} />
             </div>
           </div>
         </header>
@@ -130,6 +139,7 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
         <OrderDepositSection
           agreementAccepted={agreementAccepted}
           currentStage={orderStage}
+          isDepositConfirmed={isDepositConfirmed}
           isProcessingPayment={isProcessingPayment}
           onAgreementChange={setAgreementAccepted}
           onPayDeposit={handleMockDepositPayment}
@@ -148,6 +158,7 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
             selectedBodySrc={selectedBodySrc}
             values={values}
             onActivateMeasurement={(key) => activateMeasurement(key as MeasurementKey)}
+            onDeactivateMeasurement={deactivateMeasurement}
             onBodyTypeChange={setBodyType}
             onBodyWeightChange={setBodyWeight}
             onMeasurementChange={handleMeasurementChange}

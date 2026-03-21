@@ -10,6 +10,7 @@ export type MeasurementsSectionProps = {
   selectedBodySrc: string;
   values: Record<string, string>;
   onActivateMeasurement: (key: string) => void;
+  onDeactivateMeasurement: () => void;
   onBodyTypeChange: (value: "male" | "female") => void;
   onBodyWeightChange: (value: string) => void;
   onMeasurementChange: (key: string, value: string) => void;

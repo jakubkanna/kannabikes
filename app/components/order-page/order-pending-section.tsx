@@ -37,7 +37,7 @@ export function OrderBikeDesignPreviewSection() {
     <OrderPendingSection
       title="Next: bike design"
       titleStyle="eyebrow"
-      description="Once your measurements are submitted, your project will be ready to start and assigned to our designer for the next stage of the build."
+      description="Once your measurements are submitted and the deposit is received, your project will be ready to start and assigned to our designer for the next stage of the build."
     />
   );
 }

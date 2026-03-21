@@ -3,12 +3,14 @@ import type { OrderStage } from "~/lib/mock-order";
 export function OrderDepositSection({
   agreementAccepted,
   currentStage,
+  isDepositConfirmed,
   isProcessingPayment,
   onAgreementChange,
   onPayDeposit,
 }: {
   agreementAccepted: boolean;
   currentStage: OrderStage;
+  isDepositConfirmed: boolean;
   isProcessingPayment: boolean;
   onAgreementChange: (value: boolean) => void;
   onPayDeposit: () => void;
@@ -16,7 +18,7 @@ export function OrderDepositSection({
   const depositPaid = currentStage !== "waiting_for_deposit";
 
   if (depositPaid) {
-    const isDepositStillUnderReview = currentStage === "in_review";
+    const isDepositStillUnderReview = !isDepositConfirmed;
 
     return (
       <section className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm md:max-h-[80vh] md:overflow-y-auto md:p-6">
@@ -30,7 +32,7 @@ export function OrderDepositSection({
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700">
               {isDepositStillUnderReview
-                ? "We are reviewing your deposit and confirming that the payment has been received correctly. The order is now open for review and the measurement section is available below."
+                ? "We are reviewing your deposit and confirming that the payment has been received correctly. In the meantime, you can add the measurements required for the design process below."
                 : "Your deposit has been confirmed. The order is secured and will continue through the remaining build stages."}
             </p>
           </div>

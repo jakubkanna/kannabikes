@@ -13,6 +13,7 @@ type OrderStageDefinition = {
 };
 
 const STORAGE_PREFIX = "kanna-order-stage";
+const DEPOSIT_CONFIRMED_PREFIX = "kanna-order-deposit-confirmed";
 
 export const ORDER_STAGES: OrderStage[] = [
   "waiting_for_deposit",
@@ -60,6 +61,10 @@ function getStorageKey(orderNumber: string) {
   return `${STORAGE_PREFIX}:${orderNumber}`;
 }
 
+function getDepositConfirmedStorageKey(orderNumber: string) {
+  return `${DEPOSIT_CONFIRMED_PREFIX}:${orderNumber}`;
+}
+
 export function getStoredOrderStage(orderNumber: string): OrderStage {
   if (typeof window === "undefined") {
     return "waiting_for_deposit";
@@ -79,6 +84,22 @@ export function setStoredOrderStage(orderNumber: string, stage: OrderStage) {
   }
 
   window.localStorage.setItem(getStorageKey(orderNumber), stage);
+}
+
+export function getStoredDepositConfirmed(orderNumber: string) {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  return window.localStorage.getItem(getDepositConfirmedStorageKey(orderNumber)) === "true";
+}
+
+export function setStoredDepositConfirmed(orderNumber: string, confirmed: boolean) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(getDepositConfirmedStorageKey(orderNumber), String(confirmed));
 }
 
 export function resetStoredOrderStage(orderNumber: string) {
