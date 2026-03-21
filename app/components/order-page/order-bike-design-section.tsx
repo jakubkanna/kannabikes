@@ -62,6 +62,18 @@ const DESIGNER_LED_SAMPLE_SPECIFICATION: Record<string, string> = {
   "Other:Accessories": "Tubeless setup, bottle cages",
 };
 
+const GEOMETRY_FIELDS = [
+  { title: "Stack", key: "Geometry:Stack", sampleValue: "603 mm" },
+  { title: "Reach", key: "Geometry:Reach", sampleValue: "392 mm" },
+  { title: "Top tube", key: "Geometry:TopTube", sampleValue: "568 mm" },
+  { title: "Seat tube", key: "Geometry:SeatTube", sampleValue: "545 mm" },
+  { title: "Head tube", key: "Geometry:HeadTube", sampleValue: "172 mm" },
+  { title: "Head angle", key: "Geometry:HeadAngle", sampleValue: "71.5°" },
+  { title: "Seat angle", key: "Geometry:SeatAngle", sampleValue: "73.5°" },
+  { title: "Chainstay", key: "Geometry:Chainstay", sampleValue: "425 mm" },
+  { title: "BB height", key: "Geometry:BBHeight", sampleValue: "285 mm" },
+] as const;
+
 const DESIGNER_LED_BUDGET_KEY = "Designer:Budget";
 const RIDING_FIELDS = [
   {
@@ -148,6 +160,7 @@ function toggleSelectedValue(value: string | undefined, nextValue: string) {
 export function OrderBikeDesignSection({
   isApproving,
   bikeDrawingSrc,
+  designPreviewSrc,
   currentStage,
   isSubmitting,
   isSubmitted,
@@ -160,10 +173,11 @@ export function OrderBikeDesignSection({
 }: BikeDesignSectionProps) {
   const isWaitingForDesign = currentStage === "waiting_for_design";
   const isWaitingForApproval = currentStage === "waiting_for_design_approval";
-  const shouldCollapseSubmittedSummary =
+  const isApprovedDesign =
     currentStage === "in_production" ||
     currentStage === "waiting_for_delivery" ||
     currentStage === "delivered";
+  const shouldCollapseSubmittedSummary = isApprovedDesign;
   const hasBuildTypeSelected = specificationMode !== null;
   const showSpecificationForm = specificationMode === "self_specified";
   const showGuidedMessage = specificationMode === "guided_by_designer";
@@ -516,6 +530,122 @@ export function OrderBikeDesignSection({
       </div>
     </div>
   );
+  const renderBuildDataSummary = (
+    resolveFieldValue?: (fieldKey: string) => string,
+  ) => (
+    <>
+      <div className="rounded-lg border border-slate-200 bg-white p-4">
+        <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+          Build type
+        </h3>
+        <p className="mt-3 text-sm text-slate-900">
+          {specificationMode === "guided_by_designer"
+            ? "Designer-led specification"
+            : specificationMode === "frame_only"
+              ? "Frame only"
+              : "Self-defined specification"}
+        </p>
+      </div>
+
+      <div className="mt-5">{renderRidingSummary()}</div>
+      <div className="mt-5">{renderPaintjobSummary()}</div>
+
+      {specificationMode === "guided_by_designer" ? (
+        <>
+          <div className="mt-5 rounded-lg border border-slate-200 bg-white p-4">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+              Budget
+            </h3>
+            <p className="mt-3 text-sm text-slate-900">
+              {values[DESIGNER_LED_BUDGET_KEY] || "-"}
+            </p>
+          </div>
+
+          <div className="mt-5 rounded-lg border border-slate-200 bg-white p-4">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+              Notes
+            </h3>
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              The designer will prepare the specification based on your
+              measurements, riding goals, and project direction.
+            </p>
+          </div>
+        </>
+      ) : specificationMode === "frame_only" ? (
+        <div className="mt-5 rounded-lg border border-slate-200 bg-white p-4">
+          <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+            Notes
+          </h3>
+          <p className="mt-3 text-sm leading-6 text-slate-600">
+            This order will continue as a frame-only project. The designer will
+            prepare the frame direction based on your submitted measurements and
+            project goals.
+          </p>
+        </div>
+      ) : (
+        <>
+          {BIKE_COMPONENT_SECTIONS.map((section) => (
+            <div
+              key={section.title}
+              className="mt-5 rounded-lg border border-slate-200 bg-white p-4"
+            >
+              <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+                {section.title}
+              </h3>
+              <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+                {section.fields.map((field) => {
+                  const fieldKey = `${section.title}:${field}`;
+
+                  return (
+                    <div key={fieldKey}>
+                      <span className="mb-2 block text-sm font-semibold text-slate-700">
+                        {field}
+                      </span>
+                      <p className="text-sm text-slate-900">
+                        {resolveFieldValue
+                          ? resolveFieldValue(fieldKey)
+                          : values[fieldKey] || "-"}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+    </>
+  );
+  const renderGeometrySummary = () => (
+    <div className="rounded-lg border border-slate-200 bg-white p-4">
+      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+        Geometry
+      </h3>
+      <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+        {GEOMETRY_FIELDS.map((field) => (
+          <div key={field.key}>
+            <span className="mb-2 block text-sm font-semibold text-slate-700">
+              {field.title}
+            </span>
+            <p className="text-sm text-slate-900">
+              {values[field.key] || field.sampleValue}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+  const renderArtistMessage = () => (
+    <div className="rounded-lg border border-slate-200 bg-white p-4">
+      <h3 className="text-sm font-semibold text-slate-900">From the artist</h3>
+      <p className="mt-2 text-sm leading-6 text-slate-600">
+        The geometry and component direction are prepared based on your
+        submitted measurements and project goals. Please review the setup below
+        and approve it if everything looks right.
+      </p>
+      <p className="mt-4 text-sm font-semibold text-slate-900">Jakub Kanna</p>
+    </div>
+  );
 
   if (isWaitingForApproval) {
     const resolveFieldValue = (fieldKey: string) =>
@@ -525,7 +655,7 @@ export function OrderBikeDesignSection({
         : "");
 
     return (
-      <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:flex md:max-h-[80vh] md:flex-col md:overflow-hidden md:p-6">
+      <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:p-6">
         <div className="mb-5 shrink-0">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
             Bike design
@@ -539,94 +669,61 @@ export function OrderBikeDesignSection({
           </p>
         </div>
 
-        <div className="grid gap-6 md:min-h-0 md:flex-1 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] md:items-stretch">
-          <div className="relative flex min-h-[44vh] items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-100 p-4">
+        <div className="space-y-6">
+          <div className="relative flex min-h-[36vh] items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-100 p-4">
             <img
-              src={bikeDrawingSrc}
-              alt="Bike drawing"
-              className="h-auto max-h-[520px] w-full object-contain"
+              src={designPreviewSrc}
+              alt="Bike design preview"
+              className="h-auto max-h-[560px] w-full object-contain"
             />
           </div>
 
-          <aside className="rounded-lg border border-slate-200 bg-slate-50 p-3 md:flex md:h-full md:flex-col md:p-4">
-            <div className="space-y-4 pb-2 md:min-h-0 md:flex-1 md:overflow-y-auto">
-              <div className="rounded-lg border border-slate-200 bg-white p-4">
-                <h3 className="text-sm font-semibold text-slate-900">
-                  Message from designer
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600">
-                  The geometry and component direction are prepared based on
-                  your submitted measurements and project goals. Please review
-                  the setup below and approve it if everything looks right.
-                </p>
-              </div>
-
-              <div className="rounded-lg border border-slate-200 bg-white p-4">
-                <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
-                  Build type
-                </h3>
-                <p className="mt-3 text-sm text-slate-900">
-                  {specificationMode === "guided_by_designer"
-                    ? "Designer-led specification"
-                    : specificationMode === "frame_only"
-                      ? "Frame only"
-                      : "Self-defined specification"}
-                </p>
-              </div>
-
-              {renderRidingSummary()}
-              {renderPaintjobSummary()}
-
-              {specificationMode === "guided_by_designer" ? (
+          <div className="grid gap-6 md:grid-cols-2 md:items-start">
+            <aside className="rounded-lg border border-slate-200 bg-slate-50 p-3 md:p-4">
+              <div className="space-y-4 pb-2">
                 <div className="rounded-lg border border-slate-200 bg-white p-4">
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
-                    Budget
+                  <h3 className="text-sm font-semibold text-slate-900">
+                    Build data
                   </h3>
-                  <p className="mt-3 text-sm text-slate-900">
-                    {values[DESIGNER_LED_BUDGET_KEY] || "-"}
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    Review the selected configuration, riding direction, and
+                    finish details before approving the project.
                   </p>
                 </div>
-              ) : null}
 
-              {BIKE_COMPONENT_SECTIONS.map((section) => (
-                <div
-                  key={section.title}
-                  className="rounded-lg border border-slate-200 bg-white p-4"
-                >
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
-                    {section.title}
+                {renderBuildDataSummary(resolveFieldValue)}
+              </div>
+            </aside>
+
+            <aside className="rounded-lg border border-slate-200 bg-slate-50 p-3 md:flex md:flex-col md:p-4">
+              <div className="space-y-4 pb-2">
+                <div className="rounded-lg border border-slate-200 bg-white p-4">
+                  <h3 className="text-sm font-semibold text-slate-900">
+                    Geometry
                   </h3>
-                  <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-                    {section.fields.map((field) => {
-                      const fieldKey = `${section.title}:${field}`;
-
-                      return (
-                        <div key={fieldKey}>
-                          <span className="mb-2 block text-sm font-semibold text-slate-700">
-                            {field}
-                          </span>
-                          <p className="text-sm text-slate-900">
-                            {resolveFieldValue(fieldKey) || "-"}
-                          </p>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    This geometry proposal is prepared specifically for this
+                    order and should be reviewed together with the design image.
+                  </p>
                 </div>
-              ))}
-            </div>
 
-            <div className="shrink-0 border-t border-slate-200 bg-slate-50 pt-4">
-              <button
-                type="button"
-                onClick={onApprove}
-                disabled={isApproving}
-                className="inline-flex w-full items-center justify-center rounded-md bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
-              >
-                {isApproving ? "Approving design..." : "Approve design"}
-              </button>
-            </div>
-          </aside>
+                {renderGeometrySummary()}
+
+                {renderArtistMessage()}
+              </div>
+
+              <div className="shrink-0 border-t border-slate-200 bg-slate-50 pt-4">
+                <button
+                  type="button"
+                  onClick={onApprove}
+                  disabled={isApproving}
+                  className="inline-flex w-full items-center justify-center rounded-md bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+                >
+                  {isApproving ? "Approving design..." : "Approve design"}
+                </button>
+              </div>
+            </aside>
+          </div>
         </div>
       </section>
     );
@@ -638,7 +735,7 @@ export function OrderBikeDesignSection({
         collapsible
         defaultExpanded={!shouldCollapseSubmittedSummary}
         title="Bike design"
-        heading="Specification received"
+        heading={isApprovedDesign ? "Approved" : "Specification received"}
         description="Your bike specification has been submitted and recorded for the next design and production steps."
         imageAlt="Bike drawing"
         imageContent={
@@ -667,76 +764,16 @@ export function OrderBikeDesignSection({
           </>
         }
       >
-        <div className="pt-3">
-          <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
-            Build type
-          </h3>
-          <p className="mt-3 text-sm text-slate-900">
-            {specificationMode === "guided_by_designer"
-              ? "Designer-led specification"
-              : specificationMode === "frame_only"
-                ? "Frame only"
-                : "Self-defined specification"}
-          </p>
-        </div>
-
-        <div className="mt-5">{renderRidingSummary()}</div>
-        <div className="mt-5">{renderPaintjobSummary()}</div>
-
-        {specificationMode === "guided_by_designer" ? (
-          <>
-            <h3 className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
-              Budget
-            </h3>
-            <p className="mt-3 text-sm text-slate-900">
-              {values[DESIGNER_LED_BUDGET_KEY] || "-"}
-            </p>
-
-            <h3 className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
-              Notes
-            </h3>
-            <p className="mt-3 text-sm leading-6 text-slate-600">
-              The designer will prepare the specification based on your
-              measurements, riding goals, and project direction.
-            </p>
-          </>
-        ) : specificationMode === "frame_only" ? (
-          <>
-            <h3 className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
-              Notes
-            </h3>
-            <p className="mt-3 text-sm leading-6 text-slate-600">
-              This order will continue as a frame-only project. The designer
-              will prepare the frame direction based on your submitted
-              measurements and project goals.
-            </p>
-          </>
+        {isApprovedDesign ? (
+          <div className="space-y-5 pt-3">
+            <div>{renderBuildDataSummary()}</div>
+            <div className="grid gap-5 md:grid-cols-2 md:items-start">
+              <div>{renderGeometrySummary()}</div>
+              <div>{renderArtistMessage()}</div>
+            </div>
+          </div>
         ) : (
-          <>
-            {BIKE_COMPONENT_SECTIONS.map((section) => (
-              <div key={section.title} className="mt-5">
-                <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
-                  {section.title}
-                </h3>
-                <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-                  {section.fields.map((field) => {
-                    const fieldKey = `${section.title}:${field}`;
-
-                    return (
-                      <div key={fieldKey}>
-                        <span className="mb-2 block text-sm font-semibold text-slate-700">
-                          {field}
-                        </span>
-                        <p className="text-sm text-slate-900">
-                          {values[fieldKey] || "-"}
-                        </p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </>
+          renderBuildDataSummary()
         )}
       </OrderSubmittedSummarySection>
     );

@@ -85,6 +85,7 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
       ? `${baseUrl}bodies/body-kannabikes-F.svg`
       : `${baseUrl}bodies/body-kannabikes-M.svg`;
   const bikeDrawingSrc = `${baseUrl}bike-drawing.png`;
+  const designPreviewSrc = bikeDrawingSrc;
   const measurementsUnlocked = orderStage !== "waiting_for_deposit";
   const measurementsSubmitted =
     orderStage === "waiting_for_specification" ||
@@ -254,17 +255,18 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
 
         {bikeDesignUnlocked ? (
           <>
-          <OrderBikeDesignSection
-            isApproving={isApprovingDesign}
-            bikeDrawingSrc={bikeDrawingSrc}
-            currentStage={orderStage}
-            isSubmitting={isSubmittingSpecification}
-            isSubmitted={bikeDesignSubmitted}
-            specificationMode={specificationMode}
-            onApprove={handleApproveDesign}
-            values={bikeSpecification}
-            onModeChange={handleSpecificationModeChange}
-            onSubmit={handleSubmitSpecification}
+            <OrderBikeDesignSection
+              isApproving={isApprovingDesign}
+              bikeDrawingSrc={bikeDrawingSrc}
+              designPreviewSrc={designPreviewSrc}
+              currentStage={orderStage}
+              isSubmitting={isSubmittingSpecification}
+              isSubmitted={bikeDesignSubmitted}
+              specificationMode={specificationMode}
+              onApprove={handleApproveDesign}
+              values={bikeSpecification}
+              onModeChange={handleSpecificationModeChange}
+              onSubmit={handleSubmitSpecification}
               onValueChange={handleBikeSpecificationChange}
             />
             <OrderProductionPreviewSection />

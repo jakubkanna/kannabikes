@@ -21,6 +21,7 @@ export type MeasurementsSectionProps = {
 export type BikeDesignSectionProps = {
   isApproving: boolean;
   bikeDrawingSrc: string;
+  designPreviewSrc: string;
   currentStage: import("~/lib/mock-order").OrderStage;
   isSubmitting: boolean;
   isSubmitted: boolean;
