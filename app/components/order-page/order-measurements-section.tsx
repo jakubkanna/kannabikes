@@ -43,6 +43,8 @@ export function OrderMeasurementsSection({
   if (isSubmitted) {
     return (
       <OrderSubmittedSummarySection
+        collapsible
+        defaultExpanded={false}
         title="Measurements"
         description="Your body measurements have been submitted and recorded for the design process."
         imageAlt="Body drawing"

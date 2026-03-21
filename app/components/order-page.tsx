@@ -13,11 +13,15 @@ import {
 import {
   getStoredBikeSpecificationDraft,
   getStoredDepositConfirmed,
+  getStoredDepositPayment,
+  MOCK_DEPOSIT_AMOUNT,
   getStoredOrderStage,
   mockProcessDeposit,
   ORDER_STAGE_DEFINITIONS,
   type OrderStage,
   setStoredBikeSpecificationDraft,
+  setStoredDepositConfirmed,
+  setStoredDepositPayment,
   setStoredOrderStage,
 } from "~/lib/mock-order";
 
@@ -49,6 +53,9 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
   const [isApprovingDesign, setIsApprovingDesign] = useState(false);
   const [isSpecificationSubmitted, setIsSpecificationSubmitted] = useState(false);
   const [isDepositConfirmed, setIsDepositConfirmed] = useState(false);
+  const [depositPayment, setDepositPayment] = useState<{ amount: string; paidAt: string } | null>(
+    null,
+  );
   const [hydratedBikeSpecificationOrderNumber, setHydratedBikeSpecificationOrderNumber] =
     useState<string | null>(null);
   const [orderStage, setOrderStage] = useState<OrderStage>("waiting_for_deposit");
@@ -98,6 +105,13 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
       orderStage === "in_production" ||
       orderStage === "waiting_for_delivery" ||
       orderStage === "delivered");
+  const bikeDesignSubmitted =
+    isSpecificationSubmitted ||
+    orderStage === "waiting_for_design" ||
+    orderStage === "waiting_for_design_approval" ||
+    orderStage === "in_production" ||
+    orderStage === "waiting_for_delivery" ||
+    orderStage === "delivered";
 
   useEffect(() => {
     document.title = `Order nb. ${orderNumber}`;
@@ -106,6 +120,7 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
   useEffect(() => {
     setOrderStage(getStoredOrderStage(orderNumber));
     setIsDepositConfirmed(getStoredDepositConfirmed(orderNumber));
+    setDepositPayment(getStoredDepositPayment(orderNumber));
     const storedBikeSpecificationDraft = getStoredBikeSpecificationDraft(orderNumber);
     setBikeSpecification(storedBikeSpecificationDraft.values);
     setSpecificationMode(storedBikeSpecificationDraft.specificationMode);
@@ -135,6 +150,14 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
   const handleMockDepositPayment = async () => {
     setIsProcessingPayment(true);
     const nextStage = await mockProcessDeposit(orderNumber);
+    const payment = {
+      amount: MOCK_DEPOSIT_AMOUNT,
+      paidAt: new Date().toISOString(),
+    };
+    setStoredDepositConfirmed(orderNumber, true);
+    setStoredDepositPayment(orderNumber, payment);
+    setIsDepositConfirmed(true);
+    setDepositPayment(payment);
     setOrderStage(nextStage);
     setIsProcessingPayment(false);
   };
@@ -192,6 +215,7 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
         <OrderDepositSection
           agreementAccepted={agreementAccepted}
           currentStage={orderStage}
+          depositPayment={depositPayment}
           isDepositConfirmed={isDepositConfirmed}
           isProcessingPayment={isProcessingPayment}
           onAgreementChange={setAgreementAccepted}
@@ -235,7 +259,7 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
             bikeDrawingSrc={bikeDrawingSrc}
             currentStage={orderStage}
             isSubmitting={isSubmittingSpecification}
-            isSubmitted={isSpecificationSubmitted}
+            isSubmitted={bikeDesignSubmitted}
             specificationMode={specificationMode}
             onApprove={handleApproveDesign}
             values={bikeSpecification}

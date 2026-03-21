@@ -1,8 +1,12 @@
+import { useEffect, useState } from "react";
 import type { OrderStage } from "~/lib/mock-order";
+
+const DEPOSIT_SUCCESS_HIGHLIGHT_DELAY_MS = 4000;
 
 export function OrderDepositSection({
   agreementAccepted,
   currentStage,
+  depositPayment,
   isDepositConfirmed,
   isProcessingPayment,
   onAgreementChange,
@@ -10,32 +14,87 @@ export function OrderDepositSection({
 }: {
   agreementAccepted: boolean;
   currentStage: OrderStage;
+  depositPayment: { amount: string; paidAt: string } | null;
   isDepositConfirmed: boolean;
   isProcessingPayment: boolean;
   onAgreementChange: (value: boolean) => void;
   onPayDeposit: () => void;
 }) {
   const depositPaid = currentStage !== "waiting_for_deposit";
+  const [hasSuccessHighlight, setHasSuccessHighlight] = useState(false);
+
+  useEffect(() => {
+    if (!isDepositConfirmed || !depositPayment) {
+      setHasSuccessHighlight(false);
+      return;
+    }
+
+    const paidAt = new Date(depositPayment.paidAt).getTime();
+    const elapsed = Date.now() - paidAt;
+
+    if (elapsed >= DEPOSIT_SUCCESS_HIGHLIGHT_DELAY_MS) {
+      setHasSuccessHighlight(true);
+      return;
+    }
+
+    setHasSuccessHighlight(false);
+    const timeoutId = window.setTimeout(() => {
+      setHasSuccessHighlight(true);
+    }, DEPOSIT_SUCCESS_HIGHLIGHT_DELAY_MS - elapsed);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [depositPayment, isDepositConfirmed]);
 
   if (depositPaid) {
     const isDepositStillUnderReview = !isDepositConfirmed;
+    const useSuccessColors = !isDepositStillUnderReview && hasSuccessHighlight;
 
     return (
-      <section className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm md:max-h-[80vh] md:overflow-y-auto md:p-6">
-        <div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">
+      <section
+        className={`rounded-xl p-4 shadow-sm md:max-h-[80vh] md:overflow-y-auto md:p-6 ${
+          useSuccessColors
+            ? "border border-emerald-200 bg-emerald-50"
+            : "border border-slate-200 bg-white"
+        }`}
+      >
+        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div className="min-w-0">
+            <p
+              className={`text-xs font-semibold uppercase tracking-[0.14em] ${
+                useSuccessColors ? "text-emerald-700" : "text-slate-500"
+              }`}
+            >
               Deposit
             </p>
-            <h2 className="mt-2 text-xl font-semibold text-slate-900">
-              {isDepositStillUnderReview ? "In review" : "Confirmed"}
-            </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700">
+            <div className="mt-1">
+              <h2 className="text-xl font-semibold text-slate-900">
+                {isDepositStillUnderReview ? "In review" : "Received"}
+              </h2>
+            </div>
+            <p
+              className={`mt-2 max-w-3xl text-sm leading-6 ${
+                useSuccessColors ? "text-slate-700" : "text-slate-600"
+              }`}
+            >
               {isDepositStillUnderReview
                 ? "We are reviewing your deposit and confirming that the payment has been received correctly. In the meantime, you can add the measurements required for the design process below."
                 : "Your deposit has been confirmed. The order is secured and will continue through the remaining build stages."}
             </p>
           </div>
+          {!isDepositStillUnderReview && depositPayment ? (
+            <div className="shrink-0 text-sm md:text-right">
+              <span className="block text-slate-700">
+                {new Intl.DateTimeFormat("en-GB", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                }).format(new Date(depositPayment.paidAt))}
+              </span>
+              <span className="mt-1 block font-semibold text-slate-900">
+                {depositPayment.amount}
+              </span>
+            </div>
+          ) : null}
         </div>
       </section>
     );

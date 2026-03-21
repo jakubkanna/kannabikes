@@ -160,6 +160,10 @@ export function OrderBikeDesignSection({
 }: BikeDesignSectionProps) {
   const isWaitingForDesign = currentStage === "waiting_for_design";
   const isWaitingForApproval = currentStage === "waiting_for_design_approval";
+  const shouldCollapseSubmittedSummary =
+    currentStage === "in_production" ||
+    currentStage === "waiting_for_delivery" ||
+    currentStage === "delivered";
   const hasBuildTypeSelected = specificationMode !== null;
   const showSpecificationForm = specificationMode === "self_specified";
   const showGuidedMessage = specificationMode === "guided_by_designer";
@@ -631,6 +635,8 @@ export function OrderBikeDesignSection({
   if (isSubmitted) {
     return (
       <OrderSubmittedSummarySection
+        collapsible
+        defaultExpanded={!shouldCollapseSubmittedSummary}
         title="Bike design"
         heading="Specification received"
         description="Your bike specification has been submitted and recorded for the next design and production steps."
@@ -653,7 +659,7 @@ export function OrderBikeDesignSection({
                   </p>
                   <p className="mt-2 text-sm leading-6 text-slate-600">
                     We are working on your custom bicycle. Once it's ready you
-                    will be asked for approval.
+                    will be notified and asked for approval.
                   </p>
                 </div>
               </div>
@@ -805,7 +811,10 @@ export function OrderBikeDesignSection({
                             type="button"
                             onClick={(event) => {
                               event.stopPropagation();
-                              onValueChange(DESIGNER_LED_BUDGET_KEY, "No limit");
+                              onValueChange(
+                                DESIGNER_LED_BUDGET_KEY,
+                                "No limit",
+                              );
                             }}
                             className={`rounded-full border px-3 py-2 text-sm transition ${
                               values[DESIGNER_LED_BUDGET_KEY] === "No limit"

@@ -16,11 +16,19 @@ type OrderStageDefinition = {
 
 const STORAGE_PREFIX = "kanna-order-stage";
 const DEPOSIT_CONFIRMED_PREFIX = "kanna-order-deposit-confirmed";
+const DEPOSIT_PAYMENT_PREFIX = "kanna-order-deposit-payment";
 const BIKE_SPECIFICATION_PREFIX = "kanna-order-bike-specification";
+
+export const MOCK_DEPOSIT_AMOUNT = "500 EUR";
 
 export type StoredBikeSpecificationDraft = {
   specificationMode: "guided_by_designer" | "self_specified" | "frame_only" | null;
   values: Record<string, string>;
+};
+
+export type StoredDepositPayment = {
+  amount: string;
+  paidAt: string;
 };
 
 export const ORDER_STAGES: OrderStage[] = [
@@ -89,6 +97,10 @@ function getBikeSpecificationStorageKey(orderNumber: string) {
   return `${BIKE_SPECIFICATION_PREFIX}:${orderNumber}`;
 }
 
+function getDepositPaymentStorageKey(orderNumber: string) {
+  return `${DEPOSIT_PAYMENT_PREFIX}:${orderNumber}`;
+}
+
 export function getStoredOrderStage(orderNumber: string): OrderStage {
   if (typeof window === "undefined") {
     return "waiting_for_deposit";
@@ -124,6 +136,41 @@ export function setStoredDepositConfirmed(orderNumber: string, confirmed: boolea
   }
 
   window.localStorage.setItem(getDepositConfirmedStorageKey(orderNumber), String(confirmed));
+}
+
+export function getStoredDepositPayment(orderNumber: string): StoredDepositPayment | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const stored = window.localStorage.getItem(getDepositPaymentStorageKey(orderNumber));
+
+  if (!stored) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(stored) as Partial<StoredDepositPayment>;
+
+    if (typeof parsed.amount !== "string" || typeof parsed.paidAt !== "string") {
+      return null;
+    }
+
+    return {
+      amount: parsed.amount,
+      paidAt: parsed.paidAt,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredDepositPayment(orderNumber: string, payment: StoredDepositPayment) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(getDepositPaymentStorageKey(orderNumber), JSON.stringify(payment));
 }
 
 export function getStoredBikeSpecificationDraft(
@@ -180,6 +227,8 @@ export function resetStoredOrderStage(orderNumber: string) {
   }
 
   window.localStorage.removeItem(getStorageKey(orderNumber));
+  window.localStorage.removeItem(getDepositConfirmedStorageKey(orderNumber));
+  window.localStorage.removeItem(getDepositPaymentStorageKey(orderNumber));
   window.localStorage.removeItem(getBikeSpecificationStorageKey(orderNumber));
 }
 
