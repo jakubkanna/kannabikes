@@ -5,6 +5,9 @@ import type { Route } from "./+types/contact";
 import { SITE_NAME } from "~/root";
 
 const DEFAULT_TOPIC = "Quote request";
+const DEFAULT_CONTACT_ENDPOINT =
+  import.meta.env.VITE_WORDPRESS_CONTACT_ENDPOINT ??
+  "http://localhost/wp-json/kanna/v1/contact";
 
 function validateContactForm(values: {
   email: string;
@@ -51,22 +54,65 @@ export default function ContactPage() {
     message: "",
     privacyAccepted: false,
     marketingAccepted: false,
+    website: "",
   });
   const [showValidation, setShowValidation] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const errors = validateContactForm(formValues);
   const hasErrors = Object.keys(errors).length > 0;
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setShowValidation(true);
+    setSubmitError(null);
 
     if (hasErrors) {
       return;
     }
 
-    setIsSubmitted(true);
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(DEFAULT_CONTACT_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          full_name: formValues.fullName,
+          email: formValues.email,
+          phone_number: formValues.phoneNumber,
+          topic: formValues.topic,
+          message: formValues.message,
+          privacy_accepted: formValues.privacyAccepted,
+          marketing_accepted: formValues.marketingAccepted,
+          website: formValues.website,
+        }),
+      });
+
+      const payload = (await response.json().catch(() => null)) as
+        | { message?: string }
+        | null;
+
+      if (!response.ok) {
+        setSubmitError(
+          payload?.message ??
+            "We could not send your message right now. Please try again.",
+        );
+        return;
+      }
+
+      setIsSubmitted(true);
+    } catch {
+      setSubmitError(
+        "We could not reach the contact service. Please try again in a moment.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -90,13 +136,36 @@ export default function ContactPage() {
                 Message received
               </h2>
               <p className="mt-2 text-sm leading-6 text-slate-700">
-                Your quote request has been recorded. The next step can be a
-                unique deposit link sent to the email address you provided.
+                Your inquiry has been sent successfully. We&apos;ve sent a
+                confirmation email to your address. We will reply as quickly as
+                possible, usually within 48 hours. Thank you for your interest.
               </p>
+              <Link
+                to="/"
+                className="mt-4 inline-flex text-sm font-semibold text-slate-900 underline decoration-slate-300 underline-offset-4 transition hover:decoration-slate-900"
+              >
+                Back to homepage
+              </Link>
             </div>
           ) : (
             <form className="mt-8 space-y-6" onSubmit={handleSubmit} noValidate>
               <div className="grid gap-4 md:grid-cols-2">
+                <label className="hidden" aria-hidden="true">
+                  <span>Website</span>
+                  <input
+                    type="text"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={formValues.website}
+                    onChange={(event) =>
+                      setFormValues((prev) => ({
+                        ...prev,
+                        website: event.target.value,
+                      }))
+                    }
+                  />
+                </label>
+
                 <label className="block md:col-span-2">
                   <span className="mb-2 block text-sm font-semibold text-slate-700">
                     Full name
@@ -274,11 +343,18 @@ export default function ContactPage() {
                 </label>
               </div>
 
+              {submitError ? (
+                <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                  {submitError}
+                </div>
+              ) : null}
+
               <button
                 type="submit"
+                disabled={isSubmitting}
                 className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
               >
-                Send request
+                {isSubmitting ? "Sending..." : "Send request"}
               </button>
             </form>
           )}
