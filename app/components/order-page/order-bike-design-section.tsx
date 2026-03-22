@@ -1,7 +1,4 @@
-import {
-  MOCK_FINAL_PRICE_EXCLUDING_DEPOSIT,
-  ORDER_STAGE_DEFINITIONS,
-} from "~/lib/mock-order";
+import { ORDER_STAGE_DEFINITIONS } from "~/lib/mock-order";
 import { OrderSubmittedSummarySection } from "./order-submitted-summary-section";
 import type { BikeDesignSectionProps } from "./types";
 
@@ -165,6 +162,7 @@ export function OrderBikeDesignSection({
   bikeDrawingSrc,
   designPreviewSrc,
   currentStage,
+  finalAmountLabel,
   isSubmitting,
   isSubmitted,
   specificationMode,
@@ -674,7 +672,7 @@ export function OrderBikeDesignSection({
         {title}
       </h3>
       <p className="mt-3 text-sm text-slate-900">
-        {MOCK_FINAL_PRICE_EXCLUDING_DEPOSIT}
+        {finalAmountLabel}
       </p>
       <p className="mt-2 text-sm leading-6 text-slate-600">
         Final amount after deducting the deposit already paid.

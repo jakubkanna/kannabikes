@@ -42,11 +42,7 @@ export type StoredBikeSpecificationDraft = {
   values: Record<string, string>;
 };
 
-export type DepositPaymentMethod =
-  | "paypal"
-  | "platnosci24"
-  | "stripe"
-  | "classic_transfer";
+export type DepositPaymentMethod = "stripe" | "classic_transfer";
 
 export type StoredDepositPayment = {
   amount: string;
@@ -229,8 +225,6 @@ export function getStoredDepositPayment(orderNumber: string): StoredDepositPayme
     const parsed = JSON.parse(stored) as Partial<StoredDepositPayment>;
 
     const paymentMethod =
-      parsed.paymentMethod === "paypal" ||
-      parsed.paymentMethod === "platnosci24" ||
       parsed.paymentMethod === "stripe" ||
       parsed.paymentMethod === "classic_transfer"
         ? parsed.paymentMethod

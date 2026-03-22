@@ -1,12 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import {
-  businessOutline,
-  cardOutline,
-  chevronDownOutline,
-  flashOutline,
-  logoPaypal,
-} from "ionicons/icons";
+import { businessOutline, cardOutline, chevronDownOutline } from "ionicons/icons";
 import type {
   DepositPaymentMethod,
   OrderStage,
@@ -14,7 +8,6 @@ import type {
 } from "~/lib/mock-order";
 
 const DEPOSIT_SUCCESS_HIGHLIGHT_DELAY_MS = 4000;
-
 function validatePasswords(password: string, repeatPassword: string) {
   const errors: {
     password?: string;
@@ -36,39 +29,57 @@ function validatePasswords(password: string, repeatPassword: string) {
 
 export function OrderDepositSection({
   agreementAccepted,
+  availablePaymentMethods,
+  customerDetails,
   currentStage,
+  depositAmountLabel,
   depositPayment,
   isDepositConfirmed,
   isProcessingPayment,
   onAgreementChange,
   orderNumber,
   onPayDeposit,
+  requiresClaim,
 }: {
   agreementAccepted: boolean;
+  availablePaymentMethods: DepositPaymentMethod[];
+  customerDetails: {
+    email: string;
+    fullName: string;
+    orderTitle: string;
+    phoneNumber: string;
+  };
   currentStage: OrderStage;
+  depositAmountLabel: string;
   depositPayment: StoredDepositPayment | null;
   isDepositConfirmed: boolean;
   isProcessingPayment: boolean;
   onAgreementChange: (value: boolean) => void;
   orderNumber: string;
-  onPayDeposit: (paymentMethod: DepositPaymentMethod) => void;
+  onPayDeposit: (payload: {
+    password: string;
+    paymentMethod: DepositPaymentMethod;
+  }) => void;
+  requiresClaim: boolean;
 }) {
   const depositPaid = currentStage !== "waiting_for_deposit";
   const [hasSuccessHighlight, setHasSuccessHighlight] = useState(false);
   const [isReceivedExpanded, setIsReceivedExpanded] = useState(false);
-  const [customerDetails, setCustomerDetails] = useState({
-    orderTitle: "Custom Kanna Bike Build",
-    fullName: "Jakub Kanna",
-    email: "jakub@example.com",
-    phoneNumber: "+48 000 000 000",
-  });
   const [paymentMethod, setPaymentMethod] =
-    useState<DepositPaymentMethod>("paypal");
+    useState<DepositPaymentMethod>(availablePaymentMethods[0] ?? "stripe");
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
   const [showPasswordValidation, setShowPasswordValidation] = useState(false);
   const passwordErrors = validatePasswords(password, repeatPassword);
   const hasPasswordErrors = Object.keys(passwordErrors).length > 0;
+
+  useEffect(() => {
+    if (availablePaymentMethods.includes(paymentMethod)) {
+      return;
+    }
+
+    setPaymentMethod(availablePaymentMethods[0] ?? "stripe");
+  }, [availablePaymentMethods, paymentMethod]);
 
   useEffect(() => {
     if (!isDepositConfirmed || !depositPayment) {
@@ -87,11 +98,14 @@ export function OrderDepositSection({
   const handlePayDeposit = () => {
     setShowPasswordValidation(true);
 
-    if (hasPasswordErrors) {
+    if (requiresClaim && hasPasswordErrors) {
       return;
     }
 
-    onPayDeposit(paymentMethod);
+    onPayDeposit({
+      password,
+      paymentMethod,
+    });
   };
 
   if (depositPaid) {
@@ -316,49 +330,60 @@ export function OrderDepositSection({
                 </p>
               </div>
 
-              <label className="sm:col-span-2">
-                <span className="mb-2 block text-sm font-semibold text-slate-700">
-                  Create password
-                </span>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  onFocus={() => setShowPasswordValidation(false)}
-                  className={`w-full rounded-md bg-white px-3 py-2 text-slate-900 outline-none transition focus:ring-2 ${
-                    showPasswordValidation && passwordErrors.password
-                      ? "border border-red-300 focus:border-red-400 focus:ring-red-100"
-                      : "border border-slate-300 focus:border-yellow-400 focus:ring-yellow-200"
-                  }`}
-                />
-                {showPasswordValidation && passwordErrors.password ? (
-                  <p className="mt-2 text-sm text-red-600">
-                    {passwordErrors.password}
-                  </p>
-                ) : null}
-              </label>
+              {requiresClaim ? (
+                <>
+                  <label className="sm:col-span-2">
+                    <span className="mb-2 block text-sm font-semibold text-slate-700">
+                      Create password
+                    </span>
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      onFocus={() => setShowPasswordValidation(false)}
+                      className={`w-full rounded-md bg-white px-3 py-2 text-slate-900 outline-none transition focus:ring-2 ${
+                        showPasswordValidation && passwordErrors.password
+                          ? "border border-red-300 focus:border-red-400 focus:ring-red-100"
+                          : "border border-slate-300 focus:border-yellow-400 focus:ring-yellow-200"
+                      }`}
+                    />
+                    {showPasswordValidation && passwordErrors.password ? (
+                      <p className="mt-2 text-sm text-red-600">
+                        {passwordErrors.password}
+                      </p>
+                    ) : null}
+                  </label>
 
-              <label className="sm:col-span-2">
-                <span className="mb-2 block text-sm font-semibold text-slate-700">
-                  Repeat password
-                </span>
-                <input
-                  type="password"
-                  value={repeatPassword}
-                  onChange={(event) => setRepeatPassword(event.target.value)}
-                  onFocus={() => setShowPasswordValidation(false)}
-                  className={`w-full rounded-md bg-white px-3 py-2 text-slate-900 outline-none transition focus:ring-2 ${
-                    showPasswordValidation && passwordErrors.repeatPassword
-                      ? "border border-red-300 focus:border-red-400 focus:ring-red-100"
-                      : "border border-slate-300 focus:border-yellow-400 focus:ring-yellow-200"
-                  }`}
-                />
-                {showPasswordValidation && passwordErrors.repeatPassword ? (
-                  <p className="mt-2 text-sm text-red-600">
-                    {passwordErrors.repeatPassword}
+                  <label className="sm:col-span-2">
+                    <span className="mb-2 block text-sm font-semibold text-slate-700">
+                      Repeat password
+                    </span>
+                    <input
+                      type="password"
+                      value={repeatPassword}
+                      onChange={(event) => setRepeatPassword(event.target.value)}
+                      onFocus={() => setShowPasswordValidation(false)}
+                      className={`w-full rounded-md bg-white px-3 py-2 text-slate-900 outline-none transition focus:ring-2 ${
+                        showPasswordValidation && passwordErrors.repeatPassword
+                          ? "border border-red-300 focus:border-red-400 focus:ring-red-100"
+                          : "border border-slate-300 focus:border-yellow-400 focus:ring-yellow-200"
+                      }`}
+                    />
+                    {showPasswordValidation && passwordErrors.repeatPassword ? (
+                      <p className="mt-2 text-sm text-red-600">
+                        {passwordErrors.repeatPassword}
+                      </p>
+                    ) : null}
+                  </label>
+
+                  <p className="sm:col-span-2 text-sm leading-6 text-slate-600">
+                    Use at least 8 characters. A strong password should include
+                    a mix of uppercase and lowercase letters, numbers, and a
+                    special character. You will need this password to track
+                    your order status, so save it securely.
                   </p>
-                ) : null}
-              </label>
+                </>
+              ) : null}
             </div>
 
             <div className="mt-6 border-t border-slate-200 pt-5">
@@ -366,34 +391,24 @@ export function OrderDepositSection({
                 Payment options
               </p>
               <div className="mt-3 grid gap-2">
-                <PaymentOption
-                  icon={logoPaypal}
-                  isSelected={paymentMethod === "paypal"}
-                  onSelect={() => setPaymentMethod("paypal")}
-                  title="PayPal"
-                  helper=""
-                />
-                <PaymentOption
-                  icon={flashOutline}
-                  isSelected={paymentMethod === "platnosci24"}
-                  onSelect={() => setPaymentMethod("platnosci24")}
-                  title="Platnosci24"
-                  helper=""
-                />
-                <PaymentOption
-                  icon={cardOutline}
-                  isSelected={paymentMethod === "stripe"}
-                  onSelect={() => setPaymentMethod("stripe")}
-                  title="Stripe"
-                  helper=""
-                />
-                <PaymentOption
-                  icon={businessOutline}
-                  isSelected={paymentMethod === "classic_transfer"}
-                  onSelect={() => setPaymentMethod("classic_transfer")}
-                  title="Classic bank transfer"
-                  helper=""
-                />
+                {availablePaymentMethods.map((method) => (
+                  <PaymentOption
+                    key={method}
+                    icon={
+                      method === "classic_transfer"
+                        ? businessOutline
+                        : cardOutline
+                    }
+                    isSelected={paymentMethod === method}
+                    onSelect={() => setPaymentMethod(method)}
+                    title={
+                      method === "classic_transfer"
+                        ? "Classic bank transfer"
+                        : "Stripe"
+                    }
+                    helper=""
+                  />
+                ))}
               </div>
             </div>
           </div>
@@ -414,29 +429,29 @@ export function OrderDepositSection({
                     Deposit amount due now
                   </p>
                 </div>
-                <p className="text-lg font-semibold text-slate-900">500 EUR</p>
+                <p className="text-lg font-semibold text-slate-900">
+                  {depositAmountLabel}
+                </p>
               </div>
 
               <div className="mt-4 border-t border-slate-200 pt-4 text-sm text-slate-600">
                 <div className="flex items-center justify-between gap-4">
                   <span>Subtotal</span>
-                  <span className="font-medium text-slate-900">500 EUR</span>
+                  <span className="font-medium text-slate-900">
+                    {depositAmountLabel}
+                  </span>
                 </div>
                 <div className="mt-2 flex items-center justify-between gap-4">
                   <span>Payment method</span>
                   <span className="font-medium text-slate-900">
-                    {paymentMethod === "paypal"
-                      ? "PayPal"
-                      : paymentMethod === "platnosci24"
-                        ? "Platnosci24"
-                        : paymentMethod === "stripe"
-                          ? "Stripe"
-                          : "Classic transfer"}
+                    {paymentMethod === "classic_transfer"
+                      ? "Classic transfer"
+                      : "Stripe"}
                   </span>
                 </div>
                 <div className="mt-3 flex items-center justify-between gap-4 border-t border-slate-200 pt-3 text-base font-semibold text-slate-900">
                   <span>Total</span>
-                  <span>500 EUR</span>
+                  <span>{depositAmountLabel}</span>
                 </div>
               </div>
             </div>
@@ -466,13 +481,17 @@ export function OrderDepositSection({
               type="button"
               onClick={handlePayDeposit}
               disabled={
-                !agreementAccepted || isProcessingPayment || hasPasswordErrors
+                !agreementAccepted ||
+                isProcessingPayment ||
+                (requiresClaim && hasPasswordErrors)
               }
               className="mt-4 inline-flex w-full items-center justify-center rounded-md bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
             >
               {isProcessingPayment
-                ? "Processing mock payment..."
-                : "Pay 500 EUR"}
+                ? "Preparing payment..."
+                : requiresClaim
+                  ? `Create access and pay ${depositAmountLabel}`
+                  : `Pay ${depositAmountLabel}`}
             </button>
           </div>
         </div>
@@ -516,13 +535,13 @@ function PaymentOption({
           />
           <div className="min-w-0">
             <p className="text-sm font-semibold">{title}</p>
-          <p
-            className={`mt-1 text-xs ${
-              isSelected ? "text-slate-300" : "text-slate-500"
-            }`}
-          >
-            {helper}
-          </p>
+            <p
+              className={`mt-1 text-xs ${
+                isSelected ? "text-slate-300" : "text-slate-500"
+              }`}
+            >
+              {helper}
+            </p>
           </div>
         </div>
         <span

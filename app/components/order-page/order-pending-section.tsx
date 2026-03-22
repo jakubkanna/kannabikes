@@ -2,12 +2,9 @@ import { useEffect, useState } from "react";
 import {
   MOCK_DELIVERED_ON,
   MOCK_ESTIMATED_DELIVERY_TIME,
-  MOCK_FINAL_PRICE_EXCLUDING_DEPOSIT,
   type OrderStage,
 } from "~/lib/mock-order";
 
-const FINAL_PAYMENT_AMOUNT = 3200;
-const DEPOSIT_AMOUNT_VALUE = 500;
 const PRODUCTION_SUCCESS_HIGHLIGHT_DELAY_MS = 4000;
 
 function validateShippingDetails(
@@ -92,15 +89,40 @@ export function OrderBikeDesignPreviewSection() {
 
 export function OrderProductionPreviewSection({
   currentStage,
+  depositAmountValue,
+  finalAmountValue,
+  initialShippingState,
   isSubmittingFinalPayment,
   onPayFinalAmount,
 }: {
   currentStage: OrderStage;
+  depositAmountValue: number;
+  finalAmountValue: number;
+  initialShippingState?: {
+    address: {
+      city: string;
+      country: string;
+      fullName: string;
+      postalCode: string;
+      street: string;
+    };
+    option: "courier" | "pickup";
+    trackingUrl?: string;
+  };
   isSubmittingFinalPayment: boolean;
-  onPayFinalAmount: () => void;
+  onPayFinalAmount: (details: {
+    address: {
+      city: string;
+      country: string;
+      fullName: string;
+      postalCode: string;
+      street: string;
+    };
+    option: "courier" | "pickup";
+  }) => void;
 }) {
   const [shippingOption, setShippingOption] = useState<"courier" | "pickup">(
-    "courier",
+    initialShippingState?.option ?? "courier",
   );
   const [hasCalculatedShipping, setHasCalculatedShipping] = useState(false);
   const [showShippingValidation, setShowShippingValidation] = useState(false);
@@ -108,12 +130,13 @@ export function OrderProductionPreviewSection({
     currentStage === "in_production" || currentStage === "delivered",
   );
   const [shippingAddress, setShippingAddress] = useState({
-    fullName: "",
-    street: "",
-    postalCode: "",
-    city: "",
-    country: "",
+    fullName: initialShippingState?.address.fullName ?? "",
+    street: initialShippingState?.address.street ?? "",
+    postalCode: initialShippingState?.address.postalCode ?? "",
+    city: initialShippingState?.address.city ?? "",
+    country: initialShippingState?.address.country ?? "",
   });
+  const trackingUrl = initialShippingState?.trackingUrl?.trim() ?? "";
   const shippingErrors = validateShippingDetails(
     shippingAddress,
     shippingOption,
@@ -129,8 +152,8 @@ export function OrderProductionPreviewSection({
         : normalizedCountry.length > 0
           ? 180
           : 0;
-  const totalAmountBeforeDeposit = FINAL_PAYMENT_AMOUNT + DEPOSIT_AMOUNT_VALUE;
-  const totalWithShipping = FINAL_PAYMENT_AMOUNT + shippingCost;
+  const totalAmountBeforeDeposit = finalAmountValue + depositAmountValue;
+  const totalWithShipping = finalAmountValue + shippingCost;
 
   useEffect(() => {
     if (currentStage !== "in_production" && currentStage !== "delivered") {
@@ -355,7 +378,7 @@ export function OrderProductionPreviewSection({
               <div className="mt-2 flex items-center justify-between gap-4">
                 <span className="text-slate-700">Deposit</span>
                 <span className="font-semibold text-slate-900">
-                  -{DEPOSIT_AMOUNT_VALUE} EUR
+                  -{depositAmountValue.toLocaleString("en-US").replace(/,/g, " ")} EUR
                 </span>
               </div>
               <div className="mt-2 flex items-center justify-between gap-4">
@@ -394,7 +417,12 @@ export function OrderProductionPreviewSection({
             <button
               type="button"
               disabled={!hasCalculatedShipping}
-              onClick={onPayFinalAmount}
+              onClick={() =>
+                onPayFinalAmount({
+                  address: shippingAddress,
+                  option: shippingOption,
+                })
+              }
               className="mt-4 inline-flex w-full items-center justify-center rounded-md bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
             >
               {isSubmittingFinalPayment
@@ -466,6 +494,21 @@ export function OrderProductionPreviewSection({
               : MOCK_ESTIMATED_DELIVERY_TIME}
           </p>
         </div>
+        {trackingUrl ? (
+          <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <span className="mb-2 block text-sm font-semibold text-slate-700">
+              Courier tracking
+            </span>
+            <a
+              href={trackingUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="text-sm font-medium text-slate-900 underline underline-offset-2"
+            >
+              Open tracking link
+            </a>
+          </div>
+        ) : null}
       </section>
     );
   }

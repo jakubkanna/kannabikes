@@ -10,19 +10,21 @@ import {
   SectionStack,
 } from "~/components/order-page/index";
 import {
+  approveDesign,
+  claimOrderPortal,
+  clearStoredPortalSession,
+  fetchOrderPortalBuild,
+  getStoredPortalSession,
+  requestPaymentLink,
+  setStoredPortalSession,
+  submitMeasurements,
+  submitSpecification,
+  type OrderPortalPayload,
+} from "~/lib/order-api";
+import {
   type DepositPaymentMethod,
-  getStoredBikeSpecificationDraft,
-  getStoredDepositConfirmed,
-  getStoredDepositPayment,
-  MOCK_DEPOSIT_AMOUNT,
-  getStoredOrderStage,
-  mockProcessDeposit,
   type OrderStage,
   type StoredDepositPayment,
-  setStoredBikeSpecificationDraft,
-  setStoredDepositConfirmed,
-  setStoredDepositPayment,
-  setStoredOrderStage,
 } from "~/lib/mock-order";
 
 type MeasurementKey = "A" | "B" | "C" | "D" | "E" | "F";
@@ -39,7 +41,65 @@ export function buildOrderNumber(date: Date) {
   return `${year}${month}${day}01`;
 }
 
-export function OrderPage({ orderNumber }: { orderNumber: string }) {
+function normalizeMeasurementValues(values: Record<string, string>): MeasurementValues {
+  return {
+    A: values.A ?? "",
+    B: values.B ?? "",
+    C: values.C ?? "",
+    D: values.D ?? "",
+    E: values.E ?? "",
+    F: values.F ?? "",
+  };
+}
+
+function getSessionStoragePaymentKey(orderNumber: string) {
+  return `kanna-last-deposit-payment:${orderNumber}`;
+}
+
+function getStoredLastDepositPayment(orderNumber: string): StoredDepositPayment | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const stored = window.sessionStorage.getItem(getSessionStoragePaymentKey(orderNumber));
+
+  if (!stored) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(stored) as StoredDepositPayment;
+
+    if (
+      typeof parsed.amount === "string" &&
+      typeof parsed.paidAt === "string" &&
+      (parsed.paymentMethod === "stripe" || parsed.paymentMethod === "classic_transfer")
+    ) {
+      return parsed;
+    }
+  } catch {}
+
+  return null;
+}
+
+function setStoredLastDepositPayment(orderNumber: string, payment: StoredDepositPayment) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.sessionStorage.setItem(
+    getSessionStoragePaymentKey(orderNumber),
+    JSON.stringify(payment),
+  );
+}
+
+export function OrderPage({
+  claimToken,
+  orderNumber,
+}: {
+  claimToken?: string;
+  orderNumber: string;
+}) {
   const [agreementAccepted, setAgreementAccepted] = useState(false);
   const [activeMeasurement, setActiveMeasurement] =
     useState<MeasurementKey | null>(null);
@@ -52,13 +112,16 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
   const [isSubmittingSpecification, setIsSubmittingSpecification] = useState(false);
   const [isSubmittingFinalPayment, setIsSubmittingFinalPayment] = useState(false);
   const [isApprovingDesign, setIsApprovingDesign] = useState(false);
-  const [isSpecificationSubmitted, setIsSpecificationSubmitted] = useState(false);
-  const [isDepositConfirmed, setIsDepositConfirmed] = useState(false);
-  const [depositPayment, setDepositPayment] = useState<StoredDepositPayment | null>(null);
   const [measurementArrowsSvgMarkup, setMeasurementArrowsSvgMarkup] = useState("");
-  const [hydratedBikeSpecificationOrderNumber, setHydratedBikeSpecificationOrderNumber] =
-    useState<string | null>(null);
-  const [orderStage, setOrderStage] = useState<OrderStage>("waiting_for_deposit");
+  const [orderError, setOrderError] = useState<string | null>(null);
+  const [portalBuild, setPortalBuild] = useState<OrderPortalPayload | null>(null);
+  const [sessionToken, setSessionToken] = useState(() =>
+    getStoredPortalSession(orderNumber),
+  );
+  const [isLoadingBuild, setIsLoadingBuild] = useState(true);
+  const [depositPayment, setDepositPayment] = useState<StoredDepositPayment | null>(() =>
+    getStoredLastDepositPayment(orderNumber),
+  );
   const [bikeSpecification, setBikeSpecification] = useState<Record<string, string>>({});
   const [specificationMode, setSpecificationMode] = useState<
     "guided_by_designer" | "self_specified" | "frame_only" | null
@@ -86,8 +149,12 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
       : `${baseUrl}bodies/body-kannabikes-M.svg`;
   const bikeDrawingSrc = `${baseUrl}bike-drawing.png`;
   const designPreviewSrc = bikeDrawingSrc;
-  const measurementsUnlocked = orderStage !== "waiting_for_deposit";
+  const orderStage: OrderStage = portalBuild?.stage ?? "waiting_for_deposit";
+  const isDepositConfirmed = portalBuild?.deposit.isConfirmed ?? false;
+  const measurementsUnlocked =
+    portalBuild?.accessState === "authenticated" && orderStage !== "waiting_for_deposit";
   const measurementsSubmitted =
+    portalBuild?.measurementState.isSubmitted ||
     orderStage === "waiting_for_specification" ||
     orderStage === "waiting_for_design" ||
     orderStage === "waiting_for_design_approval" ||
@@ -107,7 +174,7 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
       orderStage === "waiting_for_delivery" ||
       orderStage === "delivered");
   const bikeDesignSubmitted =
-    isSpecificationSubmitted ||
+    portalBuild?.specificationState.isSubmitted ||
     orderStage === "waiting_for_design" ||
     orderStage === "waiting_for_design_approval" ||
     orderStage === "waiting_for_final_payment" ||
@@ -142,25 +209,66 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
   }, [baseUrl]);
 
   useEffect(() => {
-    setOrderStage(getStoredOrderStage(orderNumber));
-    setIsDepositConfirmed(getStoredDepositConfirmed(orderNumber));
-    setDepositPayment(getStoredDepositPayment(orderNumber));
-    const storedBikeSpecificationDraft = getStoredBikeSpecificationDraft(orderNumber);
-    setBikeSpecification(storedBikeSpecificationDraft.values);
-    setSpecificationMode(storedBikeSpecificationDraft.specificationMode);
-    setHydratedBikeSpecificationOrderNumber(orderNumber);
-  }, [orderNumber]);
-
-  useEffect(() => {
-    if (hydratedBikeSpecificationOrderNumber !== orderNumber) {
+    if (!portalBuild) {
       return;
     }
 
-    setStoredBikeSpecificationDraft(orderNumber, {
-      specificationMode,
-      values: bikeSpecification,
-    });
-  }, [bikeSpecification, hydratedBikeSpecificationOrderNumber, orderNumber, specificationMode]);
+    setBodyType(portalBuild.measurementState.bodyType);
+    setBodyWeight(portalBuild.measurementState.bodyWeight);
+    setValues(normalizeMeasurementValues(portalBuild.measurementState.values));
+    setBikeSpecification(portalBuild.specificationState.values);
+    setSpecificationMode(portalBuild.specificationState.specificationMode);
+  }, [portalBuild]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadBuild = async (activeSessionToken?: string) => {
+      setIsLoadingBuild(true);
+      setOrderError(null);
+
+      try {
+        const build = await fetchOrderPortalBuild({
+          claimToken,
+          publicOrderNumber: orderNumber,
+          sessionToken: activeSessionToken,
+        });
+
+        if (!cancelled) {
+          setPortalBuild(build);
+        }
+      } catch (error) {
+        if (activeSessionToken) {
+          clearStoredPortalSession(orderNumber);
+          setSessionToken("");
+
+          if (!cancelled) {
+            loadBuild("");
+          }
+
+          return;
+        }
+
+        if (!cancelled) {
+          setOrderError(
+            error instanceof Error
+              ? error.message
+              : "We could not load this order right now.",
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoadingBuild(false);
+        }
+      }
+    };
+
+    void loadBuild(sessionToken);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [claimToken, orderNumber, sessionToken]);
 
   const handleMeasurementChange = (key: string, value: string) => {
     activateMeasurement(key as MeasurementKey);
@@ -171,28 +279,102 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
     setExpandedGuidelineKey((prev) => (prev === key ? null : (key as MeasurementKey)));
   };
 
-  const handleMockDepositPayment = async (paymentMethod: DepositPaymentMethod) => {
+  const handlePayDeposit = async ({
+    password,
+    paymentMethod,
+  }: {
+    password: string;
+    paymentMethod: DepositPaymentMethod;
+  }) => {
+    if (!portalBuild) {
+      return;
+    }
+
     setIsProcessingPayment(true);
-    const nextStage = await mockProcessDeposit(orderNumber);
-    const payment = {
-      amount: MOCK_DEPOSIT_AMOUNT,
-      paidAt: new Date().toISOString(),
-      paymentMethod,
-    };
-    setStoredDepositConfirmed(orderNumber, false);
-    setStoredDepositPayment(orderNumber, payment);
-    setIsDepositConfirmed(false);
-    setDepositPayment(payment);
-    setOrderStage(nextStage);
-    setIsProcessingPayment(false);
+    setOrderError(null);
+
+    try {
+      let activeSessionToken = sessionToken;
+      let currentBuild = portalBuild;
+
+      if (portalBuild.accessState === "claim_required") {
+        if (!claimToken) {
+          throw new Error("The claim token is missing.");
+        }
+
+        const claimed = await claimOrderPortal({
+          claimToken,
+          password,
+          publicOrderNumber: orderNumber,
+        });
+
+        activeSessionToken = claimed.sessionToken;
+        currentBuild = claimed.build;
+        setSessionToken(claimed.sessionToken);
+        setStoredPortalSession(orderNumber, claimed.sessionToken);
+        setPortalBuild(claimed.build);
+        window.history.replaceState({}, document.title, `/order/${orderNumber}`);
+      }
+
+      if (!activeSessionToken) {
+        throw new Error("A valid portal session is required.");
+      }
+
+      const response = await requestPaymentLink({
+        paymentKind: "deposit",
+        paymentMethod,
+        publicOrderNumber: orderNumber,
+        sessionToken: activeSessionToken,
+      });
+
+      const nextPayment: StoredDepositPayment = {
+        amount: currentBuild.deposit.amount,
+        paidAt: new Date().toISOString(),
+        paymentMethod,
+      };
+
+      setPortalBuild(response.build);
+      setDepositPayment(nextPayment);
+      setStoredLastDepositPayment(orderNumber, nextPayment);
+      window.location.assign(response.paymentUrl);
+    } catch (error) {
+      setOrderError(
+        error instanceof Error
+          ? error.message
+          : "We could not prepare the deposit payment.",
+      );
+    } finally {
+      setIsProcessingPayment(false);
+    }
   };
 
   const handleSubmitMeasurements = async () => {
+    if (!sessionToken) {
+      setOrderError("A valid portal session is required.");
+      return;
+    }
+
     setIsSubmittingMeasurements(true);
-    await new Promise((resolve) => window.setTimeout(resolve, 700));
-    setStoredOrderStage(orderNumber, "waiting_for_specification");
-    setOrderStage("waiting_for_specification");
-    setIsSubmittingMeasurements(false);
+    setOrderError(null);
+
+    try {
+      const build = await submitMeasurements({
+        bodyType,
+        bodyWeight,
+        publicOrderNumber: orderNumber,
+        sessionToken,
+        values,
+      });
+      setPortalBuild(build);
+    } catch (error) {
+      setOrderError(
+        error instanceof Error
+          ? error.message
+          : "We could not submit the measurements.",
+      );
+    } finally {
+      setIsSubmittingMeasurements(false);
+    }
   };
 
   const handleBikeSpecificationChange = (key: string, value: string) => {
@@ -200,35 +382,102 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
   };
 
   const handleSubmitSpecification = async () => {
+    if (!sessionToken || !specificationMode) {
+      setOrderError("A valid portal session is required.");
+      return;
+    }
+
     setIsSubmittingSpecification(true);
-    await new Promise((resolve) => window.setTimeout(resolve, 700));
-    setStoredOrderStage(orderNumber, "waiting_for_design");
-    setOrderStage("waiting_for_design");
-    setIsSpecificationSubmitted(true);
-    setIsSubmittingSpecification(false);
+    setOrderError(null);
+
+    try {
+      const build = await submitSpecification({
+        publicOrderNumber: orderNumber,
+        sessionToken,
+        specificationMode,
+        values: bikeSpecification,
+      });
+      setPortalBuild(build);
+    } catch (error) {
+      setOrderError(
+        error instanceof Error
+          ? error.message
+          : "We could not submit the bike specification.",
+      );
+    } finally {
+      setIsSubmittingSpecification(false);
+    }
   };
 
   const handleApproveDesign = async () => {
+    if (!sessionToken) {
+      setOrderError("A valid portal session is required.");
+      return;
+    }
+
     setIsApprovingDesign(true);
-    await new Promise((resolve) => window.setTimeout(resolve, 700));
-    setStoredOrderStage(orderNumber, "waiting_for_final_payment");
-    setOrderStage("waiting_for_final_payment");
-    setIsApprovingDesign(false);
+    setOrderError(null);
+
+    try {
+      const build = await approveDesign({
+        publicOrderNumber: orderNumber,
+        sessionToken,
+      });
+      setPortalBuild(build);
+    } catch (error) {
+      setOrderError(
+        error instanceof Error
+          ? error.message
+          : "We could not approve the design.",
+      );
+    } finally {
+      setIsApprovingDesign(false);
+    }
   };
 
-  const handleSubmitFinalPayment = async () => {
+  const handleSubmitFinalPayment = async (shipping: {
+    address: {
+      city: string;
+      country: string;
+      fullName: string;
+      postalCode: string;
+      street: string;
+    };
+    option: "courier" | "pickup";
+  }) => {
+    if (!sessionToken) {
+      setOrderError("A valid portal session is required.");
+      return;
+    }
+
     setIsSubmittingFinalPayment(true);
-    await new Promise((resolve) => window.setTimeout(resolve, 700));
-    setStoredOrderStage(orderNumber, "final_payment_in_review");
-    setOrderStage("final_payment_in_review");
-    setIsSubmittingFinalPayment(false);
+    setOrderError(null);
+
+    try {
+      const response = await requestPaymentLink({
+        paymentKind: "final",
+        paymentMethod: "stripe",
+        publicOrderNumber: orderNumber,
+        sessionToken,
+        shipping,
+      });
+      setPortalBuild(response.build);
+      window.location.assign(response.paymentUrl);
+    } catch (error) {
+      setOrderError(
+        error instanceof Error
+          ? error.message
+          : "We could not prepare the final payment.",
+      );
+    } finally {
+      setIsSubmittingFinalPayment(false);
+    }
   };
 
   const handleSpecificationModeChange = (
     mode: "guided_by_designer" | "self_specified" | "frame_only",
   ) => {
     setSpecificationMode(mode);
-    setIsSpecificationSubmitted(false);
   };
 
   return (
@@ -245,68 +494,96 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
           </div>
         </header>
 
-        <OrderDepositSection
-          agreementAccepted={agreementAccepted}
-          currentStage={orderStage}
-          depositPayment={depositPayment}
-          isDepositConfirmed={isDepositConfirmed}
-          isProcessingPayment={isProcessingPayment}
-          onAgreementChange={setAgreementAccepted}
-          orderNumber={orderNumber}
-          onPayDeposit={handleMockDepositPayment}
-        />
+        {orderError ? (
+          <section className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 shadow-sm">
+            {orderError}
+          </section>
+        ) : null}
 
-        {measurementsUnlocked ? (
-          <OrderMeasurementsSection
-            activeMeasurement={activeMeasurement}
-            bodyType={bodyType}
-            bodyWeight={bodyWeight}
-            expandedGuidelineKey={expandedGuidelineKey}
-            isSubmitting={isSubmittingMeasurements}
-            isSubmitted={measurementsSubmitted}
-            measurementArrowsSvgMarkup={measurementArrowsSvgMarkup}
-            measurementKeys={MEASUREMENT_KEYS}
-            selectedBodySrc={selectedBodySrc}
-            values={values}
-            onActivateMeasurement={(key) => activateMeasurement(key as MeasurementKey)}
-            onDeactivateMeasurement={deactivateMeasurement}
-            onBodyTypeChange={setBodyType}
-            onBodyWeightChange={setBodyWeight}
-            onMeasurementChange={handleMeasurementChange}
-            onSubmit={handleSubmitMeasurements}
-            onToggleGuidelines={handleToggleGuidelines}
-          />
-        ) : (
-          <OrderPendingSection
-            title="Next: measurements"
-            titleStyle="eyebrow"
-            description="We will ask you to provide the necessary measurements to start the design process."
-          />
-        )}
+        {isLoadingBuild && !portalBuild ? (
+          <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <p className="text-sm text-slate-600">Loading your order portal...</p>
+          </section>
+        ) : null}
 
-        {measurementsUnlocked && !bikeDesignUnlocked ? <OrderBikeDesignPreviewSection /> : null}
-
-        {bikeDesignUnlocked ? (
+        {portalBuild ? (
           <>
-            <OrderBikeDesignSection
-              isApproving={isApprovingDesign}
-              bikeDrawingSrc={bikeDrawingSrc}
-              designPreviewSrc={designPreviewSrc}
+            <OrderDepositSection
+              agreementAccepted={agreementAccepted}
+              availablePaymentMethods={portalBuild.availablePaymentMethods}
               currentStage={orderStage}
-              isSubmitting={isSubmittingSpecification}
-              isSubmitted={bikeDesignSubmitted}
-              specificationMode={specificationMode}
-              onApprove={handleApproveDesign}
-              values={bikeSpecification}
-              onModeChange={handleSpecificationModeChange}
-              onSubmit={handleSubmitSpecification}
-              onValueChange={handleBikeSpecificationChange}
+              customerDetails={portalBuild.customer}
+              depositAmountLabel={portalBuild.deposit.amount}
+              depositPayment={depositPayment}
+              isDepositConfirmed={isDepositConfirmed}
+              isProcessingPayment={isProcessingPayment}
+              onAgreementChange={setAgreementAccepted}
+              orderNumber={orderNumber}
+              onPayDeposit={handlePayDeposit}
+              requiresClaim={portalBuild.accessState === "claim_required"}
             />
-            <OrderProductionPreviewSection
-              currentStage={orderStage}
-              isSubmittingFinalPayment={isSubmittingFinalPayment}
-              onPayFinalAmount={handleSubmitFinalPayment}
-            />
+
+            {measurementsUnlocked ? (
+              <OrderMeasurementsSection
+                activeMeasurement={activeMeasurement}
+                bodyType={bodyType}
+                bodyWeight={bodyWeight}
+                expandedGuidelineKey={expandedGuidelineKey}
+                isSubmitting={isSubmittingMeasurements}
+                isSubmitted={measurementsSubmitted}
+                measurementArrowsSvgMarkup={measurementArrowsSvgMarkup}
+                measurementKeys={MEASUREMENT_KEYS}
+                selectedBodySrc={selectedBodySrc}
+                values={values}
+                onActivateMeasurement={(key) => activateMeasurement(key as MeasurementKey)}
+                onDeactivateMeasurement={deactivateMeasurement}
+                onBodyTypeChange={setBodyType}
+                onBodyWeightChange={setBodyWeight}
+                onMeasurementChange={handleMeasurementChange}
+                onSubmit={handleSubmitMeasurements}
+                onToggleGuidelines={handleToggleGuidelines}
+              />
+            ) : (
+              <OrderPendingSection
+                title="Next: measurements"
+                titleStyle="eyebrow"
+                description="We will ask you to provide the necessary measurements to start the design process."
+              />
+            )}
+
+            {measurementsUnlocked && !bikeDesignUnlocked ? <OrderBikeDesignPreviewSection /> : null}
+
+            {bikeDesignUnlocked ? (
+              <>
+                <OrderBikeDesignSection
+                  isApproving={isApprovingDesign}
+                  bikeDrawingSrc={bikeDrawingSrc}
+                  designPreviewSrc={designPreviewSrc}
+                  currentStage={orderStage}
+                  finalAmountLabel={portalBuild.finalPayment.amount}
+                  isSubmitting={isSubmittingSpecification}
+                  isSubmitted={bikeDesignSubmitted}
+                  specificationMode={specificationMode}
+                  onApprove={handleApproveDesign}
+                  values={bikeSpecification}
+                  onModeChange={handleSpecificationModeChange}
+                  onSubmit={handleSubmitSpecification}
+                  onValueChange={handleBikeSpecificationChange}
+                />
+                <OrderProductionPreviewSection
+                  currentStage={orderStage}
+                  depositAmountValue={portalBuild.deposit.amountValue}
+                  finalAmountValue={portalBuild.finalPayment.amountValue}
+                  initialShippingState={{
+                    address: portalBuild.shippingState.address,
+                    option: portalBuild.shippingState.option,
+                    trackingUrl: portalBuild.shippingState.trackingUrl,
+                  }}
+                  isSubmittingFinalPayment={isSubmittingFinalPayment}
+                  onPayFinalAmount={handleSubmitFinalPayment}
+                />
+              </>
+            ) : null}
           </>
         ) : null}
       </SectionStack>

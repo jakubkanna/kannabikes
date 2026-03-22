@@ -23,6 +23,7 @@ export type BikeDesignSectionProps = {
   bikeDrawingSrc: string;
   designPreviewSrc: string;
   currentStage: import("~/lib/mock-order").OrderStage;
+  finalAmountLabel: string;
   isSubmitting: boolean;
   isSubmitted: boolean;
   specificationMode:
