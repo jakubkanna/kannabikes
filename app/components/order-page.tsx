@@ -17,7 +17,6 @@ import {
   MOCK_DEPOSIT_AMOUNT,
   getStoredOrderStage,
   mockProcessDeposit,
-  ORDER_STAGE_DEFINITIONS,
   type OrderStage,
   type StoredDepositPayment,
   setStoredBikeSpecificationDraft,
@@ -97,10 +96,6 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
     orderStage === "in_production" ||
     orderStage === "waiting_for_delivery" ||
     orderStage === "delivered";
-  const visibleOrderStage =
-    orderStage === "waiting_for_specification" && !isDepositConfirmed
-      ? "in_review"
-      : orderStage;
   const bikeDesignUnlocked =
     isDepositConfirmed &&
     (orderStage === "waiting_for_specification" ||
@@ -245,7 +240,7 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
               {`Order nb. ${orderNumber}`}
             </h1>
             <div className="flex items-center md:justify-end">
-              <OrderStatusBadge stage={visibleOrderStage} />
+              <OrderStatusBadge stage={orderStage} />
             </div>
           </div>
         </header>

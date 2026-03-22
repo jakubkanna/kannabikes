@@ -10,9 +10,20 @@ export type OrderStage =
   | "waiting_for_delivery"
   | "delivered";
 
+export type WooDisplayStatus =
+  | "pending_payment"
+  | "on_hold"
+  | "processing"
+  | "completed";
+
 type OrderStageDefinition = {
   label: string;
   description: string;
+  badgeClassName: string;
+};
+
+type WooDisplayStatusDefinition = {
+  label: string;
   badgeClassName: string;
 };
 
@@ -108,6 +119,47 @@ export const ORDER_STAGE_DEFINITIONS: Record<OrderStage, OrderStageDefinition> =
     badgeClassName: "border-slate-300 bg-slate-100 text-slate-700",
   },
 };
+
+export const WOO_DISPLAY_STATUS_DEFINITIONS: Record<
+  WooDisplayStatus,
+  WooDisplayStatusDefinition
+> = {
+  pending_payment: {
+    label: "Pending payment",
+    badgeClassName: "border-amber-200 bg-amber-50 text-amber-700",
+  },
+  on_hold: {
+    label: "On hold",
+    badgeClassName: "border-sky-200 bg-sky-50 text-sky-700",
+  },
+  processing: {
+    label: "Processing",
+    badgeClassName: "border-violet-200 bg-violet-50 text-violet-700",
+  },
+  completed: {
+    label: "Completed",
+    badgeClassName: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  },
+};
+
+export function getWooDisplayStatus(stage: OrderStage): WooDisplayStatus {
+  switch (stage) {
+    case "waiting_for_deposit":
+    case "waiting_for_final_payment":
+      return "pending_payment";
+    case "in_review":
+    case "waiting_for_specification":
+    case "waiting_for_design_approval":
+    case "final_payment_in_review":
+      return "on_hold";
+    case "waiting_for_design":
+    case "in_production":
+    case "waiting_for_delivery":
+      return "processing";
+    case "delivered":
+      return "completed";
+  }
+}
 
 function getStorageKey(orderNumber: string) {
   return `${STORAGE_PREFIX}:${orderNumber}`;
