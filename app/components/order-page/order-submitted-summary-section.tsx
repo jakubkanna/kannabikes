@@ -1,5 +1,4 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { chevronDownOutline } from "ionicons/icons";
 
 const SUBMITTED_SUCCESS_HIGHLIGHT_DELAY_MS = 4000;
 
@@ -72,11 +71,21 @@ export function OrderSubmittedSummarySection({
             }`}
             aria-hidden="true"
           >
-            <ion-icon
-              icon={chevronDownOutline}
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 20 20"
               className="block h-[22px] w-[22px]"
               style={{ color: hasSuccessHighlight ? "#047857" : "#64748b" }}
-            />
+            >
+              <path
+                d="M5 7.5L10 12.5L15 7.5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </span>
         </button>
       ) : (

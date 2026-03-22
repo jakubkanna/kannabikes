@@ -114,8 +114,8 @@ export const ORDER_STAGE_DEFINITIONS: Record<OrderStage, OrderStageDefinition> =
     badgeClassName: "border-orange-200 bg-orange-50 text-orange-700",
   },
   waiting_for_delivery: {
-    label: "Waiting for delivery",
-    description: "Production is complete and we are preparing shipment or handoff.",
+    label: "Ready",
+    description: "Your bicycle is ready for delivery or pickup.",
     badgeClassName: "border-emerald-200 bg-emerald-50 text-emerald-700",
   },
   delivered: {

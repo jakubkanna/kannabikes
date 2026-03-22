@@ -6,6 +6,26 @@ import type {
 
 export type PortalAccessState = "authenticated" | "claim_required";
 
+export type OrderShippingAddress = {
+  city: string;
+  country: string;
+  countryCode: string;
+  email: string;
+  fullName: string;
+  phoneNumber: string;
+  postalCode: string;
+  street: string;
+};
+
+export type OrderShippingState = {
+  address: OrderShippingAddress;
+  option: "courier" | "pickup";
+  shippingCost: number | null;
+  shippingRateLabel?: string;
+  shippingEstimateNotice?: string;
+  trackingUrl: string;
+};
+
 export type OrderPortalPayload = {
   accessState: PortalAccessState;
   availablePaymentMethods: DepositPaymentMethod[];
@@ -22,6 +42,8 @@ export type OrderPortalPayload = {
     isConfirmed: boolean;
     orderId: number;
     orderStatus: string;
+    paidAt: string | null;
+    paymentMethod: DepositPaymentMethod | null;
   };
   designState: {
     approvedAt: string | null;
@@ -49,15 +71,11 @@ export type OrderPortalPayload = {
   portalClaimed: boolean;
   publicOrderNumber: string;
   shippingState: {
-    address: {
-      city: string;
-      country: string;
-      fullName: string;
-      postalCode: string;
-      street: string;
-    };
+    address: OrderShippingAddress;
     option: "courier" | "pickup";
-    shippingCost: number;
+    shippingCost: number | null;
+    shippingRateLabel?: string;
+    shippingEstimateNotice?: string;
     trackingUrl: string;
   };
   specificationState: {
@@ -100,6 +118,10 @@ type PaymentLinkResponse = {
   orderId: number;
   paymentMethod: DepositPaymentMethod;
   paymentUrl: string;
+};
+
+type ShippingQuoteResponse = {
+  shipping: OrderShippingState;
 };
 
 const DEFAULT_WORDPRESS_API_BASE =
@@ -358,13 +380,7 @@ export async function requestPaymentLink({
   publicOrderNumber: string;
   sessionToken: string;
   shipping?: {
-    address: {
-      city: string;
-      country: string;
-      fullName: string;
-      postalCode: string;
-      street: string;
-    };
+    address: OrderShippingAddress;
     option: "courier" | "pickup";
   };
 }) {
@@ -375,6 +391,28 @@ export async function requestPaymentLink({
       shipping,
     },
     path: "payment-link",
+    publicOrderNumber,
+    sessionToken,
+  });
+}
+
+export async function requestShippingQuote({
+  publicOrderNumber,
+  sessionToken,
+  shipping,
+}: {
+  publicOrderNumber: string;
+  sessionToken: string;
+  shipping: {
+    address: OrderShippingAddress;
+    option: "courier" | "pickup";
+  };
+}) {
+  return authenticatedPortalRequest<ShippingQuoteResponse>({
+    body: {
+      shipping,
+    },
+    path: "shipping-quote",
     publicOrderNumber,
     sessionToken,
   });

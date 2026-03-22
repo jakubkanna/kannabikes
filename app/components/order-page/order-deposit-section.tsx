@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { businessOutline, cardOutline, chevronDownOutline } from "ionicons/icons";
+import { businessOutline, cardOutline } from "ionicons/icons";
 import type {
   DepositPaymentMethod,
   OrderStage,
   StoredDepositPayment,
 } from "~/lib/mock-order";
+import { formatOrderMoney, getInclusiveTaxBreakdown } from "~/lib/order-tax";
 
 const DEPOSIT_SUCCESS_HIGHLIGHT_DELAY_MS = 4000;
 function validatePasswords(password: string, repeatPassword: string) {
@@ -33,6 +34,8 @@ export function OrderDepositSection({
   customerDetails,
   currentStage,
   depositAmountLabel,
+  depositAmountValue,
+  depositCurrency,
   depositPayment,
   isDepositConfirmed,
   isProcessingPayment,
@@ -51,6 +54,8 @@ export function OrderDepositSection({
   };
   currentStage: OrderStage;
   depositAmountLabel: string;
+  depositAmountValue: number;
+  depositCurrency: string;
   depositPayment: StoredDepositPayment | null;
   isDepositConfirmed: boolean;
   isProcessingPayment: boolean;
@@ -72,6 +77,7 @@ export function OrderDepositSection({
   const [showPasswordValidation, setShowPasswordValidation] = useState(false);
   const passwordErrors = validatePasswords(password, repeatPassword);
   const hasPasswordErrors = Object.keys(passwordErrors).length > 0;
+  const depositTaxSummary = getInclusiveTaxBreakdown(depositAmountValue);
 
   useEffect(() => {
     if (availablePaymentMethods.includes(paymentMethod)) {
@@ -228,11 +234,21 @@ export function OrderDepositSection({
                 }`}
                 aria-hidden="true"
               >
-                <ion-icon
-                  icon={chevronDownOutline}
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 20 20"
                   className="block h-[22px] w-[22px]"
                   style={{ color: useSuccessColors ? "#047857" : "#64748b" }}
-                />
+                >
+                  <path
+                    d="M5 7.5L10 12.5L15 7.5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </span>
             </button>
 
@@ -439,6 +455,24 @@ export function OrderDepositSection({
                   <span>Subtotal</span>
                   <span className="font-medium text-slate-900">
                     {depositAmountLabel}
+                  </span>
+                </div>
+                <div className="mt-2 flex items-center justify-between gap-4">
+                  <span>Net amount</span>
+                  <span className="font-medium text-slate-900">
+                    {formatOrderMoney(
+                      depositTaxSummary.netAmount,
+                      depositCurrency,
+                    )}
+                  </span>
+                </div>
+                <div className="mt-2 flex items-center justify-between gap-4">
+                  <span>{depositTaxSummary.taxLabel}</span>
+                  <span className="font-medium text-slate-900">
+                    {formatOrderMoney(
+                      depositTaxSummary.taxAmount,
+                      depositCurrency,
+                    )}
                   </span>
                 </div>
                 <div className="mt-2 flex items-center justify-between gap-4">

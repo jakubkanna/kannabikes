@@ -584,6 +584,36 @@ export function OrderBikeDesignSection({
       )}
     </>
   );
+  const renderPartsSummary = () => (
+    <>
+      {BIKE_COMPONENT_SECTIONS.map((section) => (
+        <div
+          key={section.title}
+          className="mt-5 rounded-lg border border-slate-200 bg-white p-4"
+        >
+          <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+            {section.title}
+          </h3>
+          <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+            {section.fields.map((field) => {
+              const fieldKey = `${section.title}:${field}`;
+
+              return (
+                <div key={fieldKey}>
+                  <span className="mb-2 block text-sm font-semibold text-slate-700">
+                    {field}
+                  </span>
+                  <p className="text-sm text-slate-900">
+                    {resolveSpecificationFieldValue(fieldKey) || "-"}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </>
+  );
   const renderGeometrySummary = () => (
     <div className="rounded-lg border border-slate-200 bg-white p-4">
       <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -666,6 +696,9 @@ export function OrderBikeDesignSection({
                 </div>
 
                 {renderBuildDataSummary()}
+                {specificationMode === "guided_by_designer"
+                  ? renderPartsSummary()
+                  : null}
               </div>
             </aside>
 

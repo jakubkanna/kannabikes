@@ -19,10 +19,12 @@ import {
   OrderPortalApiError,
   requestOrderPortalPasswordReset,
   requestPaymentLink,
+  requestShippingQuote,
   setStoredPortalSession,
   submitMeasurements,
   submitSpecification,
   type OrderPortalPayload,
+  type OrderShippingAddress,
 } from "~/lib/order-api";
 import {
   getWooDisplayStatus,
@@ -231,6 +233,36 @@ export function OrderPage({
     setBikeSpecification(portalBuild.specificationState.values);
     setSpecificationMode(portalBuild.specificationState.specificationMode);
   }, [portalBuild]);
+
+  useEffect(() => {
+    if (
+      !portalBuild?.deposit.isConfirmed ||
+      !portalBuild.deposit.paidAt ||
+      !portalBuild.deposit.paymentMethod
+    ) {
+      return;
+    }
+
+    const nextPayment: StoredDepositPayment = {
+      amount: portalBuild.deposit.amount,
+      paidAt: portalBuild.deposit.paidAt,
+      paymentMethod: portalBuild.deposit.paymentMethod,
+    };
+
+    setDepositPayment((currentPayment) => {
+      if (
+        currentPayment &&
+        currentPayment.amount === nextPayment.amount &&
+        currentPayment.paidAt === nextPayment.paidAt &&
+        currentPayment.paymentMethod === nextPayment.paymentMethod
+      ) {
+        return currentPayment;
+      }
+
+      setStoredLastDepositPayment(orderNumber, nextPayment);
+      return nextPayment;
+    });
+  }, [orderNumber, portalBuild]);
 
   useEffect(() => {
     let cancelled = false;
@@ -460,14 +492,34 @@ export function OrderPage({
     }
   };
 
+  const handleRequestShippingQuote = async (shipping: {
+    address: OrderShippingAddress;
+    option: "courier" | "pickup";
+  }) => {
+    if (!sessionToken) {
+      throw new Error("A valid portal session is required.");
+    }
+
+    const response = await requestShippingQuote({
+      publicOrderNumber: orderNumber,
+      sessionToken,
+      shipping,
+    });
+
+    setPortalBuild((prev) =>
+      prev
+        ? {
+            ...prev,
+            shippingState: response.shipping,
+          }
+        : prev,
+    );
+
+    return response.shipping;
+  };
+
   const handleSubmitFinalPayment = async (shipping: {
-    address: {
-      city: string;
-      country: string;
-      fullName: string;
-      postalCode: string;
-      street: string;
-    };
+    address: OrderShippingAddress;
     option: "courier" | "pickup";
   }) => {
     if (!sessionToken) {
@@ -643,6 +695,8 @@ export function OrderPage({
               currentStage={orderStage}
               customerDetails={portalBuild.customer}
               depositAmountLabel={portalBuild.deposit.amount}
+              depositAmountValue={portalBuild.deposit.amountValue}
+              depositCurrency={portalBuild.deposit.currency}
               depositPayment={depositPayment}
               isDepositConfirmed={isDepositConfirmed}
               isProcessingPayment={isProcessingPayment}
@@ -705,11 +759,15 @@ export function OrderPage({
                   currentStage={orderStage}
                   depositAmountValue={portalBuild.deposit.amountValue}
                   finalAmountValue={portalBuild.finalPayment.amountValue}
+                  currency={portalBuild.finalPayment.currency}
                   initialShippingState={{
                     address: portalBuild.shippingState.address,
                     option: portalBuild.shippingState.option,
+                    shippingCost: portalBuild.shippingState.shippingCost,
+                    shippingRateLabel: portalBuild.shippingState.shippingRateLabel,
                     trackingUrl: portalBuild.shippingState.trackingUrl,
                   }}
+                  onCalculateShipping={handleRequestShippingQuote}
                   isSubmittingFinalPayment={isSubmittingFinalPayment}
                   onPayFinalAmount={handleSubmitFinalPayment}
                 />
