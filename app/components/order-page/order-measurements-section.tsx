@@ -68,9 +68,11 @@ export function OrderMeasurementsSection({
           <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-4">
             <div>
               <span className="mb-2 block text-sm font-semibold text-slate-700">
-                Body weight
+                Body weight (kg)
               </span>
-              <p className="text-sm text-slate-900">{bodyWeight || "-"}</p>
+              <p className="text-sm text-slate-900">
+                {bodyWeight ? `${bodyWeight} kg` : "-"}
+              </p>
             </div>
             <div>
               <span className="mb-2 block text-sm font-semibold text-slate-700">
@@ -94,7 +96,9 @@ export function OrderMeasurementsSection({
               onMouseLeave={onDeactivateMeasurement}
             >
               <span className="mb-2 block text-sm font-semibold text-slate-700">{key}</span>
-              <p className="text-sm text-slate-900">{values[key] || "-"}</p>
+              <p className="text-sm text-slate-900">
+                {values[key] ? `${values[key]} cm` : "-"}
+              </p>
             </div>
           ))}
         </div>
@@ -164,9 +168,11 @@ export function OrderMeasurementsSection({
                 <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-4">
                   <div>
                     <span className="mb-2 block text-sm font-semibold text-slate-700">
-                      Body weight
+                      Body weight (kg)
                     </span>
-                    <p className="text-sm text-slate-900">{bodyWeight || "-"}</p>
+                    <p className="text-sm text-slate-900">
+                      {bodyWeight ? `${bodyWeight} kg` : "-"}
+                    </p>
                   </div>
                   <div>
                     <span className="mb-2 block text-sm font-semibold text-slate-700">
@@ -181,12 +187,12 @@ export function OrderMeasurementsSection({
                 <>
                   <label className="mt-3 block">
                     <span className="mb-2 block text-sm font-semibold text-slate-700">
-                      Body weight
+                      Body weight (kg)
                     </span>
                     <input
                       type="text"
                       inputMode="decimal"
-                      placeholder="Enter body weight"
+                      placeholder="Enter body weight in kg"
                       value={bodyWeight}
                       onChange={(event) => onBodyWeightChange(event.target.value)}
                       className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
@@ -242,12 +248,12 @@ export function OrderMeasurementsSection({
                     className="block rounded-lg border border-slate-200 bg-slate-50 p-3"
                   >
                     <span className="mb-2 block text-sm font-semibold text-slate-700">
-                      {key}
+                      {key} (cm)
                     </span>
                     <input
                       type="text"
                       inputMode="decimal"
-                      placeholder={`Enter measurement ${key}`}
+                      placeholder={`Enter measurement ${key} in cm`}
                       value={values[key] ?? ""}
                       onFocus={() => onActivateMeasurement(key)}
                       onClick={() => onActivateMeasurement(key)}

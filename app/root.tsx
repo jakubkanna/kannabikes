@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   isRouteErrorResponse,
   Links,
@@ -6,6 +7,7 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
+import { defineCustomElements } from "ionicons/loader";
 
 import type { Route } from "./+types/root";
 import "./app.css";
@@ -22,12 +24,6 @@ const OG_IMAGE_URL = `${SITE_URL}${OG_IMAGE}`;
 export const links: Route.LinksFunction = () => [
   { rel: "icon", href: `${BASE_URL}kannabikes_logo.svg`, type: "image/svg+xml" },
   { rel: "apple-touch-icon", href: `${BASE_URL}kannabikes_logo.svg` },
-  {
-    rel: "preload",
-    as: "image",
-    href: `${BASE_URL}_DSF0937_low.jpg`,
-    type: "image/jpeg",
-  },
 ];
 
 export function meta({}: Route.MetaArgs) {
@@ -54,6 +50,10 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    defineCustomElements(window);
+  }, []);
+
   return (
     <html lang="en">
       <head>

@@ -707,10 +707,10 @@ export function OrderBikeDesignSection({
             />
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 md:items-start">
-            <aside className="rounded-lg border border-slate-200 bg-slate-50 p-3 md:p-4">
+          <div className="grid gap-6 md:grid-cols-2 md:items-stretch">
+            <aside className="rounded-lg border border-slate-200 bg-slate-50 p-3 md:h-full md:p-4">
               <div className="space-y-4 pb-2">
-                <div className="rounded-lg border border-slate-200 bg-white p-4">
+                <div>
                   <h3 className="text-sm font-semibold text-slate-900">
                     Build data
                   </h3>
@@ -724,9 +724,9 @@ export function OrderBikeDesignSection({
               </div>
             </aside>
 
-            <aside className="rounded-lg border border-slate-200 bg-slate-50 p-3 md:flex md:flex-col md:p-4">
-              <div className="space-y-4 pb-2">
-                <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <aside className="rounded-lg border border-slate-200 bg-slate-50 p-3 md:flex md:h-full md:flex-col md:self-stretch md:p-4">
+              <div className="space-y-4 pb-24 md:flex-1">
+                <div>
                   <h3 className="text-sm font-semibold text-slate-900">
                     Geometry
                   </h3>
@@ -742,17 +742,30 @@ export function OrderBikeDesignSection({
                 {renderArtistMessage()}
               </div>
 
-              <div className="shrink-0 border-t border-slate-200 bg-slate-50 pt-4">
+              <div className="sticky bottom-4 z-10 mt-auto border-t border-slate-200 bg-slate-50/95 pt-4 backdrop-blur-sm">
                 <button
                   type="button"
                   onClick={onApprove}
                   disabled={isApproving}
-                  className="inline-flex w-full items-center justify-center rounded-md bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+                  className="inline-flex w-full items-center justify-center rounded-md bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
                 >
                   {isApproving ? "Approving design..." : "Approve design"}
                 </button>
               </div>
             </aside>
+          </div>
+
+          <div className="md:hidden">
+            <div className="sticky bottom-4 z-10">
+              <button
+                type="button"
+                onClick={onApprove}
+                disabled={isApproving}
+                className="inline-flex w-full items-center justify-center rounded-md bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+              >
+                {isApproving ? "Approving design..." : "Approve design"}
+              </button>
+            </div>
           </div>
         </div>
       </section>

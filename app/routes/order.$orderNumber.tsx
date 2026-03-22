@@ -4,7 +4,7 @@ import { OrderPage, buildOrderNumber } from "~/components/order-page";
 import { SITE_NAME } from "~/root";
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: `Order | ${SITE_NAME}` }];
+  return [{ title: `${SITE_NAME} | Order` }];
 }
 
 export default function OrderNumberPage() {

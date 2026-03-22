@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { chevronDownOutline } from "ionicons/icons";
 
 const SUBMITTED_SUCCESS_HIGHLIGHT_DELAY_MS = 4000;
 
@@ -65,14 +66,13 @@ export function OrderSubmittedSummarySection({
               {description}
             </p>
           </div>
-          <span
-            className={`mt-1 text-lg leading-none transition-transform ${
+          <ion-icon
+            icon={chevronDownOutline}
+            className={`shrink-0 self-center text-[22px] leading-none transition-transform ${
               hasSuccessHighlight ? "text-emerald-700" : "text-slate-500"
             } ${isExpanded ? "rotate-180" : ""}`}
             aria-hidden="true"
-          >
-            ˅
-          </span>
+          />
         </button>
       ) : (
         <div className="mb-5 shrink-0">

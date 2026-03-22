@@ -11,6 +11,7 @@ import {
   SectionStack,
 } from "~/components/order-page/index";
 import {
+  type DepositPaymentMethod,
   getStoredBikeSpecificationDraft,
   getStoredDepositConfirmed,
   getStoredDepositPayment,
@@ -19,6 +20,7 @@ import {
   mockProcessDeposit,
   ORDER_STAGE_DEFINITIONS,
   type OrderStage,
+  type StoredDepositPayment,
   setStoredBikeSpecificationDraft,
   setStoredDepositConfirmed,
   setStoredDepositPayment,
@@ -54,9 +56,7 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
   const [isApprovingDesign, setIsApprovingDesign] = useState(false);
   const [isSpecificationSubmitted, setIsSpecificationSubmitted] = useState(false);
   const [isDepositConfirmed, setIsDepositConfirmed] = useState(false);
-  const [depositPayment, setDepositPayment] = useState<{ amount: string; paidAt: string } | null>(
-    null,
-  );
+  const [depositPayment, setDepositPayment] = useState<StoredDepositPayment | null>(null);
   const [hydratedBikeSpecificationOrderNumber, setHydratedBikeSpecificationOrderNumber] =
     useState<string | null>(null);
   const [orderStage, setOrderStage] = useState<OrderStage>("waiting_for_deposit");
@@ -155,16 +155,17 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
     setExpandedGuidelineKey((prev) => (prev === key ? null : (key as MeasurementKey)));
   };
 
-  const handleMockDepositPayment = async () => {
+  const handleMockDepositPayment = async (paymentMethod: DepositPaymentMethod) => {
     setIsProcessingPayment(true);
     const nextStage = await mockProcessDeposit(orderNumber);
     const payment = {
       amount: MOCK_DEPOSIT_AMOUNT,
       paidAt: new Date().toISOString(),
+      paymentMethod,
     };
-    setStoredDepositConfirmed(orderNumber, true);
+    setStoredDepositConfirmed(orderNumber, false);
     setStoredDepositPayment(orderNumber, payment);
-    setIsDepositConfirmed(true);
+    setIsDepositConfirmed(false);
     setDepositPayment(payment);
     setOrderStage(nextStage);
     setIsProcessingPayment(false);
@@ -262,7 +263,7 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
           <OrderPendingSection
             title="Next: measurements"
             titleStyle="eyebrow"
-            description="Measurement fields will appear here after the deposit is paid."
+            description="We will ask you to provide the necessary measurements to start the design process."
           />
         )}
 

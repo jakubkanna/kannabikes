@@ -4,7 +4,7 @@ import { SITE_NAME } from "~/root";
 import { attachBackgroundParallax } from "~/lib/parallax";
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: SITE_NAME }];
+  return [{ title: `${SITE_NAME} | Home` }];
 }
 
 export default function Home() {

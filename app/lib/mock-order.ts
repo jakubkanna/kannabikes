@@ -24,15 +24,23 @@ const BIKE_SPECIFICATION_PREFIX = "kanna-order-bike-specification";
 export const MOCK_DEPOSIT_AMOUNT = "500 EUR";
 export const MOCK_FINAL_PRICE_EXCLUDING_DEPOSIT = "3 200 EUR";
 export const MOCK_ESTIMATED_DELIVERY_TIME = "6-8 weeks";
+export const MOCK_DELIVERED_ON = "21 Mar 2026";
 
 export type StoredBikeSpecificationDraft = {
   specificationMode: "guided_by_designer" | "self_specified" | "frame_only" | null;
   values: Record<string, string>;
 };
 
+export type DepositPaymentMethod =
+  | "paypal"
+  | "platnosci24"
+  | "stripe"
+  | "classic_transfer";
+
 export type StoredDepositPayment = {
   amount: string;
   paidAt: string;
+  paymentMethod: DepositPaymentMethod;
 };
 
 export const ORDER_STAGES: OrderStage[] = [
@@ -168,13 +176,26 @@ export function getStoredDepositPayment(orderNumber: string): StoredDepositPayme
   try {
     const parsed = JSON.parse(stored) as Partial<StoredDepositPayment>;
 
-    if (typeof parsed.amount !== "string" || typeof parsed.paidAt !== "string") {
+    const paymentMethod =
+      parsed.paymentMethod === "paypal" ||
+      parsed.paymentMethod === "platnosci24" ||
+      parsed.paymentMethod === "stripe" ||
+      parsed.paymentMethod === "classic_transfer"
+        ? parsed.paymentMethod
+        : null;
+
+    if (
+      typeof parsed.amount !== "string" ||
+      typeof parsed.paidAt !== "string" ||
+      paymentMethod === null
+    ) {
       return null;
     }
 
     return {
       amount: parsed.amount,
       paidAt: parsed.paidAt,
+      paymentMethod,
     };
   } catch {
     return null;

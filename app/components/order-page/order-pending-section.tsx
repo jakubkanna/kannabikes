@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  MOCK_DELIVERED_ON,
   MOCK_ESTIMATED_DELIVERY_TIME,
   MOCK_FINAL_PRICE_EXCLUDING_DEPOSIT,
   type OrderStage,
@@ -104,7 +105,7 @@ export function OrderProductionPreviewSection({
   const [hasCalculatedShipping, setHasCalculatedShipping] = useState(false);
   const [showShippingValidation, setShowShippingValidation] = useState(false);
   const [hasProductionHighlight, setHasProductionHighlight] = useState(
-    currentStage === "in_production",
+    currentStage === "in_production" || currentStage === "delivered",
   );
   const [shippingAddress, setShippingAddress] = useState({
     fullName: "",
@@ -132,7 +133,7 @@ export function OrderProductionPreviewSection({
   const totalWithShipping = FINAL_PAYMENT_AMOUNT + shippingCost;
 
   useEffect(() => {
-    if (currentStage !== "in_production") {
+    if (currentStage !== "in_production" && currentStage !== "delivered") {
       setHasProductionHighlight(false);
       return;
     }
@@ -155,8 +156,10 @@ export function OrderProductionPreviewSection({
           Waiting for final payment
         </h2>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-          Final payment will cover cost of material, specified parts and
-          production of your custom bicycle.
+          Final payment will cover the cost of materials, specified parts, and
+          production of your custom bicycle. Once we receive it, your bike will
+          move directly into production and we will provide an estimated
+          delivery time.
         </p>
         <div className="mt-6 grid gap-6 md:grid-cols-[minmax(0,1.7fr)_minmax(280px,1fr)] md:items-start">
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
@@ -427,14 +430,16 @@ export function OrderProductionPreviewSection({
     return (
       <section
         className={`rounded-xl p-6 shadow-sm ${
-          currentStage === "in_production" && hasProductionHighlight
+          (currentStage === "in_production" || currentStage === "delivered") &&
+          hasProductionHighlight
             ? "border border-emerald-200 bg-emerald-50"
             : "border border-slate-200 bg-white"
         }`}
       >
         <p
           className={`text-xs font-semibold uppercase tracking-[0.14em] ${
-            currentStage === "in_production" && hasProductionHighlight
+            (currentStage === "in_production" || currentStage === "delivered") &&
+            hasProductionHighlight
               ? "text-emerald-700"
               : "text-slate-500"
           }`}
@@ -450,10 +455,14 @@ export function OrderProductionPreviewSection({
         </h2>
         <div className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4">
           <span className="mb-2 block text-sm font-semibold text-slate-700">
-            Estimated delivery time
+            {currentStage === "delivered"
+              ? "Delivered on"
+              : "Estimated delivery time"}
           </span>
           <p className="text-sm text-slate-900">
-            {MOCK_ESTIMATED_DELIVERY_TIME}
+            {currentStage === "delivered"
+              ? MOCK_DELIVERED_ON
+              : MOCK_ESTIMATED_DELIVERY_TIME}
           </p>
         </div>
       </section>
