@@ -5,9 +5,10 @@ import type { Route } from "./+types/contact";
 import { SITE_NAME } from "~/root";
 
 const DEFAULT_TOPIC = "Quote request";
-const DEFAULT_CONTACT_ENDPOINT =
-  import.meta.env.VITE_WORDPRESS_CONTACT_ENDPOINT ??
-  "http://localhost/wp-json/kanna/v1/contact";
+const DEFAULT_WORDPRESS_API_BASE =
+  import.meta.env.VITE_WORDPRESS_API_BASE_URL ??
+  "http://localhost/wp-json/kanna/v1";
+const DEFAULT_CONTACT_ENDPOINT = `${DEFAULT_WORDPRESS_API_BASE.replace(/\/$/, "")}/contact`;
 
 function validateContactForm(values: {
   email: string;

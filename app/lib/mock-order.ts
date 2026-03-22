@@ -1,6 +1,7 @@
 export type OrderStage =
   | "waiting_for_deposit"
   | "in_review"
+  | "waiting_for_measurements"
   | "waiting_for_specification"
   | "waiting_for_design"
   | "waiting_for_design_approval"
@@ -32,7 +33,7 @@ const DEPOSIT_CONFIRMED_PREFIX = "kanna-order-deposit-confirmed";
 const DEPOSIT_PAYMENT_PREFIX = "kanna-order-deposit-payment";
 const BIKE_SPECIFICATION_PREFIX = "kanna-order-bike-specification";
 
-export const MOCK_DEPOSIT_AMOUNT = "500 EUR";
+export const MOCK_DEPOSIT_AMOUNT = "590 EUR";
 export const MOCK_FINAL_PRICE_EXCLUDING_DEPOSIT = "3 200 EUR";
 export const MOCK_ESTIMATED_DELIVERY_TIME = "6-8 weeks";
 export const MOCK_DELIVERED_ON = "21 Mar 2026";
@@ -53,6 +54,7 @@ export type StoredDepositPayment = {
 export const ORDER_STAGES: OrderStage[] = [
   "waiting_for_deposit",
   "in_review",
+  "waiting_for_measurements",
   "waiting_for_specification",
   "waiting_for_design",
   "waiting_for_design_approval",
@@ -71,8 +73,15 @@ export const ORDER_STAGE_DEFINITIONS: Record<OrderStage, OrderStageDefinition> =
   },
   in_review: {
     label: "In review",
-    description: "The deposit is being verified and we are reviewing your measurements and order details.",
+    description:
+      "The payment is being verified manually before the order moves to the measurement step.",
     badgeClassName: "border-sky-200 bg-sky-50 text-sky-700",
+  },
+  waiting_for_measurements: {
+    label: "Waiting for measurements",
+    description:
+      "The deposit is confirmed. We are waiting for your body measurements before moving the project into specification.",
+    badgeClassName: "border-cyan-200 bg-cyan-50 text-cyan-700",
   },
   waiting_for_specification: {
     label: "Waiting for specification",
@@ -144,6 +153,7 @@ export function getWooDisplayStatus(stage: OrderStage): WooDisplayStatus {
     case "waiting_for_final_payment":
       return "pending_payment";
     case "in_review":
+    case "waiting_for_measurements":
     case "waiting_for_specification":
     case "waiting_for_design_approval":
     case "final_payment_in_review":
@@ -326,6 +336,6 @@ export function getNextOrderStage(stage: OrderStage): OrderStage {
 
 export async function mockProcessDeposit(orderNumber: string) {
   await new Promise((resolve) => window.setTimeout(resolve, 1200));
-  setStoredOrderStage(orderNumber, "in_review");
-  return "in_review" as const;
+  setStoredOrderStage(orderNumber, "waiting_for_measurements");
+  return "waiting_for_measurements" as const;
 }

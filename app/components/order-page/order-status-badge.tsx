@@ -1,11 +1,14 @@
-import type { OrderStage } from "~/lib/mock-order";
 import {
-  getWooDisplayStatus,
+  type WooDisplayStatus,
   WOO_DISPLAY_STATUS_DEFINITIONS,
 } from "~/lib/mock-order";
 
-export function OrderStatusBadge({ stage }: { stage: OrderStage }) {
-  const definition = WOO_DISPLAY_STATUS_DEFINITIONS[getWooDisplayStatus(stage)];
+export function OrderStatusBadge({
+  displayStatus,
+}: {
+  displayStatus: WooDisplayStatus;
+}) {
+  const definition = WOO_DISPLAY_STATUS_DEFINITIONS[displayStatus];
 
   return (
     <span

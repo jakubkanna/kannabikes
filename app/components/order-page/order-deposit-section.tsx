@@ -489,9 +489,7 @@ export function OrderDepositSection({
             >
               {isProcessingPayment
                 ? "Preparing payment..."
-                : requiresClaim
-                  ? `Create access and pay ${depositAmountLabel}`
-                  : `Pay ${depositAmountLabel}`}
+                : "Pay Deposit"}
             </button>
           </div>
         </div>

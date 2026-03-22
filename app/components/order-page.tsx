@@ -15,6 +15,8 @@ import {
   clearStoredPortalSession,
   fetchOrderPortalBuild,
   getStoredPortalSession,
+  loginOrderPortal,
+  OrderPortalApiError,
   requestPaymentLink,
   setStoredPortalSession,
   submitMeasurements,
@@ -22,6 +24,7 @@ import {
   type OrderPortalPayload,
 } from "~/lib/order-api";
 import {
+  getWooDisplayStatus,
   type DepositPaymentMethod,
   type OrderStage,
   type StoredDepositPayment,
@@ -112,9 +115,13 @@ export function OrderPage({
   const [isSubmittingSpecification, setIsSubmittingSpecification] = useState(false);
   const [isSubmittingFinalPayment, setIsSubmittingFinalPayment] = useState(false);
   const [isApprovingDesign, setIsApprovingDesign] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [measurementArrowsSvgMarkup, setMeasurementArrowsSvgMarkup] = useState("");
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [loginPassword, setLoginPassword] = useState("");
   const [orderError, setOrderError] = useState<string | null>(null);
   const [portalBuild, setPortalBuild] = useState<OrderPortalPayload | null>(null);
+  const [requiresLogin, setRequiresLogin] = useState(false);
   const [sessionToken, setSessionToken] = useState(() =>
     getStoredPortalSession(orderNumber),
   );
@@ -182,6 +189,8 @@ export function OrderPage({
     orderStage === "in_production" ||
     orderStage === "waiting_for_delivery" ||
     orderStage === "delivered";
+  const headerDisplayStatus =
+    portalBuild?.displayStatus ?? getWooDisplayStatus(orderStage);
 
   useEffect(() => {
     document.title = `Order nb. ${orderNumber}`;
@@ -235,6 +244,8 @@ export function OrderPage({
         });
 
         if (!cancelled) {
+          setRequiresLogin(false);
+          setLoginError(null);
           setPortalBuild(build);
         }
       } catch (error) {
@@ -250,6 +261,17 @@ export function OrderPage({
         }
 
         if (!cancelled) {
+          if (
+            error instanceof OrderPortalApiError &&
+            error.code === "unauthorized" &&
+            !claimToken
+          ) {
+            setPortalBuild(null);
+            setRequiresLogin(true);
+            setOrderError(null);
+            return;
+          }
+
           setOrderError(
             error instanceof Error
               ? error.message
@@ -480,6 +502,38 @@ export function OrderPage({
     setSpecificationMode(mode);
   };
 
+  const handlePortalLogin = async () => {
+    if (loginPassword.trim().length < 8) {
+      setLoginError("Enter the password you created for this order.");
+      return;
+    }
+
+    setIsLoggingIn(true);
+    setLoginError(null);
+    setOrderError(null);
+
+    try {
+      const loggedIn = await loginOrderPortal({
+        password: loginPassword,
+        publicOrderNumber: orderNumber,
+      });
+
+      setSessionToken(loggedIn.sessionToken);
+      setStoredPortalSession(orderNumber, loggedIn.sessionToken);
+      setPortalBuild(loggedIn.build);
+      setRequiresLogin(false);
+      setLoginPassword("");
+    } catch (error) {
+      setLoginError(
+        error instanceof Error
+          ? error.message
+          : "We could not unlock this order right now.",
+      );
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-6 md:px-8 md:py-10">
       <SectionStack>
@@ -489,7 +543,7 @@ export function OrderPage({
               {`Order nb. ${orderNumber}`}
             </h1>
             <div className="flex items-center md:justify-end">
-              <OrderStatusBadge stage={orderStage} />
+              <OrderStatusBadge displayStatus={headerDisplayStatus} />
             </div>
           </div>
         </header>
@@ -503,6 +557,46 @@ export function OrderPage({
         {isLoadingBuild && !portalBuild ? (
           <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <p className="text-sm text-slate-600">Loading your order portal...</p>
+          </section>
+        ) : null}
+
+        {!isLoadingBuild && requiresLogin ? (
+          <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+              Protected order
+            </p>
+            <h2 className="mt-2 text-xl font-semibold text-slate-900">
+              Enter your order password
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+              This order page is protected. Enter the password created during the
+              deposit step to access the portal.
+            </p>
+            <div className="mt-5 max-w-md">
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold text-slate-700">
+                  Password
+                </span>
+                <input
+                  type="password"
+                  value={loginPassword}
+                  onChange={(event) => setLoginPassword(event.target.value)}
+                  placeholder="Enter your order password"
+                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
+                />
+              </label>
+              {loginError ? (
+                <p className="mt-3 text-sm text-red-600">{loginError}</p>
+              ) : null}
+              <button
+                type="button"
+                onClick={handlePortalLogin}
+                disabled={isLoggingIn}
+                className="mt-4 inline-flex items-center justify-center rounded-md bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+              >
+                {isLoggingIn ? "Unlocking..." : "Access order"}
+              </button>
+            </div>
           </section>
         ) : null}
 

@@ -1,4 +1,8 @@
-import type { DepositPaymentMethod, OrderStage } from "~/lib/mock-order";
+import type {
+  DepositPaymentMethod,
+  OrderStage,
+  WooDisplayStatus,
+} from "~/lib/mock-order";
 
 export type PortalAccessState = "authenticated" | "claim_required";
 
@@ -23,7 +27,7 @@ export type OrderPortalPayload = {
     approvedAt: string | null;
     isApproved: boolean;
   };
-  displayStatus: string;
+  displayStatus: WooDisplayStatus;
   finalPayment: {
     amount: string;
     amountValue: number;
@@ -69,6 +73,18 @@ type ClaimPortalResponse = {
   build: OrderPortalPayload;
   sessionToken: string;
 };
+
+export class OrderPortalApiError extends Error {
+  code?: string;
+  status?: number;
+
+  constructor(message: string, options?: { code?: string; status?: number }) {
+    super(message);
+    this.name = "OrderPortalApiError";
+    this.code = options?.code;
+    this.status = options?.status;
+  }
+}
 
 type PaymentLinkResponse = {
   build: OrderPortalPayload;
@@ -121,7 +137,7 @@ export function clearStoredPortalSession(publicOrderNumber: string) {
 
 async function parseResponse<T>(response: Response): Promise<T> {
   const payload = (await response.json().catch(() => null)) as
-    | (T & { message?: string })
+    | (T & { code?: string; data?: { status?: number }; message?: string })
     | null;
 
   if (!response.ok) {
@@ -129,7 +145,15 @@ async function parseResponse<T>(response: Response): Promise<T> {
       payload && typeof payload.message === "string"
         ? payload.message
         : "The order portal request failed.";
-    throw new Error(message);
+    throw new OrderPortalApiError(message, {
+      code: payload && typeof payload.code === "string" ? payload.code : undefined,
+      status:
+        payload &&
+        payload.data &&
+        typeof payload.data.status === "number"
+          ? payload.data.status
+          : response.status,
+    });
   }
 
   return payload as T;
@@ -177,6 +201,27 @@ export async function claimOrderPortal({
     },
     body: JSON.stringify({
       claim_token: claimToken,
+      password,
+      public_order_number: publicOrderNumber,
+    }),
+  });
+
+  return parseResponse<ClaimPortalResponse>(response);
+}
+
+export async function loginOrderPortal({
+  password,
+  publicOrderNumber,
+}: {
+  password: string;
+  publicOrderNumber: string;
+}) {
+  const response = await fetch(`${getApiBase()}/portal/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
       password,
       public_order_number: publicOrderNumber,
     }),
