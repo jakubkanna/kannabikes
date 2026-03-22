@@ -19,9 +19,11 @@ export type MeasurementsSectionProps = {
 };
 
 export type BikeDesignSectionProps = {
+  artistNote?: string;
   isApproving: boolean;
   bikeDrawingSrc: string;
   designPreviewSrc: string;
+  designValues?: Record<string, string>;
   currentStage: import("~/lib/mock-order").OrderStage;
   finalAmountLabel: string;
   isSubmitting: boolean;

@@ -9,11 +9,11 @@ const BIKE_COMPONENT_SECTIONS = [
   },
   {
     title: "Front wheel",
-    fields: ["Front rim", "Front hub", "Front tire"],
+    fields: ["Size", "Front rim", "Front hub", "Front tire"],
   },
   {
     title: "Back wheel",
-    fields: ["Rear rim", "Rear hub", "Rear tire"],
+    fields: ["Size", "Rear rim", "Rear hub", "Rear tire"],
   },
   {
     title: "Drivetrain",
@@ -36,42 +36,18 @@ const BIKE_COMPONENT_SECTIONS = [
   },
 ] as const;
 
-const DESIGNER_LED_SAMPLE_SPECIFICATION: Record<string, string> = {
-  "Frameset:Frame": "Custom steel frame, designer recommendation",
-  "Frameset:Fork": "Matched carbon fork",
-  "Frameset:Headset": "Integrated headset",
-  "Frameset:Cockpit": "Compact gravel cockpit",
-  "Front wheel:Front rim": "Light alloy gravel rim",
-  "Front wheel:Front hub": "Sealed bearing front hub",
-  "Front wheel:Front tire": "700x40c all-road tire",
-  "Back wheel:Rear rim": "Light alloy gravel rim",
-  "Back wheel:Rear hub": "Sealed bearing rear hub",
-  "Back wheel:Rear tire": "700x40c all-road tire",
-  "Drivetrain:Crankset": "1x gravel crankset",
-  "Drivetrain:Chainring": "40T narrow-wide chainring",
-  "Drivetrain:Cassette": "10-44 cassette",
-  "Drivetrain:Rear derailleur": "Clutch rear derailleur",
-  "Drivetrain:Chain": "11-speed chain",
-  "Drivetrain:Shifters": "Hydraulic integrated shifters",
-  "Brakes:Front brake": "Hydraulic disc brake",
-  "Brakes:Rear brake": "Hydraulic disc brake",
-  "Brakes:Rotors": "160 mm rotors",
-  "Other:Saddle": "Endurance saddle",
-  "Other:Seatpost": "Setback seatpost",
-  "Other:Pedals": "Flat test pedals",
-  "Other:Accessories": "Tubeless setup, bottle cages",
-};
+const WHEEL_SIZE_OPTIONS = ['32"', '29"', '27.5"', '26"', "700c"] as const;
 
 const GEOMETRY_FIELDS = [
-  { title: "Stack", key: "Geometry:Stack", sampleValue: "603 mm" },
-  { title: "Reach", key: "Geometry:Reach", sampleValue: "392 mm" },
-  { title: "Top tube", key: "Geometry:TopTube", sampleValue: "568 mm" },
-  { title: "Seat tube", key: "Geometry:SeatTube", sampleValue: "545 mm" },
-  { title: "Head tube", key: "Geometry:HeadTube", sampleValue: "172 mm" },
-  { title: "Head angle", key: "Geometry:HeadAngle", sampleValue: "71.5°" },
-  { title: "Seat angle", key: "Geometry:SeatAngle", sampleValue: "73.5°" },
-  { title: "Chainstay", key: "Geometry:Chainstay", sampleValue: "425 mm" },
-  { title: "BB height", key: "Geometry:BBHeight", sampleValue: "285 mm" },
+  { title: "Stack", key: "Geometry:Stack" },
+  { title: "Reach", key: "Geometry:Reach" },
+  { title: "Top tube", key: "Geometry:TopTube" },
+  { title: "Seat tube", key: "Geometry:SeatTube" },
+  { title: "Head tube", key: "Geometry:HeadTube" },
+  { title: "Head angle", key: "Geometry:HeadAngle" },
+  { title: "Seat angle", key: "Geometry:SeatAngle" },
+  { title: "Chainstay", key: "Geometry:Chainstay" },
+  { title: "BB height", key: "Geometry:BBHeight" },
 ] as const;
 
 const DESIGNER_LED_BUDGET_KEY = "Designer:Budget";
@@ -158,8 +134,10 @@ function toggleSelectedValue(value: string | undefined, nextValue: string) {
 }
 
 export function OrderBikeDesignSection({
+  artistNote,
   isApproving,
   bikeDrawingSrc,
+  designValues = {},
   designPreviewSrc,
   currentStage,
   finalAmountLabel,
@@ -221,10 +199,7 @@ export function OrderBikeDesignSection({
   );
   const progressPercent = Math.round((completedFields / totalFields) * 100);
   const resolveSpecificationFieldValue = (fieldKey: string) =>
-    values[fieldKey] ||
-    (specificationMode === "guided_by_designer"
-      ? DESIGNER_LED_SAMPLE_SPECIFICATION[fieldKey]
-      : "");
+    designValues[fieldKey] || values[fieldKey] || "";
   const renderRidingSection = () => (
     <div className="rounded-lg border border-slate-200 bg-white p-4">
       <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -565,33 +540,6 @@ export function OrderBikeDesignSection({
               {values[DESIGNER_LED_BUDGET_KEY] || "-"}
             </p>
           </div>
-
-          {BIKE_COMPONENT_SECTIONS.map((section) => (
-            <div
-              key={section.title}
-              className="mt-5 rounded-lg border border-slate-200 bg-white p-4"
-            >
-              <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
-                {section.title}
-              </h3>
-              <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-                {section.fields.map((field) => {
-                  const fieldKey = `${section.title}:${field}`;
-
-                  return (
-                    <div key={fieldKey}>
-                      <span className="mb-2 block text-sm font-semibold text-slate-700">
-                        {field}
-                      </span>
-                      <p className="text-sm text-slate-900">
-                        {resolveSpecificationFieldValue(fieldKey) || "-"}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
         </>
       ) : specificationMode === "frame_only" ? (
         <div className="mt-5 rounded-lg border border-slate-200 bg-white p-4">
@@ -648,7 +596,7 @@ export function OrderBikeDesignSection({
               {field.title}
             </span>
             <p className="text-sm text-slate-900">
-              {values[field.key] || field.sampleValue}
+              {designValues[field.key] || values[field.key] || "-"}
             </p>
           </div>
         ))}
@@ -659,9 +607,8 @@ export function OrderBikeDesignSection({
     <div className="rounded-lg border border-slate-200 bg-white p-4">
       <h3 className="text-sm font-semibold text-slate-900">From the artist</h3>
       <p className="mt-2 text-sm leading-6 text-slate-600">
-        The geometry and component direction are prepared based on your
-        submitted measurements and project goals. Please review the setup below
-        and approve it if everything looks right.
+        {artistNote ||
+          "The geometry and component direction are prepared based on your submitted measurements and project goals. Please review the setup below and approve it if everything looks right."}
       </p>
       <p className="mt-4 text-sm font-semibold text-slate-900">Jakub Kanna</p>
     </div>
@@ -685,7 +632,7 @@ export function OrderBikeDesignSection({
       <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:p-6">
         <div className="mb-5 shrink-0">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-            Bike design
+            Specification
           </p>
           <h2 className="mt-2 text-xl font-semibold text-slate-900">
             Design waiting for approval
@@ -774,8 +721,8 @@ export function OrderBikeDesignSection({
       <OrderSubmittedSummarySection
         collapsible
         defaultExpanded={!shouldCollapseSubmittedSummary}
-        title="Bike design"
-        heading={isApprovedDesign ? "Approved" : "Specification received"}
+        title="Specification"
+        heading={isApprovedDesign ? "Approved" : "Received"}
         description="Your bike specification has been submitted and recorded for the next design and production steps."
         imageAlt="Bike drawing"
         imageContent={
@@ -826,7 +773,7 @@ export function OrderBikeDesignSection({
     <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:flex md:h-[80vh] md:flex-col md:overflow-hidden md:p-6">
       <div className="mb-5 shrink-0">
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-          Bike design
+          Specification
         </p>
         <h2 className="mt-2 text-xl font-semibold text-slate-900">
           Define the bike specification
@@ -991,18 +938,38 @@ export function OrderBikeDesignSection({
                                   <span className="mb-2 block text-sm font-semibold text-slate-700">
                                     {field}
                                   </span>
-                                  <input
-                                    type="text"
-                                    value={values[fieldKey] ?? ""}
-                                    onChange={(event) =>
-                                      onValueChange(
-                                        fieldKey,
-                                        event.target.value,
-                                      )
-                                    }
-                                    placeholder={`Specify ${field.toLowerCase()}`}
-                                    className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
-                                  />
+                                  {field === "Size" ? (
+                                    <select
+                                      value={values[fieldKey] ?? ""}
+                                      onChange={(event) =>
+                                        onValueChange(
+                                          fieldKey,
+                                          event.target.value,
+                                        )
+                                      }
+                                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
+                                    >
+                                      <option value="">Select wheel size</option>
+                                      {WHEEL_SIZE_OPTIONS.map((option) => (
+                                        <option key={option} value={option}>
+                                          {option}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  ) : (
+                                    <input
+                                      type="text"
+                                      value={values[fieldKey] ?? ""}
+                                      onChange={(event) =>
+                                        onValueChange(
+                                          fieldKey,
+                                          event.target.value,
+                                        )
+                                      }
+                                      placeholder={`Specify ${field.toLowerCase()}`}
+                                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
+                                    />
+                                  )}
                                 </label>
                               );
                             })}

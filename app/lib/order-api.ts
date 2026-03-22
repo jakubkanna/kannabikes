@@ -25,7 +25,11 @@ export type OrderPortalPayload = {
   };
   designState: {
     approvedAt: string | null;
+    artistNote: string;
+    imageUrl: string;
     isApproved: boolean;
+    isReady: boolean;
+    values: Record<string, string>;
   };
   displayStatus: WooDisplayStatus;
   finalPayment: {
@@ -72,6 +76,11 @@ export type OrderPortalPayload = {
 type ClaimPortalResponse = {
   build: OrderPortalPayload;
   sessionToken: string;
+};
+
+type ForgotPasswordResponse = {
+  message: string;
+  success: boolean;
 };
 
 export class OrderPortalApiError extends Error {
@@ -228,6 +237,24 @@ export async function loginOrderPortal({
   });
 
   return parseResponse<ClaimPortalResponse>(response);
+}
+
+export async function requestOrderPortalPasswordReset({
+  publicOrderNumber,
+}: {
+  publicOrderNumber: string;
+}) {
+  const response = await fetch(`${getApiBase()}/portal/forgot-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      public_order_number: publicOrderNumber,
+    }),
+  });
+
+  return parseResponse<ForgotPasswordResponse>(response);
 }
 
 async function authenticatedPortalRequest<T>({

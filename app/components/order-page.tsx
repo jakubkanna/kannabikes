@@ -17,6 +17,7 @@ import {
   getStoredPortalSession,
   loginOrderPortal,
   OrderPortalApiError,
+  requestOrderPortalPasswordReset,
   requestPaymentLink,
   setStoredPortalSession,
   submitMeasurements,
@@ -126,9 +127,11 @@ export function OrderPage({
     getStoredPortalSession(orderNumber),
   );
   const [isLoadingBuild, setIsLoadingBuild] = useState(true);
+  const [isSendingPasswordReset, setIsSendingPasswordReset] = useState(false);
   const [depositPayment, setDepositPayment] = useState<StoredDepositPayment | null>(() =>
     getStoredLastDepositPayment(orderNumber),
   );
+  const [passwordResetNotice, setPasswordResetNotice] = useState<string | null>(null);
   const [bikeSpecification, setBikeSpecification] = useState<Record<string, string>>({});
   const [specificationMode, setSpecificationMode] = useState<
     "guided_by_designer" | "self_specified" | "frame_only" | null
@@ -155,7 +158,7 @@ export function OrderPage({
       ? `${baseUrl}bodies/body-kannabikes-F.svg`
       : `${baseUrl}bodies/body-kannabikes-M.svg`;
   const bikeDrawingSrc = `${baseUrl}bike-drawing.png`;
-  const designPreviewSrc = bikeDrawingSrc;
+  const designPreviewSrc = portalBuild?.designState.imageUrl || bikeDrawingSrc;
   const orderStage: OrderStage = portalBuild?.stage ?? "waiting_for_deposit";
   const isDepositConfirmed = portalBuild?.deposit.isConfirmed ?? false;
   const measurementsUnlocked =
@@ -534,6 +537,27 @@ export function OrderPage({
     }
   };
 
+  const handleForgotPassword = async () => {
+    setIsSendingPasswordReset(true);
+    setLoginError(null);
+    setPasswordResetNotice(null);
+
+    try {
+      const response = await requestOrderPortalPasswordReset({
+        publicOrderNumber: orderNumber,
+      });
+      setPasswordResetNotice(response.message);
+    } catch (error) {
+      setLoginError(
+        error instanceof Error
+          ? error.message
+          : "We could not send a password reset link right now.",
+      );
+    } finally {
+      setIsSendingPasswordReset(false);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-6 md:px-8 md:py-10">
       <SectionStack>
@@ -588,13 +612,24 @@ export function OrderPage({
               {loginError ? (
                 <p className="mt-3 text-sm text-red-600">{loginError}</p>
               ) : null}
+              {passwordResetNotice ? (
+                <p className="mt-3 text-sm text-emerald-700">{passwordResetNotice}</p>
+              ) : null}
               <button
                 type="button"
                 onClick={handlePortalLogin}
                 disabled={isLoggingIn}
                 className="mt-4 inline-flex items-center justify-center rounded-md bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
               >
-                {isLoggingIn ? "Unlocking..." : "Access order"}
+                {isLoggingIn ? "Unlocking..." : "Access"}
+              </button>
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                disabled={isSendingPasswordReset}
+                className="mt-4 ml-4 inline-flex items-center justify-center text-sm font-medium text-slate-700 underline decoration-slate-300 underline-offset-4 transition hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-400"
+              >
+                {isSendingPasswordReset ? "Sending reset link..." : "Forgot password?"}
               </button>
             </div>
           </section>
@@ -650,8 +685,10 @@ export function OrderPage({
             {bikeDesignUnlocked ? (
               <>
                 <OrderBikeDesignSection
+                  artistNote={portalBuild.designState.artistNote}
                   isApproving={isApprovingDesign}
                   bikeDrawingSrc={bikeDrawingSrc}
+                  designValues={portalBuild.designState.values}
                   designPreviewSrc={designPreviewSrc}
                   currentStage={orderStage}
                   finalAmountLabel={portalBuild.finalPayment.amount}
