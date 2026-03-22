@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router";
 import {
   businessOutline,
   cardOutline,
@@ -40,6 +41,7 @@ export function OrderDepositSection({
   isDepositConfirmed,
   isProcessingPayment,
   onAgreementChange,
+  orderNumber,
   onPayDeposit,
 }: {
   agreementAccepted: boolean;
@@ -48,6 +50,7 @@ export function OrderDepositSection({
   isDepositConfirmed: boolean;
   isProcessingPayment: boolean;
   onAgreementChange: (value: boolean) => void;
+  orderNumber: string;
   onPayDeposit: (paymentMethod: DepositPaymentMethod) => void;
 }) {
   const depositPaid = currentStage !== "waiting_for_deposit";
@@ -167,7 +170,7 @@ export function OrderDepositSection({
                         Transfer title
                       </span>
                       <p className="mt-1 font-medium text-slate-900">
-                        Deposit payment for order
+                        {`Deposit payment for order ${orderNumber}`}
                       </p>
                     </div>
                   </div>
@@ -205,13 +208,18 @@ export function OrderDepositSection({
                   continue through the remaining build stages.
                 </p>
               </div>
-              <ion-icon
-                icon={chevronDownOutline}
-                className={`shrink-0 self-center text-[22px] leading-none ${
-                  useSuccessColors ? "text-emerald-700" : "text-slate-500"
-                } transition-transform ${isReceivedExpanded ? "rotate-180" : ""}`}
+              <span
+                className={`shrink-0 self-center transition-transform ${
+                  isReceivedExpanded ? "rotate-180" : ""
+                }`}
                 aria-hidden="true"
-              />
+              >
+                <ion-icon
+                  icon={chevronDownOutline}
+                  className="block h-[22px] w-[22px]"
+                  style={{ color: useSuccessColors ? "#047857" : "#64748b" }}
+                />
+              </span>
             </button>
 
             {isReceivedExpanded && depositPayment ? (
@@ -441,9 +449,16 @@ export function OrderDepositSection({
                 className="mt-0.5"
               />
               <span>
-                I accept the order agreement, deposit terms, and processing of
-                my order data for this bike build. I understand that, once the
-                bike enters production, the deposit becomes non-refundable.
+                I accept the{" "}
+                <Link
+                  to="/privacy-terms"
+                  className="font-medium text-slate-900 underline underline-offset-2"
+                >
+                  order agreement
+                </Link>
+                , deposit terms, and processing of my order data for this bike
+                build. I understand that, once the bike enters production, the
+                deposit becomes non-refundable.
               </span>
             </label>
 

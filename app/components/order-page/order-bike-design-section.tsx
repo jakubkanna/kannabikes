@@ -725,7 +725,7 @@ export function OrderBikeDesignSection({
             </aside>
 
             <aside className="rounded-lg border border-slate-200 bg-slate-50 p-3 md:flex md:h-full md:flex-col md:self-stretch md:p-4">
-              <div className="space-y-4 pb-24 md:flex-1">
+              <div className="space-y-4 md:flex-1 md:overflow-y-auto md:pr-1">
                 <div>
                   <h3 className="text-sm font-semibold text-slate-900">
                     Geometry
@@ -738,11 +738,10 @@ export function OrderBikeDesignSection({
 
                 {renderGeometrySummary()}
                 {renderFinalPriceSummary()}
-
                 {renderArtistMessage()}
               </div>
 
-              <div className="sticky bottom-4 z-10 mt-auto border-t border-slate-200 bg-slate-50/95 pt-4 backdrop-blur-sm">
+              <div className=" shrink-0 border-t border-slate-200 bg-slate-50 py-4 md:sticky md:bottom-0">
                 <button
                   type="button"
                   onClick={onApprove}

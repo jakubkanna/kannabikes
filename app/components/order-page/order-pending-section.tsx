@@ -159,7 +159,7 @@ export function OrderProductionPreviewSection({
           Final payment will cover the cost of materials, specified parts, and
           production of your custom bicycle. Once we receive it, your bike will
           move directly into production and we will provide an estimated
-          delivery time.
+          delivery time. (Usually 4-6 weeks)
         </p>
         <div className="mt-6 grid gap-6 md:grid-cols-[minmax(0,1.7fr)_minmax(280px,1fr)] md:items-start">
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
@@ -438,7 +438,8 @@ export function OrderProductionPreviewSection({
       >
         <p
           className={`text-xs font-semibold uppercase tracking-[0.14em] ${
-            (currentStage === "in_production" || currentStage === "delivered") &&
+            (currentStage === "in_production" ||
+              currentStage === "delivered") &&
             hasProductionHighlight
               ? "text-emerald-700"
               : "text-slate-500"

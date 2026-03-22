@@ -66,13 +66,18 @@ export function OrderSubmittedSummarySection({
               {description}
             </p>
           </div>
-          <ion-icon
-            icon={chevronDownOutline}
-            className={`shrink-0 self-center text-[22px] leading-none transition-transform ${
-              hasSuccessHighlight ? "text-emerald-700" : "text-slate-500"
-            } ${isExpanded ? "rotate-180" : ""}`}
+          <span
+            className={`shrink-0 self-center transition-transform ${
+              isExpanded ? "rotate-180" : ""
+            }`}
             aria-hidden="true"
-          />
+          >
+            <ion-icon
+              icon={chevronDownOutline}
+              className="block h-[22px] w-[22px]"
+              style={{ color: hasSuccessHighlight ? "#047857" : "#64748b" }}
+            />
+          </span>
         </button>
       ) : (
         <div className="mb-5 shrink-0">

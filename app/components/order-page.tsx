@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import measurementArrowsSvgMarkup from "../bodies/measurement-arrows.svg?raw";
 import {
   OrderBikeDesignSection,
   OrderBikeDesignPreviewSection,
@@ -57,6 +56,7 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
   const [isSpecificationSubmitted, setIsSpecificationSubmitted] = useState(false);
   const [isDepositConfirmed, setIsDepositConfirmed] = useState(false);
   const [depositPayment, setDepositPayment] = useState<StoredDepositPayment | null>(null);
+  const [measurementArrowsSvgMarkup, setMeasurementArrowsSvgMarkup] = useState("");
   const [hydratedBikeSpecificationOrderNumber, setHydratedBikeSpecificationOrderNumber] =
     useState<string | null>(null);
   const [orderStage, setOrderStage] = useState<OrderStage>("waiting_for_deposit");
@@ -124,6 +124,27 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
   useEffect(() => {
     document.title = `Order nb. ${orderNumber}`;
   }, [orderNumber]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch(`${baseUrl}bodies/measurement-arrows.svg`)
+      .then((response) => response.text())
+      .then((markup) => {
+        if (!cancelled) {
+          setMeasurementArrowsSvgMarkup(markup);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setMeasurementArrowsSvgMarkup("");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [baseUrl]);
 
   useEffect(() => {
     setOrderStage(getStoredOrderStage(orderNumber));
@@ -236,6 +257,7 @@ export function OrderPage({ orderNumber }: { orderNumber: string }) {
           isDepositConfirmed={isDepositConfirmed}
           isProcessingPayment={isProcessingPayment}
           onAgreementChange={setAgreementAccepted}
+          orderNumber={orderNumber}
           onPayDeposit={handleMockDepositPayment}
         />
 
