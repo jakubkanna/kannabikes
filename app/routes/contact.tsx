@@ -124,11 +124,11 @@ export default function ContactPage() {
             Contact
           </p>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl">
-            Request a quote
+            Get in touch
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600">
-            Send the details of your project and we will get back to you about a
-            custom quote and the next steps for your build.
+            Choose the topic that fits your inquiry and send us the details.
+            We will get back to you with the right next steps.
           </p>
 
           {isSubmitted ? (
@@ -316,9 +316,9 @@ export default function ContactPage() {
                     >
                       privacy information and terms
                     </Link>{" "}
-                    and want Kanna Bikes to contact me regarding my quote
-                    request. My data will be processed for pre-contract
-                    communication and preparation of an offer.
+                    and want Kanna Bikes to contact me regarding my inquiry.
+                    My data will be processed to respond to my message and
+                    handle further communication related to this request.
                   </span>
                 </label>
                 {showValidation && errors.privacyAccepted ? (

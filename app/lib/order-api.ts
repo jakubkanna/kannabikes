@@ -61,6 +61,7 @@ export type OrderPortalPayload = {
     isConfirmed: boolean;
     orderId: number;
     orderStatus: string;
+    paidAt?: string | null;
   };
   measurementState: {
     bodyType: "male" | "female";
@@ -175,7 +176,7 @@ async function parseResponse<T>(response: Response): Promise<T> {
     const message =
       payload && typeof payload.message === "string"
         ? payload.message
-        : "The order portal request failed.";
+        : "The bike configurator request failed.";
     throw new OrderPortalApiError(message, {
       code: payload && typeof payload.code === "string" ? payload.code : undefined,
       status:

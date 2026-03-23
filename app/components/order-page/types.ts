@@ -25,7 +25,9 @@ export type BikeDesignSectionProps = {
   designPreviewSrc: string;
   designValues?: Record<string, string>;
   currentStage: import("~/lib/mock-order").OrderStage;
+  depositOrderStatus: string;
   finalAmountLabel: string;
+  isDepositConfirmed: boolean;
   isSubmitting: boolean;
   isSubmitted: boolean;
   specificationMode:

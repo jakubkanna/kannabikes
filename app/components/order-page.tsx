@@ -47,7 +47,9 @@ export function buildOrderNumber(date: Date) {
   return `${year}${month}${day}01`;
 }
 
-function normalizeMeasurementValues(values: Record<string, string>): MeasurementValues {
+function normalizeMeasurementValues(
+  values: Record<string, string>,
+): MeasurementValues {
   return {
     A: values.A ?? "",
     B: values.B ?? "",
@@ -58,16 +60,39 @@ function normalizeMeasurementValues(values: Record<string, string>): Measurement
   };
 }
 
+function validatePortalPasswordSetup(password: string, repeatPassword: string) {
+  const errors: {
+    password?: string;
+    repeatPassword?: string;
+  } = {};
+
+  if (password.trim().length < 8) {
+    errors.password = "Enter a password with at least 8 characters.";
+  }
+
+  if (repeatPassword.trim().length === 0) {
+    errors.repeatPassword = "Repeat your password.";
+  } else if (password !== repeatPassword) {
+    errors.repeatPassword = "Passwords do not match.";
+  }
+
+  return errors;
+}
+
 function getSessionStoragePaymentKey(orderNumber: string) {
   return `kanna-last-deposit-payment:${orderNumber}`;
 }
 
-function getStoredLastDepositPayment(orderNumber: string): StoredDepositPayment | null {
+function getStoredLastDepositPayment(
+  orderNumber: string,
+): StoredDepositPayment | null {
   if (typeof window === "undefined") {
     return null;
   }
 
-  const stored = window.sessionStorage.getItem(getSessionStoragePaymentKey(orderNumber));
+  const stored = window.sessionStorage.getItem(
+    getSessionStoragePaymentKey(orderNumber),
+  );
 
   if (!stored) {
     return null;
@@ -79,7 +104,8 @@ function getStoredLastDepositPayment(orderNumber: string): StoredDepositPayment 
     if (
       typeof parsed.amount === "string" &&
       typeof parsed.paidAt === "string" &&
-      (parsed.paymentMethod === "stripe" || parsed.paymentMethod === "classic_transfer")
+      (parsed.paymentMethod === "stripe" ||
+        parsed.paymentMethod === "classic_transfer")
     ) {
       return parsed;
     }
@@ -88,7 +114,10 @@ function getStoredLastDepositPayment(orderNumber: string): StoredDepositPayment 
   return null;
 }
 
-function setStoredLastDepositPayment(orderNumber: string, payment: StoredDepositPayment) {
+function setStoredLastDepositPayment(
+  orderNumber: string,
+  payment: StoredDepositPayment,
+) {
   if (typeof window === "undefined") {
     return;
   }
@@ -114,27 +143,42 @@ export function OrderPage({
   const [bodyType, setBodyType] = useState<BodyType>("male");
   const [bodyWeight, setBodyWeight] = useState<string>("");
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  const [isSubmittingMeasurements, setIsSubmittingMeasurements] = useState(false);
-  const [isSubmittingSpecification, setIsSubmittingSpecification] = useState(false);
-  const [isSubmittingFinalPayment, setIsSubmittingFinalPayment] = useState(false);
+  const [isSubmittingMeasurements, setIsSubmittingMeasurements] =
+    useState(false);
+  const [isSubmittingSpecification, setIsSubmittingSpecification] =
+    useState(false);
+  const [isSubmittingFinalPayment, setIsSubmittingFinalPayment] =
+    useState(false);
   const [isApprovingDesign, setIsApprovingDesign] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const [measurementArrowsSvgMarkup, setMeasurementArrowsSvgMarkup] = useState("");
+  const [measurementArrowsSvgMarkup, setMeasurementArrowsSvgMarkup] =
+    useState("");
   const [loginError, setLoginError] = useState<string | null>(null);
   const [loginPassword, setLoginPassword] = useState("");
   const [orderError, setOrderError] = useState<string | null>(null);
-  const [portalBuild, setPortalBuild] = useState<OrderPortalPayload | null>(null);
+  const [depositClaimError, setDepositClaimError] = useState<string | null>(
+    null,
+  );
+  const [portalBuild, setPortalBuild] = useState<OrderPortalPayload | null>(
+    null,
+  );
   const [requiresLogin, setRequiresLogin] = useState(false);
   const [sessionToken, setSessionToken] = useState(() =>
     getStoredPortalSession(orderNumber),
   );
   const [isLoadingBuild, setIsLoadingBuild] = useState(true);
   const [isSendingPasswordReset, setIsSendingPasswordReset] = useState(false);
-  const [depositPayment, setDepositPayment] = useState<StoredDepositPayment | null>(() =>
-    getStoredLastDepositPayment(orderNumber),
+  const [isClaimingAccess, setIsClaimingAccess] = useState(false);
+  const [depositPayment, setDepositPayment] =
+    useState<StoredDepositPayment | null>(() =>
+      getStoredLastDepositPayment(orderNumber),
+    );
+  const [passwordResetNotice, setPasswordResetNotice] = useState<string | null>(
+    null,
   );
-  const [passwordResetNotice, setPasswordResetNotice] = useState<string | null>(null);
-  const [bikeSpecification, setBikeSpecification] = useState<Record<string, string>>({});
+  const [bikeSpecification, setBikeSpecification] = useState<
+    Record<string, string>
+  >({});
   const [specificationMode, setSpecificationMode] = useState<
     "guided_by_designer" | "self_specified" | "frame_only" | null
   >(null);
@@ -146,6 +190,13 @@ export function OrderPage({
     E: "",
     F: "",
   });
+  const [claimPassword, setClaimPassword] = useState("");
+  const [claimRepeatPassword, setClaimRepeatPassword] = useState("");
+  const [claimPasswordTouched, setClaimPasswordTouched] = useState(false);
+  const [claimRepeatPasswordTouched, setClaimRepeatPasswordTouched] =
+    useState(false);
+  const [showClaimPasswordValidation, setShowClaimPasswordValidation] =
+    useState(false);
 
   const activateMeasurement = (key: MeasurementKey) => {
     setActiveMeasurement(key);
@@ -164,7 +215,8 @@ export function OrderPage({
   const orderStage: OrderStage = portalBuild?.stage ?? "waiting_for_deposit";
   const isDepositConfirmed = portalBuild?.deposit.isConfirmed ?? false;
   const measurementsUnlocked =
-    portalBuild?.accessState === "authenticated" && orderStage !== "waiting_for_deposit";
+    portalBuild?.accessState === "authenticated" &&
+    orderStage !== "waiting_for_deposit";
   const measurementsSubmitted =
     portalBuild?.measurementState.isSubmitted ||
     orderStage === "waiting_for_specification" ||
@@ -175,16 +227,7 @@ export function OrderPage({
     orderStage === "in_production" ||
     orderStage === "waiting_for_delivery" ||
     orderStage === "delivered";
-  const bikeDesignUnlocked =
-    isDepositConfirmed &&
-    (orderStage === "waiting_for_specification" ||
-      orderStage === "waiting_for_design" ||
-      orderStage === "waiting_for_design_approval" ||
-      orderStage === "waiting_for_final_payment" ||
-      orderStage === "final_payment_in_review" ||
-      orderStage === "in_production" ||
-      orderStage === "waiting_for_delivery" ||
-      orderStage === "delivered");
+  const bikeDesignUnlocked = measurementsSubmitted;
   const bikeDesignSubmitted =
     portalBuild?.specificationState.isSubmitted ||
     orderStage === "waiting_for_design" ||
@@ -196,6 +239,24 @@ export function OrderPage({
     orderStage === "delivered";
   const headerDisplayStatus =
     portalBuild?.displayStatus ?? getWooDisplayStatus(orderStage);
+  const showHeaderStatus = portalBuild?.accessState === "authenticated";
+  const requiresPasswordReset =
+    portalBuild?.accessState === "claim_required" &&
+    portalBuild.portalClaimed;
+  const claimPasswordErrors = validatePortalPasswordSetup(
+    claimPassword,
+    claimRepeatPassword,
+  );
+  const claimPasswordFieldError =
+    (showClaimPasswordValidation || claimPasswordTouched
+      ? claimPasswordErrors.password
+      : undefined) ??
+    depositClaimError ??
+    undefined;
+  const claimRepeatPasswordFieldError =
+    showClaimPasswordValidation || claimRepeatPasswordTouched
+      ? claimPasswordErrors.repeatPassword
+      : undefined;
 
   useEffect(() => {
     document.title = `Order nb. ${orderNumber}`;
@@ -237,10 +298,11 @@ export function OrderPage({
   useEffect(() => {
     if (
       !portalBuild?.deposit.isConfirmed ||
-      !portalBuild.deposit.paidAt ||
       !portalBuild.deposit.paymentMethod
     ) {
-      return;
+      if (!portalBuild?.deposit.paymentMethod) {
+        return;
+      }
     }
 
     const nextPayment: StoredDepositPayment = {
@@ -333,7 +395,9 @@ export function OrderPage({
   };
 
   const handleToggleGuidelines = (key: string) => {
-    setExpandedGuidelineKey((prev) => (prev === key ? null : (key as MeasurementKey)));
+    setExpandedGuidelineKey((prev) =>
+      prev === key ? null : (key as MeasurementKey),
+    );
   };
 
   const handlePayDeposit = async ({
@@ -347,34 +411,32 @@ export function OrderPage({
       return;
     }
 
+    setDepositClaimError(null);
     setIsProcessingPayment(true);
     setOrderError(null);
 
-    try {
-      let activeSessionToken = sessionToken;
-      let currentBuild = portalBuild;
+    let activeSessionToken = sessionToken;
+    let currentBuild = portalBuild;
 
-      if (portalBuild.accessState === "claim_required") {
-        if (!claimToken) {
-          throw new Error("The claim token is missing.");
-        }
-
-        const claimed = await claimOrderPortal({
-          claimToken,
-          password,
-          publicOrderNumber: orderNumber,
-        });
-
+    if (portalBuild.accessState === "claim_required") {
+      try {
+        const claimed = await claimPortalAccess(password);
         activeSessionToken = claimed.sessionToken;
         currentBuild = claimed.build;
-        setSessionToken(claimed.sessionToken);
-        setStoredPortalSession(orderNumber, claimed.sessionToken);
-        setPortalBuild(claimed.build);
-        window.history.replaceState({}, document.title, `/order/${orderNumber}`);
+      } catch (error) {
+        setDepositClaimError(
+          error instanceof Error
+            ? error.message
+            : "We could not verify your password.",
+        );
+        setIsProcessingPayment(false);
+        return;
       }
+    }
 
+    try {
       if (!activeSessionToken) {
-        throw new Error("A valid portal session is required.");
+        throw new Error("A valid bike configurator session is required.");
       }
 
       const response = await requestPaymentLink({
@@ -405,9 +467,30 @@ export function OrderPage({
     }
   };
 
+  const claimPortalAccess = async (password: string) => {
+    if (!claimToken) {
+      throw new Error("The claim token is missing.");
+    }
+
+    const claimed = await claimOrderPortal({
+      claimToken,
+      password,
+      publicOrderNumber: orderNumber,
+    });
+
+    setSessionToken(claimed.sessionToken);
+    setStoredPortalSession(orderNumber, claimed.sessionToken);
+    setPortalBuild(claimed.build);
+    setRequiresLogin(false);
+    setDepositClaimError(null);
+    window.history.replaceState({}, document.title, `/order/${orderNumber}`);
+
+    return claimed;
+  };
+
   const handleSubmitMeasurements = async () => {
     if (!sessionToken) {
-      setOrderError("A valid portal session is required.");
+      setOrderError("A valid bike configurator session is required.");
       return;
     }
 
@@ -440,7 +523,7 @@ export function OrderPage({
 
   const handleSubmitSpecification = async () => {
     if (!sessionToken || !specificationMode) {
-      setOrderError("A valid portal session is required.");
+      setOrderError("A valid bike configurator session is required.");
       return;
     }
 
@@ -468,7 +551,7 @@ export function OrderPage({
 
   const handleApproveDesign = async () => {
     if (!sessionToken) {
-      setOrderError("A valid portal session is required.");
+      setOrderError("A valid bike configurator session is required.");
       return;
     }
 
@@ -497,7 +580,7 @@ export function OrderPage({
     option: "courier" | "pickup";
   }) => {
     if (!sessionToken) {
-      throw new Error("A valid portal session is required.");
+      throw new Error("A valid bike configurator session is required.");
     }
 
     const response = await requestShippingQuote({
@@ -523,7 +606,7 @@ export function OrderPage({
     option: "courier" | "pickup";
   }) => {
     if (!sessionToken) {
-      setOrderError("A valid portal session is required.");
+      setOrderError("A valid bike configurator session is required.");
       return;
     }
 
@@ -610,6 +693,35 @@ export function OrderPage({
     }
   };
 
+  const handleClaimAccess = async () => {
+    setShowClaimPasswordValidation(true);
+
+    if (Object.keys(claimPasswordErrors).length > 0) {
+      return;
+    }
+
+    setIsClaimingAccess(true);
+    setDepositClaimError(null);
+    setOrderError(null);
+
+    try {
+      await claimPortalAccess(claimPassword);
+      setClaimPassword("");
+      setClaimRepeatPassword("");
+      setClaimPasswordTouched(false);
+      setClaimRepeatPasswordTouched(false);
+      setShowClaimPasswordValidation(false);
+    } catch (error) {
+      setDepositClaimError(
+        error instanceof Error
+          ? error.message
+          : "We could not reset your password right now.",
+      );
+    } finally {
+      setIsClaimingAccess(false);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-6 md:px-8 md:py-10">
       <SectionStack>
@@ -618,9 +730,11 @@ export function OrderPage({
             <h1 className="text-xl font-semibold tracking-tight text-slate-900 md:text-2xl">
               {`Order nb. ${orderNumber}`}
             </h1>
-            <div className="flex items-center md:justify-end">
-              <OrderStatusBadge displayStatus={headerDisplayStatus} />
-            </div>
+            {showHeaderStatus ? (
+              <div className="flex items-center md:justify-end">
+                <OrderStatusBadge displayStatus={headerDisplayStatus} />
+              </div>
+            ) : null}
           </div>
         </header>
 
@@ -632,7 +746,9 @@ export function OrderPage({
 
         {isLoadingBuild && !portalBuild ? (
           <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-sm text-slate-600">Loading your order portal...</p>
+            <p className="text-sm text-slate-600">
+              Loading your bike configurator...
+            </p>
           </section>
         ) : null}
 
@@ -645,8 +761,8 @@ export function OrderPage({
               Enter your order password
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-              This order page is protected. Enter the password created during the
-              deposit step to access the portal.
+              This order page is protected with the password created during the
+              deposit step.
             </p>
             <div className="mt-5 max-w-md">
               <label className="block">
@@ -665,7 +781,9 @@ export function OrderPage({
                 <p className="mt-3 text-sm text-red-600">{loginError}</p>
               ) : null}
               {passwordResetNotice ? (
-                <p className="mt-3 text-sm text-emerald-700">{passwordResetNotice}</p>
+                <p className="mt-3 text-sm text-emerald-700">
+                  {passwordResetNotice}
+                </p>
               ) : null}
               <button
                 type="button"
@@ -681,13 +799,86 @@ export function OrderPage({
                 disabled={isSendingPasswordReset}
                 className="mt-4 ml-4 inline-flex items-center justify-center text-sm font-medium text-slate-700 underline decoration-slate-300 underline-offset-4 transition hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-400"
               >
-                {isSendingPasswordReset ? "Sending reset link..." : "Forgot password?"}
+                {isSendingPasswordReset
+                  ? "Sending reset link..."
+                  : "Forgot password?"}
               </button>
             </div>
           </section>
         ) : null}
 
-        {portalBuild ? (
+        {!isLoadingBuild && requiresPasswordReset ? (
+          <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+              Reset password
+            </p>
+            <h2 className="mt-2 text-xl font-semibold text-slate-900">
+              Create a new order password
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+              Use this secure link to set a new password and access your order
+              page again.
+            </p>
+            <div className="mt-5 max-w-md space-y-4">
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold text-slate-700">
+                  New password
+                </span>
+                <input
+                  type="password"
+                  value={claimPassword}
+                  onBlur={() => setClaimPasswordTouched(true)}
+                  onChange={(event) => setClaimPassword(event.target.value)}
+                  placeholder="Enter a new password"
+                  className={`w-full rounded-md bg-white px-3 py-2 text-slate-900 outline-none transition focus:ring-2 ${
+                    claimPasswordFieldError
+                      ? "border border-red-300 focus:border-red-400 focus:ring-red-100"
+                      : "border border-slate-300 focus:border-yellow-400 focus:ring-yellow-200"
+                  }`}
+                />
+                {claimPasswordFieldError ? (
+                  <p className="mt-2 text-sm text-red-600">
+                    {claimPasswordFieldError}
+                  </p>
+                ) : null}
+              </label>
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold text-slate-700">
+                  Repeat new password
+                </span>
+                <input
+                  type="password"
+                  value={claimRepeatPassword}
+                  onBlur={() => setClaimRepeatPasswordTouched(true)}
+                  onChange={(event) =>
+                    setClaimRepeatPassword(event.target.value)
+                  }
+                  placeholder="Repeat your new password"
+                  className={`w-full rounded-md bg-white px-3 py-2 text-slate-900 outline-none transition focus:ring-2 ${
+                    claimRepeatPasswordFieldError
+                      ? "border border-red-300 focus:border-red-400 focus:ring-red-100"
+                      : "border border-slate-300 focus:border-yellow-400 focus:ring-yellow-200"
+                  }`}
+                />
+                {claimRepeatPasswordFieldError ? (
+                  <p className="mt-2 text-sm text-red-600">
+                    {claimRepeatPasswordFieldError}
+                  </p>
+                ) : null}
+              </label>
+              <button
+                type="button"
+                onClick={handleClaimAccess}
+                disabled={isClaimingAccess}
+                className="inline-flex items-center justify-center rounded-md bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+              >
+                {isClaimingAccess ? "Saving..." : "Save password and access"}
+              </button>
+            </div>
+          </section>
+        ) : null}
+
+        {portalBuild && !requiresPasswordReset ? (
           <>
             <OrderDepositSection
               agreementAccepted={agreementAccepted}
@@ -697,10 +888,13 @@ export function OrderPage({
               depositAmountLabel={portalBuild.deposit.amount}
               depositAmountValue={portalBuild.deposit.amountValue}
               depositCurrency={portalBuild.deposit.currency}
+              depositOrderStatus={portalBuild.deposit.orderStatus}
               depositPayment={depositPayment}
+              claimError={depositClaimError}
               isDepositConfirmed={isDepositConfirmed}
               isProcessingPayment={isProcessingPayment}
               onAgreementChange={setAgreementAccepted}
+              onClaimErrorChange={setDepositClaimError}
               orderNumber={orderNumber}
               onPayDeposit={handlePayDeposit}
               requiresClaim={portalBuild.accessState === "claim_required"}
@@ -718,7 +912,9 @@ export function OrderPage({
                 measurementKeys={MEASUREMENT_KEYS}
                 selectedBodySrc={selectedBodySrc}
                 values={values}
-                onActivateMeasurement={(key) => activateMeasurement(key as MeasurementKey)}
+                onActivateMeasurement={(key) =>
+                  activateMeasurement(key as MeasurementKey)
+                }
                 onDeactivateMeasurement={deactivateMeasurement}
                 onBodyTypeChange={setBodyType}
                 onBodyWeightChange={setBodyWeight}
@@ -734,7 +930,9 @@ export function OrderPage({
               />
             )}
 
-            {measurementsUnlocked && !bikeDesignUnlocked ? <OrderBikeDesignPreviewSection /> : null}
+            {measurementsUnlocked && !bikeDesignUnlocked ? (
+              <OrderBikeDesignPreviewSection />
+            ) : null}
 
             {bikeDesignUnlocked ? (
               <>
@@ -745,7 +943,9 @@ export function OrderPage({
                   designValues={portalBuild.designState.values}
                   designPreviewSrc={designPreviewSrc}
                   currentStage={orderStage}
+                  depositOrderStatus={portalBuild.deposit.orderStatus}
                   finalAmountLabel={portalBuild.finalPayment.amount}
+                  isDepositConfirmed={isDepositConfirmed}
                   isSubmitting={isSubmittingSpecification}
                   isSubmitted={bikeDesignSubmitted}
                   specificationMode={specificationMode}
@@ -760,11 +960,13 @@ export function OrderPage({
                   depositAmountValue={portalBuild.deposit.amountValue}
                   finalAmountValue={portalBuild.finalPayment.amountValue}
                   currency={portalBuild.finalPayment.currency}
+                  finalPaymentPaidAt={portalBuild.finalPayment.paidAt}
                   initialShippingState={{
                     address: portalBuild.shippingState.address,
                     option: portalBuild.shippingState.option,
                     shippingCost: portalBuild.shippingState.shippingCost,
-                    shippingRateLabel: portalBuild.shippingState.shippingRateLabel,
+                    shippingRateLabel:
+                      portalBuild.shippingState.shippingRateLabel,
                     trackingUrl: portalBuild.shippingState.trackingUrl,
                   }}
                   onCalculateShipping={handleRequestShippingQuote}

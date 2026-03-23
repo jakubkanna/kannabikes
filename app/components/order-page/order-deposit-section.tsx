@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router";
-import { businessOutline, cardOutline } from "ionicons/icons";
 import type {
   DepositPaymentMethod,
   OrderStage,
@@ -31,21 +30,25 @@ function validatePasswords(password: string, repeatPassword: string) {
 export function OrderDepositSection({
   agreementAccepted,
   availablePaymentMethods,
+  claimError,
   customerDetails,
   currentStage,
   depositAmountLabel,
   depositAmountValue,
   depositCurrency,
+  depositOrderStatus,
   depositPayment,
   isDepositConfirmed,
   isProcessingPayment,
   onAgreementChange,
+  onClaimErrorChange,
   orderNumber,
   onPayDeposit,
   requiresClaim,
 }: {
   agreementAccepted: boolean;
   availablePaymentMethods: DepositPaymentMethod[];
+  claimError: string | null;
   customerDetails: {
     email: string;
     fullName: string;
@@ -56,10 +59,12 @@ export function OrderDepositSection({
   depositAmountLabel: string;
   depositAmountValue: number;
   depositCurrency: string;
+  depositOrderStatus: string;
   depositPayment: StoredDepositPayment | null;
   isDepositConfirmed: boolean;
   isProcessingPayment: boolean;
   onAgreementChange: (value: boolean) => void;
+  onClaimErrorChange: (value: string | null) => void;
   orderNumber: string;
   onPayDeposit: (payload: {
     password: string;
@@ -70,14 +75,31 @@ export function OrderDepositSection({
   const depositPaid = currentStage !== "waiting_for_deposit";
   const [hasSuccessHighlight, setHasSuccessHighlight] = useState(false);
   const [isReceivedExpanded, setIsReceivedExpanded] = useState(false);
-  const [paymentMethod, setPaymentMethod] =
-    useState<DepositPaymentMethod>(availablePaymentMethods[0] ?? "stripe");
+  const [paymentMethod, setPaymentMethod] = useState<DepositPaymentMethod>(
+    availablePaymentMethods[0] ?? "stripe",
+  );
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
+  const [passwordTouched, setPasswordTouched] = useState(false);
+  const [repeatPasswordTouched, setRepeatPasswordTouched] = useState(false);
   const [showPasswordValidation, setShowPasswordValidation] = useState(false);
   const passwordErrors = validatePasswords(password, repeatPassword);
   const hasPasswordErrors = Object.keys(passwordErrors).length > 0;
+  const passwordFieldError =
+    (showPasswordValidation || passwordTouched
+      ? passwordErrors.password
+      : undefined) ??
+    claimError ??
+    undefined;
+  const repeatPasswordFieldError =
+    showPasswordValidation || repeatPasswordTouched
+      ? passwordErrors.repeatPassword
+      : undefined;
   const depositTaxSummary = getInclusiveTaxBreakdown(depositAmountValue);
+  const hasDepositReachedPaidState =
+    isDepositConfirmed ||
+    depositOrderStatus === "processing" ||
+    depositOrderStatus === "completed";
 
   useEffect(() => {
     if (availablePaymentMethods.includes(paymentMethod)) {
@@ -88,7 +110,7 @@ export function OrderDepositSection({
   }, [availablePaymentMethods, paymentMethod]);
 
   useEffect(() => {
-    if (!isDepositConfirmed || !depositPayment) {
+    if (!hasDepositReachedPaidState || !depositPayment) {
       setHasSuccessHighlight(false);
       return;
     }
@@ -99,7 +121,7 @@ export function OrderDepositSection({
     }, DEPOSIT_SUCCESS_HIGHLIGHT_DELAY_MS);
 
     return () => window.clearTimeout(timeoutId);
-  }, [depositPayment, isDepositConfirmed]);
+  }, [depositPayment, hasDepositReachedPaidState]);
 
   const handlePayDeposit = () => {
     setShowPasswordValidation(true);
@@ -115,7 +137,7 @@ export function OrderDepositSection({
   };
 
   if (depositPaid) {
-    const isDepositStillUnderReview = !isDepositConfirmed;
+    const isDepositStillUnderReview = !hasDepositReachedPaidState;
     const useSuccessColors = !isDepositStillUnderReview && hasSuccessHighlight;
 
     return (
@@ -254,19 +276,25 @@ export function OrderDepositSection({
 
             {isReceivedExpanded && depositPayment ? (
               <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
-                <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-                  <div>
-                    <span className="mb-2 block text-sm font-semibold text-slate-700">
-                      Payment date
-                    </span>
-                    <p className="text-sm text-slate-900">
-                      {new Intl.DateTimeFormat("en-GB", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      }).format(new Date(depositPayment.paidAt))}
-                    </p>
-                  </div>
+                <div
+                  className={`grid grid-cols-1 gap-x-6 gap-y-4 ${
+                    depositPayment.paidAt ? "sm:grid-cols-2" : ""
+                  }`}
+                >
+                  {depositPayment.paidAt ? (
+                    <div>
+                      <span className="mb-2 block text-sm font-semibold text-slate-700">
+                        Payment date
+                      </span>
+                      <p className="text-sm text-slate-900">
+                        {new Intl.DateTimeFormat("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        }).format(new Date(depositPayment.paidAt))}
+                      </p>
+                    </div>
+                  ) : null}
                   <div>
                     <span className="mb-2 block text-sm font-semibold text-slate-700">
                       Amount
@@ -355,17 +383,20 @@ export function OrderDepositSection({
                     <input
                       type="password"
                       value={password}
-                      onChange={(event) => setPassword(event.target.value)}
-                      onFocus={() => setShowPasswordValidation(false)}
+                      onChange={(event) => {
+                        setPassword(event.target.value);
+                        onClaimErrorChange(null);
+                      }}
+                      onBlur={() => setPasswordTouched(true)}
                       className={`w-full rounded-md bg-white px-3 py-2 text-slate-900 outline-none transition focus:ring-2 ${
-                        showPasswordValidation && passwordErrors.password
+                        passwordFieldError
                           ? "border border-red-300 focus:border-red-400 focus:ring-red-100"
                           : "border border-slate-300 focus:border-yellow-400 focus:ring-yellow-200"
                       }`}
                     />
-                    {showPasswordValidation && passwordErrors.password ? (
+                    {passwordFieldError ? (
                       <p className="mt-2 text-sm text-red-600">
-                        {passwordErrors.password}
+                        {passwordFieldError}
                       </p>
                     ) : null}
                   </label>
@@ -377,26 +408,27 @@ export function OrderDepositSection({
                     <input
                       type="password"
                       value={repeatPassword}
-                      onChange={(event) => setRepeatPassword(event.target.value)}
-                      onFocus={() => setShowPasswordValidation(false)}
+                      onChange={(event) => {
+                        setRepeatPassword(event.target.value);
+                        onClaimErrorChange(null);
+                      }}
+                      onBlur={() => setRepeatPasswordTouched(true)}
                       className={`w-full rounded-md bg-white px-3 py-2 text-slate-900 outline-none transition focus:ring-2 ${
-                        showPasswordValidation && passwordErrors.repeatPassword
+                        repeatPasswordFieldError
                           ? "border border-red-300 focus:border-red-400 focus:ring-red-100"
                           : "border border-slate-300 focus:border-yellow-400 focus:ring-yellow-200"
                       }`}
                     />
-                    {showPasswordValidation && passwordErrors.repeatPassword ? (
+                    {repeatPasswordFieldError ? (
                       <p className="mt-2 text-sm text-red-600">
-                        {passwordErrors.repeatPassword}
+                        {repeatPasswordFieldError}
                       </p>
                     ) : null}
                   </label>
 
-                  <p className="sm:col-span-2 text-sm leading-6 text-slate-600">
-                    Use at least 8 characters. A strong password should include
-                    a mix of uppercase and lowercase letters, numbers, and a
-                    special character. You will need this password to track
-                    your order status, so save it securely.
+                  <p className="sm:col-span-2 text-xs leading-6 text-slate-600">
+                    Use at least 8 characters. You will need this password to
+                    track your order status, so save it securely.
                   </p>
                 </>
               ) : null}
@@ -411,9 +443,11 @@ export function OrderDepositSection({
                   <PaymentOption
                     key={method}
                     icon={
-                      method === "classic_transfer"
-                        ? businessOutline
-                        : cardOutline
+                      method === "classic_transfer" ? (
+                        <BankTransferIcon />
+                      ) : (
+                        <StripeCardIcon />
+                      )
                     }
                     isSelected={paymentMethod === method}
                     onSelect={() => setPaymentMethod(method)}
@@ -436,27 +470,16 @@ export function OrderDepositSection({
               Order summary
             </p>
             <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">
-                    {customerDetails.orderTitle || "Custom Kanna Bike Build"}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-500">
-                    Deposit amount due now
-                  </p>
-                </div>
-                <p className="text-lg font-semibold text-slate-900">
-                  {depositAmountLabel}
+              <div>
+                <p className="text-sm font-semibold text-slate-900">
+                  {customerDetails.orderTitle || "Custom Kanna Bike Build"}
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  Deposit amount due now
                 </p>
               </div>
 
               <div className="mt-4 border-t border-slate-200 pt-4 text-sm text-slate-600">
-                <div className="flex items-center justify-between gap-4">
-                  <span>Subtotal</span>
-                  <span className="font-medium text-slate-900">
-                    {depositAmountLabel}
-                  </span>
-                </div>
                 <div className="mt-2 flex items-center justify-between gap-4">
                   <span>Net amount</span>
                   <span className="font-medium text-slate-900">
@@ -514,16 +537,10 @@ export function OrderDepositSection({
             <button
               type="button"
               onClick={handlePayDeposit}
-              disabled={
-                !agreementAccepted ||
-                isProcessingPayment ||
-                (requiresClaim && hasPasswordErrors)
-              }
+              disabled={!agreementAccepted || isProcessingPayment}
               className="mt-4 inline-flex w-full items-center justify-center rounded-md bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
             >
-              {isProcessingPayment
-                ? "Preparing payment..."
-                : "Pay Deposit"}
+              {isProcessingPayment ? "Preparing payment..." : "Pay Deposit"}
             </button>
           </div>
         </div>
@@ -540,7 +557,7 @@ function PaymentOption({
   title,
 }: {
   helper: string;
-  icon: string;
+  icon: ReactNode;
   isSelected: boolean;
   onSelect: () => void;
   title: string;
@@ -558,13 +575,14 @@ function PaymentOption({
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
-          <ion-icon
-            icon={icon}
-            className={`shrink-0 text-[18px] ${
+          <span
+            className={`shrink-0 ${
               isSelected ? "text-white" : "text-slate-500"
             }`}
             aria-hidden="true"
-          />
+          >
+            {icon}
+          </span>
           <div className="min-w-0">
             <p className="text-sm font-semibold">{title}</p>
             <p
@@ -586,5 +604,77 @@ function PaymentOption({
         />
       </div>
     </button>
+  );
+}
+
+function StripeCardIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="block h-5 w-5" fill="none">
+      <rect
+        x="3.25"
+        y="5.25"
+        width="17.5"
+        height="13.5"
+        rx="2.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M3.75 9.25H20.25"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M7.5 14.75H11.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function BankTransferIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="block h-5 w-5" fill="none">
+      <path
+        d="M4 9L12 4L20 9"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M5.5 9.75V17.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M9.5 9.75V17.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M14.5 9.75V17.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M18.5 9.75V17.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M4 19.5H20"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }

@@ -1,0 +1,14 @@
+{
+  "folders": [
+	{
+		"path": "."
+	},
+	{
+		"path": "../wp-plugins"
+	},
+	{
+		"path": "../../../Library/Mobile Documents/com~apple~CloudDocs/Documents/Containers/wordpress-docker-compose"
+	}
+],
+  "settings": {}
+}

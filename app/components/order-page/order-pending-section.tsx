@@ -163,6 +163,23 @@ function PendingValue() {
   );
 }
 
+function formatPaymentDate(value?: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(date);
+}
+
 export function OrderPendingSection({
   description,
   eyebrow,
@@ -214,6 +231,7 @@ export function OrderProductionPreviewSection({
   depositAmountValue,
   finalAmountValue,
   currency,
+  finalPaymentPaidAt,
   initialShippingState,
   onCalculateShipping,
   isSubmittingFinalPayment,
@@ -223,6 +241,7 @@ export function OrderProductionPreviewSection({
   depositAmountValue: number;
   finalAmountValue: number;
   currency: string;
+  finalPaymentPaidAt?: string | null;
   initialShippingState?: {
     address: OrderShippingAddress;
     option: "courier" | "pickup";
@@ -326,6 +345,8 @@ export function OrderProductionPreviewSection({
   const hasShippingQuote = quotedShipping !== null && quotedShipping.shippingCost !== null;
   const totalAmountBeforeDeposit = finalAmountValue + depositAmountValue;
   const totalWithShipping = finalAmountValue + shippingCost;
+  const paidAmountValue = finalAmountValue + (initialShippingState?.shippingCost ?? 0);
+  const formattedPaymentDate = formatPaymentDate(finalPaymentPaidAt);
   const balanceTaxSummary = getInclusiveTaxBreakdown(finalAmountValue);
   const shippingTaxSummary =
     quotedShipping?.shippingCost !== null && quotedShipping?.shippingCost !== undefined
@@ -950,6 +971,26 @@ export function OrderProductionPreviewSection({
               </div>
             </div>
           ) : null}
+        </div>
+        <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+          <div className={`grid gap-4 ${formattedPaymentDate ? "sm:grid-cols-2" : ""}`}>
+            {formattedPaymentDate ? (
+              <div>
+                <span className="mb-2 block text-sm font-semibold text-slate-700">
+                  Payment date
+                </span>
+                <p className="text-sm text-slate-900">{formattedPaymentDate}</p>
+              </div>
+            ) : null}
+            <div>
+              <span className="mb-2 block text-sm font-semibold text-slate-700">
+                Amount paid by customer
+              </span>
+              <p className="text-sm text-slate-900">
+                {formatOrderMoney(paidAmountValue, currency)}
+              </p>
+            </div>
+          </div>
         </div>
       </section>
     );

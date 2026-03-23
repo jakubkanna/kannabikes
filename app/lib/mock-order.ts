@@ -47,7 +47,7 @@ export type DepositPaymentMethod = "stripe" | "classic_transfer";
 
 export type StoredDepositPayment = {
   amount: string;
-  paidAt: string;
+  paidAt: string | null;
   paymentMethod: DepositPaymentMethod;
 };
 
@@ -242,7 +242,7 @@ export function getStoredDepositPayment(orderNumber: string): StoredDepositPayme
 
     if (
       typeof parsed.amount !== "string" ||
-      typeof parsed.paidAt !== "string" ||
+      (parsed.paidAt !== null && typeof parsed.paidAt !== "string") ||
       paymentMethod === null
     ) {
       return null;

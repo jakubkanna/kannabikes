@@ -72,6 +72,11 @@ const RIDING_FIELDS = [
     key: "Riding:BikeType",
     options: ["mtb", "gravel", "road", "track", "mixed", "other"],
   },
+  {
+    title: "Frame material",
+    key: "Riding:FrameMaterial",
+    options: ["steel", "titanium"],
+  },
 ] as const;
 const RIDING_NOTES_KEY = "Riding:AdditionalNotes";
 const PAINTJOB_ROUTE_KEY = "Paintjob:Route";
@@ -140,7 +145,9 @@ export function OrderBikeDesignSection({
   designValues = {},
   designPreviewSrc,
   currentStage,
+  depositOrderStatus,
   finalAmountLabel,
+  isDepositConfirmed,
   isSubmitting,
   isSubmitted,
   specificationMode,
@@ -152,6 +159,12 @@ export function OrderBikeDesignSection({
 }: BikeDesignSectionProps) {
   const isWaitingForDesign = currentStage === "waiting_for_design";
   const isWaitingForApproval = currentStage === "waiting_for_design_approval";
+  const hasDepositReachedPaidState =
+    isDepositConfirmed ||
+    depositOrderStatus === "processing" ||
+    depositOrderStatus === "completed";
+  const isPaymentVerificationPending =
+    isWaitingForDesign && !hasDepositReachedPaidState;
   const isApprovedDesign =
     currentStage === "waiting_for_final_payment" ||
     currentStage === "in_production" ||
@@ -648,9 +661,7 @@ export function OrderBikeDesignSection({
       <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
         {title}
       </h3>
-      <p className="mt-3 text-sm text-slate-900">
-        {finalAmountLabel}
-      </p>
+      <p className="mt-3 text-sm text-slate-900">{finalAmountLabel}</p>
       <p className="mt-2 text-sm leading-6 text-slate-600">
         Final amount after deducting the deposit already paid.
       </p>
@@ -772,11 +783,14 @@ export function OrderBikeDesignSection({
               <div className="absolute inset-0 flex items-center justify-center bg-white/35 p-6">
                 <div className="max-w-sm rounded-xl border border-slate-200 bg-white/95 px-5 py-4 text-center shadow-sm backdrop-blur-sm">
                   <p className="mt-2 text-lg font-semibold text-slate-900">
-                    {ORDER_STAGE_DEFINITIONS[currentStage].label}
+                    {isPaymentVerificationPending
+                      ? "We are verifying your payment"
+                      : "We are designing your bicycle"}
                   </p>
                   <p className="mt-2 text-sm leading-6 text-slate-600">
-                    We are working on your custom bicycle. Once it's ready you
-                    will be notified and asked for approval.
+                    {isPaymentVerificationPending
+                      ? "Your specification has been received. Once the deposit is verified, we will move your bike into the design stage."
+                      : "Your measurements and specification have been received, and we are now working on the design of your bicycle. Once it is ready, you will be asked for approval."}
                   </p>
                 </div>
               </div>
@@ -982,7 +996,9 @@ export function OrderBikeDesignSection({
                                       }
                                       className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                                     >
-                                      <option value="">Select wheel size</option>
+                                      <option value="">
+                                        Select wheel size
+                                      </option>
                                       {WHEEL_SIZE_OPTIONS.map((option) => (
                                         <option key={option} value={option}>
                                           {option}
