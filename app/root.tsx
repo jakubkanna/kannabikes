@@ -80,8 +80,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   const location = useLocation();
   const { pathname } = location;
-  const showHeader =
-    pathname !== "/personalization" && !pathname.startsWith("/order/");
+  const showHeader = pathname !== "/personalization";
 
   return (
     <>

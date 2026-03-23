@@ -27,14 +27,14 @@ export default function Home() {
   }, [baseUrl]);
 
   return (
-    <main className="h-screen overflow-hidden px-6">
+    <main className="relative h-[100svh] overflow-hidden px-6">
       <div
         ref={backgroundRef}
         aria-hidden="true"
-        className="fixed inset-0 -z-10 pointer-events-none bg-cover bg-center will-change-transform translate-x-[var(--bg-x,0px)] translate-y-[var(--bg-y,0px)] scale-[1.05]"
+        className="absolute inset-0 -z-10 pointer-events-none bg-cover bg-center will-change-transform translate-x-[var(--bg-x,0px)] translate-y-[var(--bg-y,0px)] scale-[1.05]"
         style={{ backgroundImage: `url(${bgSrc})` }}
       />
-      <div className="fixed inset-0 flex flex-col items-center justify-center px-6 sm:px-0">
+      <div className="absolute inset-0 flex flex-col items-center justify-center px-6 sm:px-0">
         <a
           href="https://instagram.com/kannabikes"
           target="_blank"

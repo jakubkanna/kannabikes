@@ -2,6 +2,82 @@
 
 :root {
   --kanna-yellow: #ffd400;
+  --site-header-height: 4.5rem;
+}
+
+.blog-content > * + * {
+  margin-top: 1rem;
+}
+
+.blog-content h2,
+.blog-content h3,
+.blog-content h4 {
+  color: #0f172a;
+  font-weight: 600;
+  line-height: 1.2;
+  margin-top: 2.5rem;
+}
+
+.blog-content h2 {
+  font-size: 1.875rem;
+}
+
+.blog-content h3 {
+  font-size: 1.5rem;
+}
+
+.blog-content h4 {
+  font-size: 1.25rem;
+}
+
+.blog-content p,
+.blog-content li,
+.blog-content blockquote {
+  color: #475569;
+  line-height: 1.8;
+}
+
+.blog-content a {
+  color: #0f172a;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+
+.blog-content ul,
+.blog-content ol {
+  padding-left: 1.25rem;
+}
+
+.blog-content ul {
+  list-style: disc;
+}
+
+.blog-content ol {
+  list-style: decimal;
+}
+
+.blog-content blockquote {
+  border-left: 3px solid #ffd400;
+  padding-left: 1rem;
+}
+
+.blog-content img {
+  border-radius: 1rem;
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
+.blog-content figure,
+.blog-content iframe {
+  margin-top: 1.5rem;
+}
+
+.blog-content iframe {
+  aspect-ratio: 16 / 9;
+  height: auto;
+  width: 100%;
 }
 
 .measurement-svg-wrap {

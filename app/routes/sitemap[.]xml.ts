@@ -14,7 +14,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     : requestUrl.origin;
   const siteUrl = normalizeBaseUrl(envSiteUrl ?? origin);
 
-  const pages = ["/", "/contact", "/privacy-terms"];
+  const pages = ["/", "/about", "/blog", "/contact", "/privacy-terms"];
   const now = new Date().toISOString();
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
