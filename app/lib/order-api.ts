@@ -61,6 +61,7 @@ export type OrderPortalPayload = {
     isConfirmed: boolean;
     orderId: number;
     orderStatus: string;
+    paymentMethod?: DepositPaymentMethod | null;
     paidAt?: string | null;
   };
   measurementState: {

@@ -1,11 +1,12 @@
 import { City, Country } from "country-state-city";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useState, type ReactNode } from "react";
 import { Link } from "react-router";
 import validator from "validator";
 import { Spinner } from "~/components/spinner";
 import {
   MOCK_DELIVERED_ON,
   MOCK_ESTIMATED_DELIVERY_TIME,
+  type DepositPaymentMethod,
   type OrderStage,
 } from "~/lib/mock-order";
 import type { OrderShippingAddress, OrderShippingState } from "~/lib/order-api";
@@ -180,6 +181,188 @@ function formatPaymentDate(value?: string | null) {
   }).format(date);
 }
 
+function PaymentOption({
+  helper,
+  icon,
+  isSelected,
+  onSelect,
+  title,
+}: {
+  helper: string;
+  icon: ReactNode;
+  isSelected: boolean;
+  onSelect: () => void;
+  title: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-pressed={isSelected}
+      className={`rounded-lg border px-3 py-3 text-left transition ${
+        isSelected
+          ? "border-slate-900 bg-slate-900 text-white"
+          : "border-slate-200 bg-white text-slate-900 hover:border-slate-300"
+      }`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-start gap-3">
+          <span
+            className={`shrink-0 ${
+              isSelected ? "text-white" : "text-slate-500"
+            }`}
+            aria-hidden="true"
+          >
+            {icon}
+          </span>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold">{title}</p>
+            <p
+              className={`mt-1 text-xs ${
+                isSelected ? "text-slate-300" : "text-slate-500"
+              }`}
+            >
+              {helper}
+            </p>
+          </div>
+        </div>
+        <span
+          className={`mt-0.5 h-4 w-4 rounded-full border ${
+            isSelected
+              ? "border-white bg-white ring-4 ring-slate-700"
+              : "border-slate-300 bg-white"
+          }`}
+          aria-hidden="true"
+        />
+      </div>
+    </button>
+  );
+}
+
+function StripeCardIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="block h-5 w-5" fill="none">
+      <rect
+        x="3.25"
+        y="5.25"
+        width="17.5"
+        height="13.5"
+        rx="2.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M3.75 9.25H20.25"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M7.5 14.75H11.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function BankTransferIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="block h-5 w-5" fill="none">
+      <path
+        d="M4 9L12 4L20 9"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M5.5 9.75V17.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M9.5 9.75V17.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M14.5 9.75V17.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M18.5 9.75V17.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M4 19.5H20"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function BankTransferDetails({
+  amountLabel,
+  orderNumber,
+}: {
+  amountLabel: string;
+  orderNumber: string;
+}) {
+  return (
+    <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+      <p className="text-sm font-semibold text-slate-900">
+        Bank transfer details
+      </p>
+      <div className="mt-3 grid gap-3 text-sm text-slate-700 sm:grid-cols-2">
+        <div>
+          <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+            Account holder
+          </span>
+          <p className="mt-1">Kanna Bikes Sp. z o.o.</p>
+        </div>
+        <div>
+          <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+            Amount
+          </span>
+          <p className="mt-1">{amountLabel}</p>
+        </div>
+        <div>
+          <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+            IBAN
+          </span>
+          <p className="mt-1 font-medium text-slate-900">
+            PL12 3456 7890 1234 5678 9012 3456
+          </p>
+        </div>
+        <div>
+          <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+            SWIFT / BIC
+          </span>
+          <p className="mt-1 font-medium text-slate-900">PKOPPLPW</p>
+        </div>
+        <div className="sm:col-span-2">
+          <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+            Transfer title
+          </span>
+          <p className="mt-1 font-medium text-slate-900">
+            {`Final payment for order ${orderNumber}`}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function OrderPendingSection({
   description,
   eyebrow,
@@ -227,20 +410,27 @@ export function OrderBikeDesignPreviewSection() {
 }
 
 export function OrderProductionPreviewSection({
+  availablePaymentMethods,
   currentStage,
   depositAmountValue,
   finalAmountValue,
   currency,
+  finalPaymentMethod,
+  finalPaymentOrderStatus,
   finalPaymentPaidAt,
   initialShippingState,
   onCalculateShipping,
   isSubmittingFinalPayment,
+  orderNumber,
   onPayFinalAmount,
 }: {
+  availablePaymentMethods: DepositPaymentMethod[];
   currentStage: OrderStage;
   depositAmountValue: number;
   finalAmountValue: number;
   currency: string;
+  finalPaymentMethod?: DepositPaymentMethod | null;
+  finalPaymentOrderStatus?: string;
   finalPaymentPaidAt?: string | null;
   initialShippingState?: {
     address: OrderShippingAddress;
@@ -255,8 +445,10 @@ export function OrderProductionPreviewSection({
     option: "courier" | "pickup";
   }) => Promise<OrderShippingState>;
   isSubmittingFinalPayment: boolean;
+  orderNumber: string;
   onPayFinalAmount: (details: {
     address: OrderShippingAddress;
+    paymentMethod: DepositPaymentMethod;
     option: "courier" | "pickup";
   }) => void;
 }) {
@@ -264,6 +456,13 @@ export function OrderProductionPreviewSection({
   const countryListId = useId();
   const [shippingOption, setShippingOption] = useState<"courier" | "pickup">(
     initialShippingState?.option ?? "courier",
+  );
+  const [paymentMethod, setPaymentMethod] = useState<DepositPaymentMethod>(
+    finalPaymentMethod &&
+      (finalPaymentMethod === "stripe" ||
+        finalPaymentMethod === "classic_transfer")
+      ? finalPaymentMethod
+      : availablePaymentMethods[0] ?? "stripe",
   );
   const [showShippingValidation, setShowShippingValidation] = useState(false);
   const [shippingQuoteError, setShippingQuoteError] = useState<string | null>(null);
@@ -355,6 +554,26 @@ export function OrderProductionPreviewSection({
   const totalTaxSummary = hasShippingQuote
     ? getInclusiveTaxBreakdown(totalWithShipping)
     : null;
+  const effectiveProductionStage =
+    currentStage === "final_payment_in_review" &&
+    finalPaymentOrderStatus === "completed"
+      ? "delivered"
+      : currentStage === "final_payment_in_review" &&
+          finalPaymentOrderStatus === "processing"
+        ? "in_production"
+      : currentStage;
+  const finalTransferAmountLabel = formatOrderMoney(
+    finalAmountValue + (initialShippingState?.shippingCost ?? shippingCost),
+    currency,
+  );
+
+  useEffect(() => {
+    if (availablePaymentMethods.includes(paymentMethod)) {
+      return;
+    }
+
+    setPaymentMethod(availablePaymentMethods[0] ?? "stripe");
+  }, [availablePaymentMethods, paymentMethod]);
 
   const resetShippingQuoteState = () => {
     setQuotedShipping(null);
@@ -450,7 +669,7 @@ export function OrderProductionPreviewSection({
     shippingRequestSignature,
   ]);
 
-  if (currentStage === "waiting_for_final_payment") {
+  if (effectiveProductionStage === "waiting_for_final_payment") {
     return (
       <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
@@ -749,6 +968,44 @@ export function OrderProductionPreviewSection({
                 </label>
               </div>
             </fieldset>
+
+            <div className="mt-5 border-t border-slate-200 pt-5">
+              <p className="text-sm font-semibold text-slate-900">
+                Payment options
+              </p>
+              <div className="mt-3 grid gap-2">
+                {availablePaymentMethods.map((method) => (
+                  <PaymentOption
+                    key={method}
+                    icon={
+                      method === "classic_transfer" ? (
+                        <BankTransferIcon />
+                      ) : (
+                        <StripeCardIcon />
+                      )
+                    }
+                    isSelected={paymentMethod === method}
+                    onSelect={() => setPaymentMethod(method)}
+                    title={
+                      method === "classic_transfer"
+                        ? "Classic bank transfer"
+                        : "Stripe"
+                    }
+                    helper=""
+                  />
+                ))}
+              </div>
+              {paymentMethod === "classic_transfer" && hasShippingQuote ? (
+                <BankTransferDetails
+                  amountLabel={
+                    totalTaxSummary
+                      ? formatOrderMoney(totalTaxSummary.grossAmount, currency)
+                      : finalTransferAmountLabel
+                  }
+                  orderNumber={orderNumber}
+                />
+              ) : null}
+            </div>
           </div>
 
           <aside className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -766,8 +1023,8 @@ export function OrderProductionPreviewSection({
                   -{depositAmountValue.toLocaleString("en-US").replace(/,/g, " ")} EUR
                 </span>
               </div>
-              <div className="mt-2 flex items-center justify-between gap-4">
-                <span className="text-slate-700">Shipping</span>
+                <div className="mt-2 flex items-center justify-between gap-4">
+                  <span className="text-slate-700">Shipping</span>
                 <div className="text-right">
                   <span className="font-semibold text-slate-900">
                     {isCalculatingShipping
@@ -801,7 +1058,15 @@ export function OrderProductionPreviewSection({
                     </p>
                   ) : null}
                 </div>
-              </div>
+                </div>
+                <div className="mt-2 flex items-center justify-between gap-4">
+                  <span className="text-slate-700">Payment method</span>
+                  <span className="font-semibold text-slate-900">
+                    {paymentMethod === "classic_transfer"
+                      ? "Classic transfer"
+                      : "Stripe"}
+                  </span>
+                </div>
               <div className="mt-3 border-t border-slate-200 pt-3">
                 <div className="mb-2 flex items-center justify-between gap-4">
                   <span className="text-slate-700">VAT total (23% included)</span>
@@ -843,6 +1108,7 @@ export function OrderProductionPreviewSection({
 
                   onPayFinalAmount({
                     address: quotedShipping?.address ?? shippingAddress,
+                    paymentMethod,
                     option: shippingOption,
                   });
                 }
@@ -851,7 +1117,9 @@ export function OrderProductionPreviewSection({
             >
               {isSubmittingFinalPayment
                 ? "Submitting payment..."
-                : "Pay final amount"}
+                : paymentMethod === "classic_transfer"
+                  ? "Continue with transfer"
+                  : "Pay final amount"}
             </button>
           </aside>
         </div>
@@ -859,7 +1127,7 @@ export function OrderProductionPreviewSection({
     );
   }
 
-  if (currentStage === "final_payment_in_review") {
+  if (effectiveProductionStage === "final_payment_in_review") {
     return (
       <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
@@ -870,19 +1138,26 @@ export function OrderProductionPreviewSection({
           We are reviewing the final payment. Once it is confirmed, the order
           will move into production manually.
         </p>
+        {finalPaymentMethod === "classic_transfer" ? (
+          <BankTransferDetails
+            amountLabel={finalTransferAmountLabel}
+            orderNumber={orderNumber}
+          />
+        ) : null}
       </section>
     );
   }
 
   if (
-    currentStage === "in_production" ||
-    currentStage === "waiting_for_delivery" ||
-    currentStage === "delivered"
+    effectiveProductionStage === "in_production" ||
+    effectiveProductionStage === "waiting_for_delivery" ||
+    effectiveProductionStage === "delivered"
   ) {
     return (
       <section
         className={`rounded-xl p-6 shadow-sm ${
-          (currentStage === "in_production" || currentStage === "delivered") &&
+          (effectiveProductionStage === "in_production" ||
+            effectiveProductionStage === "delivered") &&
           hasProductionHighlight
             ? "border border-emerald-200 bg-emerald-50"
             : "border border-slate-200 bg-white"
@@ -890,8 +1165,8 @@ export function OrderProductionPreviewSection({
       >
         <p
           className={`text-xs font-semibold uppercase tracking-[0.14em] ${
-            (currentStage === "in_production" ||
-              currentStage === "delivered") &&
+            (effectiveProductionStage === "in_production" ||
+              effectiveProductionStage === "delivered") &&
             hasProductionHighlight
               ? "text-emerald-700"
               : "text-slate-500"
@@ -900,13 +1175,13 @@ export function OrderProductionPreviewSection({
           Production
         </p>
         <h2 className="mt-2 text-xl font-semibold text-slate-900">
-          {currentStage === "in_production"
+          {effectiveProductionStage === "in_production"
             ? "In production"
-            : currentStage === "waiting_for_delivery"
+            : effectiveProductionStage === "waiting_for_delivery"
               ? "Ready"
               : "Delivered"}
         </h2>
-        {currentStage === "waiting_for_delivery" ? (
+        {effectiveProductionStage === "waiting_for_delivery" ? (
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
             Your bicycle is ready for delivery or pickup.
             {trackingUrl ? (
@@ -918,8 +1193,8 @@ export function OrderProductionPreviewSection({
           </p>
         ) : null}
         {trackingUrl &&
-        (currentStage === "waiting_for_delivery" ||
-          currentStage === "delivered") ? (
+        (effectiveProductionStage === "waiting_for_delivery" ||
+          effectiveProductionStage === "delivered") ? (
           <div className="mt-4 rounded-lg border border-pink-200 bg-pink-50 p-4">
             <span className="mb-2 block text-sm font-semibold text-pink-700">
               Courier tracking
@@ -941,12 +1216,12 @@ export function OrderProductionPreviewSection({
         >
           <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
             <span className="mb-2 block text-sm font-semibold text-slate-700">
-              {currentStage === "delivered"
+              {effectiveProductionStage === "delivered"
                 ? "Delivered on"
                 : "Estimated delivery time"}
             </span>
             <p className="text-sm text-slate-900">
-              {currentStage === "delivered"
+              {effectiveProductionStage === "delivered"
                 ? MOCK_DELIVERED_ON
                 : MOCK_ESTIMATED_DELIVERY_TIME}
             </p>

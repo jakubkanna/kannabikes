@@ -603,6 +603,7 @@ export function OrderPage({
 
   const handleSubmitFinalPayment = async (shipping: {
     address: OrderShippingAddress;
+    paymentMethod: DepositPaymentMethod;
     option: "courier" | "pickup";
   }) => {
     if (!sessionToken) {
@@ -616,7 +617,7 @@ export function OrderPage({
     try {
       const response = await requestPaymentLink({
         paymentKind: "final",
-        paymentMethod: "stripe",
+        paymentMethod: shipping.paymentMethod,
         publicOrderNumber: orderNumber,
         sessionToken,
         shipping,
@@ -956,10 +957,13 @@ export function OrderPage({
                   onValueChange={handleBikeSpecificationChange}
                 />
                 <OrderProductionPreviewSection
+                  availablePaymentMethods={portalBuild.availablePaymentMethods}
                   currentStage={orderStage}
                   depositAmountValue={portalBuild.deposit.amountValue}
                   finalAmountValue={portalBuild.finalPayment.amountValue}
                   currency={portalBuild.finalPayment.currency}
+                  finalPaymentMethod={portalBuild.finalPayment.paymentMethod}
+                  finalPaymentOrderStatus={portalBuild.finalPayment.orderStatus}
                   finalPaymentPaidAt={portalBuild.finalPayment.paidAt}
                   initialShippingState={{
                     address: portalBuild.shippingState.address,
@@ -971,6 +975,7 @@ export function OrderPage({
                   }}
                   onCalculateShipping={handleRequestShippingQuote}
                   isSubmittingFinalPayment={isSubmittingFinalPayment}
+                  orderNumber={orderNumber}
                   onPayFinalAmount={handleSubmitFinalPayment}
                 />
               </>
