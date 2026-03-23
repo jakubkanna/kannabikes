@@ -6,11 +6,13 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLocation,
 } from "react-router";
 import { defineCustomElements } from "ionicons/loader";
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { SiteHeader } from "./components/site-header";
 
 export const SITE_NAME = "Kanna Bikes";
 const DEFAULT_SITE_DESCRIPTION = "Kanna Bikes";
@@ -25,6 +27,10 @@ export const links: Route.LinksFunction = () => [
   { rel: "icon", href: `${BASE_URL}kannabikes_logo.svg`, type: "image/svg+xml" },
   { rel: "apple-touch-icon", href: `${BASE_URL}kannabikes_logo.svg` },
 ];
+
+export function formatPageTitle(page: string) {
+  return `${SITE_NAME} – ${page}`;
+}
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -72,7 +78,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  const location = useLocation();
+  const { pathname } = location;
+  const showHeader =
+    pathname !== "/personalization" && !pathname.startsWith("/order/");
+
+  return (
+    <>
+      {showHeader ? <SiteHeader overlay={pathname === "/"} /> : null}
+      <Outlet />
+    </>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {

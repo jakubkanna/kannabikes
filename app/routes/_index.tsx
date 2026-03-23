@@ -1,10 +1,10 @@
 import type { Route } from "./+types/_index";
 import { useEffect, useRef, useState } from "react";
-import { SITE_NAME } from "~/root";
+import { SITE_NAME, formatPageTitle } from "~/root";
 import { attachBackgroundParallax } from "~/lib/parallax";
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: `${SITE_NAME} | Home` }];
+  return [{ title: formatPageTitle("Home") }];
 }
 
 export default function Home() {

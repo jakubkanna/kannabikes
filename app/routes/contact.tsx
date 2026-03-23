@@ -2,7 +2,7 @@ import { Link } from "react-router";
 import { useState } from "react";
 import { chevronDownOutline } from "ionicons/icons";
 import type { Route } from "./+types/contact";
-import { SITE_NAME } from "~/root";
+import { SITE_NAME, formatPageTitle } from "~/root";
 
 const DEFAULT_TOPIC = "Quote request";
 const DEFAULT_WORDPRESS_API_BASE =
@@ -43,7 +43,7 @@ function validateContactForm(values: {
 }
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: `${SITE_NAME} | Contact` }];
+  return [{ title: formatPageTitle("Contact") }];
 }
 
 export default function ContactPage() {

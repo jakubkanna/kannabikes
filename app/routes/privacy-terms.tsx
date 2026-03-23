@@ -1,5 +1,5 @@
 import type { Route } from "./+types/privacy-terms";
-import { SITE_NAME } from "~/root";
+import { SITE_NAME, formatPageTitle } from "~/root";
 
 const BUSINESS = {
   controllerName: "Kanna Bikes",
@@ -14,7 +14,7 @@ const BUSINESS = {
 };
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: `${SITE_NAME} | Privacy & Terms` }];
+  return [{ title: formatPageTitle("Privacy & Terms") }];
 }
 
 export default function PrivacyTermsPage() {

@@ -1,11 +1,11 @@
 import type { Route } from "./+types/personalization";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { SITE_NAME } from "~/root";
+import { formatPageTitle } from "~/root";
 import { buildOrderNumber } from "~/components/order-page";
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: `${SITE_NAME} | Order` }];
+  return [{ title: formatPageTitle("Order") }];
 }
 
 export default function PersonalizationPage() {

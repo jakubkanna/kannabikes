@@ -32,6 +32,7 @@ import {
   type OrderStage,
   type StoredDepositPayment,
 } from "~/lib/mock-order";
+import { SITE_NAME } from "~/root";
 
 type MeasurementKey = "A" | "B" | "C" | "D" | "E" | "F";
 type BodyType = "male" | "female";
@@ -259,7 +260,7 @@ export function OrderPage({
       : undefined;
 
   useEffect(() => {
-    document.title = `Order nb. ${orderNumber}`;
+    document.title = `${SITE_NAME} – Order ${orderNumber}`;
   }, [orderNumber]);
 
   useEffect(() => {
