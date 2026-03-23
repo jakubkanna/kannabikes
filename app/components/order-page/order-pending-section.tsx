@@ -1079,7 +1079,7 @@ export function OrderProductionPreviewSection({
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-4">
-                  <span className="text-sm font-semibold text-slate-900">
+                  <span className="text-base font-semibold text-slate-900">
                     Total due
                   </span>
                   <span className="text-lg font-semibold text-slate-900">
@@ -1195,15 +1195,15 @@ export function OrderProductionPreviewSection({
         {trackingUrl &&
         (effectiveProductionStage === "waiting_for_delivery" ||
           effectiveProductionStage === "delivered") ? (
-          <div className="mt-4 rounded-lg border border-pink-200 bg-pink-50 p-4">
-            <span className="mb-2 block text-sm font-semibold text-pink-700">
+          <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
+            <span className="mb-2 block text-sm font-semibold text-amber-700">
               Courier tracking
             </span>
             <a
               href={trackingUrl}
               target="_blank"
               rel="noreferrer"
-              className="break-all text-sm font-medium text-pink-900 underline underline-offset-2"
+              className="break-all text-sm font-medium text-amber-900 underline underline-offset-2"
             >
               {trackingUrl}
             </a>

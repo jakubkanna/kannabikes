@@ -269,7 +269,7 @@ export function OrderMeasurementsSection({
                           aria-expanded={isGuidelineExpanded}
                           aria-controls={`guidelines-${key}`}
                         >
-                          <span>Guidelines</span>
+                          <span>How to measure</span>
                           <svg
                             aria-hidden="true"
                             viewBox="0 0 20 20"

@@ -1,6 +1,7 @@
 export type OrderStage =
   | "waiting_for_deposit"
   | "in_review"
+  | "confirmed"
   | "waiting_for_measurements"
   | "waiting_for_specification"
   | "waiting_for_design"
@@ -54,6 +55,7 @@ export type StoredDepositPayment = {
 export const ORDER_STAGES: OrderStage[] = [
   "waiting_for_deposit",
   "in_review",
+  "confirmed",
   "waiting_for_measurements",
   "waiting_for_specification",
   "waiting_for_design",
@@ -76,6 +78,12 @@ export const ORDER_STAGE_DEFINITIONS: Record<OrderStage, OrderStageDefinition> =
     description:
       "The payment is being verified manually before the order moves to the measurement step.",
     badgeClassName: "border-sky-200 bg-sky-50 text-sky-700",
+  },
+  confirmed: {
+    label: "Confirmed",
+    description:
+      "Your deposit has been received. Complete your measurements and specification to move the project into design.",
+    badgeClassName: "border-cyan-200 bg-cyan-50 text-cyan-700",
   },
   waiting_for_measurements: {
     label: "Waiting for measurements",
@@ -158,6 +166,7 @@ export function getWooDisplayStatus(stage: OrderStage): WooDisplayStatus {
     case "waiting_for_design_approval":
     case "final_payment_in_review":
       return "on_hold";
+    case "confirmed":
     case "waiting_for_design":
     case "in_production":
     case "waiting_for_delivery":
