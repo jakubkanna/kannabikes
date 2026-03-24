@@ -15,6 +15,71 @@
   --site-header-height: 4.5rem;
 }
 
+.reveal-slide-left,
+.reveal-slide-right,
+.reveal-scale-in {
+  opacity: 0;
+  transition:
+    opacity 720ms ease,
+    transform 720ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-slide-left {
+  transform: translate3d(-4rem, 0, 0);
+}
+
+.reveal-slide-right {
+  transform: translate3d(4rem, 0, 0);
+}
+
+.reveal-scale-in {
+  transform: scale(0);
+  transform-origin: center;
+}
+
+.reveal-slide-left.is-visible,
+.reveal-slide-right.is-visible {
+  opacity: 1;
+}
+
+.reveal-slide-left.is-visible,
+.reveal-slide-right.is-visible {
+  transform: translate3d(0, 0, 0);
+}
+
+.reveal-scale-in.is-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.reveal-button-up {
+  display: inline-flex;
+  opacity: 1;
+  transition: transform 720ms cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translate3d(0, 105%, 0);
+  will-change: transform;
+}
+
+.reveal-button-up.is-visible {
+  transform: translate3d(0, 0, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-slide-left,
+  .reveal-slide-right,
+  .reveal-scale-in {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .reveal-button-up {
+    transform: none;
+    transition: none;
+  }
+}
+
 .hero-chevron {
   animation: heroChevronPulse 1.8s ease-in-out infinite;
   display: flex;

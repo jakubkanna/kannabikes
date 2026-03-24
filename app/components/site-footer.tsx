@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
 
 export function SiteFooter() {
   const { pathname } = useLocation();
   const currentYear = new Date().getFullYear();
   const [useHomeKannaState, setUseHomeKannaState] = useState(pathname === "/");
+  const footerHeadingRef = useRef<HTMLHeadingElement | null>(null);
+  const [isFooterHeadingVisible, setIsFooterHeadingVisible] = useState(false);
 
   useEffect(() => {
     if (pathname !== "/") {
@@ -41,6 +43,53 @@ export function SiteFooter() {
     };
   }, [pathname]);
 
+  useEffect(() => {
+    const heading = footerHeadingRef.current;
+
+    if (!heading) return;
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (reduceMotion) {
+      setIsFooterHeadingVisible(true);
+      return;
+    }
+
+    const frameIds = new Set<number>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+
+          const outerFrame = window.requestAnimationFrame(() => {
+            frameIds.delete(outerFrame);
+            const innerFrame = window.requestAnimationFrame(() => {
+              frameIds.delete(innerFrame);
+              setIsFooterHeadingVisible(true);
+            });
+
+            frameIds.add(innerFrame);
+          });
+
+          frameIds.add(outerFrame);
+          observer.unobserve(entry.target);
+        });
+      },
+      {
+        threshold: 0.2,
+        rootMargin: "0px 0px -10% 0px",
+      },
+    );
+
+    observer.observe(heading);
+
+    return () => {
+      observer.disconnect();
+      frameIds.forEach((id) => window.cancelAnimationFrame(id));
+      frameIds.clear();
+    };
+  }, []);
+
   const footerClassName = useHomeKannaState
     ? "relative overflow-hidden bg-[var(--kanna-color)] px-4 py-20 text-black"
     : "relative overflow-hidden bg-black px-4 py-20 text-white";
@@ -60,7 +109,8 @@ export function SiteFooter() {
         >
           <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
             <h2
-              className="max-w-4xl text-4xl tracking-tight md:text-7xl"
+              ref={footerHeadingRef}
+              className={`max-w-4xl text-4xl tracking-tight md:text-7xl reveal-slide-left ${isFooterHeadingVisible ? "is-visible" : ""}`}
               style={{
                 fontFamily: "var(--font-kanna)",
                 fontVariationSettings: '"wdth" 125, "wght" 900',

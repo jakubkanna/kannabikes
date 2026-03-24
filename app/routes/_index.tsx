@@ -3,7 +3,7 @@ import type { Route } from "./+types/_index";
 import { useEffect, useRef, useState } from "react";
 import { SectionPill } from "~/components/section-pill";
 import { SITE_NAME, formatPageTitle } from "~/root";
-import { attachBackgroundParallax } from "~/lib/parallax";
+import { attachBackgroundParallax, attachPointerParallax } from "~/lib/parallax";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: formatPageTitle("Home") }];
@@ -11,14 +11,42 @@ export function meta({}: Route.MetaArgs) {
 
 export default function Home() {
   const backgroundRef = useRef<HTMLDivElement | null>(null);
+  const walkerBackgroundRef = useRef<HTMLDivElement | null>(null);
   const customOrderRef = useRef<HTMLDivElement | null>(null);
+  const customOrderTextRef = useRef<HTMLDivElement | null>(null);
+  const customOrderButtonRef = useRef<HTMLDivElement | null>(null);
+  const customOrderImageRef = useRef<HTMLDivElement | null>(null);
+  const walkerTextRef = useRef<HTMLDivElement | null>(null);
+  const chainringTextRef = useRef<HTMLDivElement | null>(null);
+  const chainringImageRef = useRef<HTMLDivElement | null>(null);
   const baseUrl = import.meta.env.BASE_URL;
   const [bgSrc, setBgSrc] = useState(`${baseUrl}_DSF0937_low.jpg`);
   const [heroLogoOpacity, setHeroLogoOpacity] = useState(1);
+  const [revealedSections, setRevealedSections] = useState<
+    Record<string, boolean>
+  >({
+    customOrderText: false,
+    customOrderButton: false,
+    customOrderImage: false,
+    walkerText: false,
+    chainringText: false,
+    chainringImage: false,
+  });
 
   useEffect(() => {
     if (!backgroundRef.current) return;
     return attachBackgroundParallax(backgroundRef.current);
+  }, []);
+
+  useEffect(() => {
+    if (!walkerBackgroundRef.current) return;
+
+    return attachPointerParallax(walkerBackgroundRef.current, {
+      distance: 8,
+      scrollFactor: 0,
+      xProperty: "--walker-bg-x",
+      yProperty: "--walker-bg-y",
+    });
   }, []);
 
   useEffect(() => {
@@ -55,6 +83,75 @@ export default function Home() {
     return () => {
       window.removeEventListener("scroll", updateHeroLogoOpacity);
       window.removeEventListener("resize", updateHeroLogoOpacity);
+    };
+  }, []);
+
+  useEffect(() => {
+    const observedEntries = [
+      { key: "customOrderText", ref: customOrderTextRef },
+      { key: "customOrderButton", ref: customOrderButtonRef },
+      { key: "customOrderImage", ref: customOrderImageRef },
+      { key: "walkerText", ref: walkerTextRef },
+      { key: "chainringText", ref: chainringTextRef },
+      { key: "chainringImage", ref: chainringImageRef },
+    ] as const;
+
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    if (reduceMotion) {
+      setRevealedSections({
+        customOrderText: true,
+        customOrderButton: true,
+        customOrderImage: true,
+        walkerText: true,
+        chainringText: true,
+        chainringImage: true,
+      });
+      return;
+    }
+
+    const frameIds = new Set<number>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const key = entry.target.getAttribute("data-reveal-key");
+          if (!key) return;
+
+          const outerFrame = window.requestAnimationFrame(() => {
+            frameIds.delete(outerFrame);
+            const innerFrame = window.requestAnimationFrame(() => {
+              frameIds.delete(innerFrame);
+              setRevealedSections((current) =>
+                current[key] ? current : { ...current, [key]: true },
+              );
+            });
+
+            frameIds.add(innerFrame);
+          });
+
+          frameIds.add(outerFrame);
+          observer.unobserve(entry.target);
+        });
+      },
+      {
+        threshold: 0.2,
+        rootMargin: "0px 0px -10% 0px",
+      },
+    );
+
+    observedEntries.forEach(({ key, ref }) => {
+      if (!ref.current) return;
+      ref.current.setAttribute("data-reveal-key", key);
+      observer.observe(ref.current);
+    });
+
+    return () => {
+      observer.disconnect();
+      frameIds.forEach((id) => window.cancelAnimationFrame(id));
+      frameIds.clear();
     };
   }, []);
 
@@ -102,7 +199,10 @@ export default function Home() {
         <div ref={customOrderRef} className="w-full">
           <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_33%] lg:items-stretch">
             <div className="flex h-full flex-col">
-              <div>
+              <div
+                ref={customOrderTextRef}
+                className={`reveal-slide-left ${revealedSections.customOrderText ? "is-visible" : ""}`}
+              >
                 <SectionPill>Custom Order</SectionPill>
                 <h2
                   className="mt-4 max-w-3xl text-4xl tracking-tight text-slate-900 md:text-6xl"
@@ -121,21 +221,31 @@ export default function Home() {
               </div>
 
               <div className="pt-8 lg:mt-auto">
-                <Link
-                  to="/pre-order"
-                  className="inline-flex h-[15rem] w-[15rem] items-center justify-center rounded-full border border-transparent bg-black px-8 text-center text-[1.35rem] font-semibold leading-tight text-white transition hover:border-black hover:bg-white hover:text-black uppercase"
+                <div
+                  ref={customOrderButtonRef}
+                  className="h-[15rem] w-[15rem] overflow-hidden"
                 >
-                  Order custom bike
-                </Link>
+                  <Link
+                    to="/pre-order"
+                    className={`reveal-button-up inline-flex h-[15rem] w-[15rem] min-h-[15rem] min-w-[15rem] shrink-0 items-center justify-center rounded-full border border-transparent bg-black p-0 text-center text-[3rem] font-semibold leading-[0.95] text-white uppercase transition hover:border-black hover:bg-white hover:text-black ${revealedSections.customOrderButton ? "is-visible" : ""}`}
+                  >
+                    Order custom bike
+                  </Link>
+                </div>
               </div>
             </div>
 
-            <div className="overflow-hidden border border-stone-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.08)]">
-              <img
-                src={`${baseUrl}wikiimages-welding-67640.jpg`}
-                alt="Welding bicycle frame"
-                className="aspect-[4/5] w-full object-cover"
-              />
+            <div
+              ref={customOrderImageRef}
+              className={`overflow-hidden border border-stone-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.08)] reveal-slide-right ${revealedSections.customOrderImage ? "is-visible" : ""}`}
+            >
+              <Link to="/pre-order" className="block">
+                <img
+                  src={`${baseUrl}wikiimages-welding-67640.jpg`}
+                  alt="Welding bicycle frame"
+                  className="aspect-[4/5] w-full object-cover"
+                />
+              </Link>
             </div>
           </div>
         </div>
@@ -143,14 +253,18 @@ export default function Home() {
 
       <section className="relative overflow-hidden bg-black px-6 py-20 text-white">
         <div
+          ref={walkerBackgroundRef}
           aria-hidden="true"
-          className="absolute inset-0 bg-cover bg-center"
+          className="absolute inset-0 bg-cover bg-center will-change-transform translate-x-[var(--walker-bg-x,0px)] translate-y-[var(--walker-bg-y,0px)] scale-[1.04]"
           style={{
             backgroundImage: `url(${baseUrl}2013_DSF6372_jakubkanna.png)`,
           }}
         />
         <div className="relative z-10 w-full flex min-h-[34rem] items-start">
-          <div className="max-w-3xl">
+          <div
+            ref={walkerTextRef}
+            className={`max-w-3xl reveal-slide-left ${revealedSections.walkerText ? "is-visible" : ""}`}
+          >
             <SectionPill tone="dark">New Bike</SectionPill>
             <h2
               className="mt-4 text-4xl tracking-tight text-white md:text-6xl"
@@ -175,7 +289,10 @@ export default function Home() {
       <section className="relative overflow-hidden bg-white">
         <div className="relative grid min-h-[28rem] gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="flex items-start px-6 py-20">
-            <div>
+            <div
+              ref={chainringTextRef}
+              className={`reveal-slide-left ${revealedSections.chainringText ? "is-visible" : ""}`}
+            >
               <SectionPill>Survivor Chainring</SectionPill>
               <h2
                 className="mt-4 max-w-3xl text-4xl tracking-tight text-slate-900 md:text-6xl"
@@ -193,7 +310,10 @@ export default function Home() {
               </p>
             </div>
           </div>
-          <div className="flex items-center justify-end">
+          <div
+            ref={chainringImageRef}
+            className={`flex items-center justify-end reveal-slide-right ${revealedSections.chainringImage ? "is-visible" : ""}`}
+          >
             <img
               src={`${baseUrl}Survior_Chainring_v147_2024-Jan-10_05-04-08PM-000_CustomizedView27250563922.png`}
               alt="Survivor chainring"

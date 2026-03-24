@@ -4,7 +4,19 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
-export function attachBackgroundParallax(target: HTMLElement): Cleanup {
+export function attachPointerParallax(
+  target: HTMLElement,
+  options?: {
+    distance?: number;
+    scrollFactor?: number;
+    xProperty?: string;
+    yProperty?: string;
+  },
+): Cleanup {
+  const distance = options?.distance ?? 12;
+  const scrollFactor = options?.scrollFactor ?? 0;
+  const xProperty = options?.xProperty ?? "--bg-x";
+  const yProperty = options?.yProperty ?? "--bg-y";
   let rafId = 0;
   let lastX = 0;
   let lastY = 0;
@@ -12,8 +24,8 @@ export function attachBackgroundParallax(target: HTMLElement): Cleanup {
 
   const update = () => {
     rafId = 0;
-    target.style.setProperty("--bg-x", `${lastX}px`);
-    target.style.setProperty("--bg-y", `${lastY + scrollY}px`);
+    target.style.setProperty(xProperty, `${lastX}px`);
+    target.style.setProperty(yProperty, `${lastY + scrollY}px`);
   };
 
   const handlePointerMove = (event: PointerEvent) => {
@@ -23,8 +35,8 @@ export function attachBackgroundParallax(target: HTMLElement): Cleanup {
     const normX = (event.clientX / innerWidth - 0.5) * 2;
     const normY = (event.clientY / innerHeight - 0.5) * 2;
 
-    const offsetX = clamp(normX, -1, 1) * 12;
-    const offsetY = clamp(normY, -1, 1) * 12;
+    const offsetX = clamp(normX, -1, 1) * distance;
+    const offsetY = clamp(normY, -1, 1) * distance;
 
     lastX = offsetX;
     lastY = offsetY;
@@ -43,7 +55,7 @@ export function attachBackgroundParallax(target: HTMLElement): Cleanup {
   };
 
   const handleScroll = () => {
-    scrollY = window.scrollY * 0.18;
+    scrollY = window.scrollY * scrollFactor;
     if (!rafId) {
       rafId = window.requestAnimationFrame(update);
     }
@@ -63,6 +75,15 @@ export function attachBackgroundParallax(target: HTMLElement): Cleanup {
     window.removeEventListener("scroll", handleScroll);
     if (rafId) window.cancelAnimationFrame(rafId);
   };
+}
+
+export function attachBackgroundParallax(target: HTMLElement): Cleanup {
+  return attachPointerParallax(target, {
+    distance: 12,
+    scrollFactor: 0.18,
+    xProperty: "--bg-x",
+    yProperty: "--bg-y",
+  });
 }
 
 export function attachSectionParallax(
