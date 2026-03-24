@@ -70,20 +70,13 @@ export default function Home() {
 
         <section className="relative z-20 flex h-full flex-col items-stretch justify-end text-center text-white">
           <div className="px-4 pb-28 md:px-6">
-            <a
-              href="https://instagram.com/kannabikes"
-              target="_blank"
-              rel="noreferrer"
-              aria-label={`${SITE_NAME} on Instagram`}
-              className="block w-full"
-              style={{ opacity: heroLogoOpacity }}
-            >
+            <div className="block w-full" style={{ opacity: heroLogoOpacity }}>
               <img
                 src={`${baseUrl}kannabikes_logotype.svg`}
                 alt={SITE_NAME}
                 className="w-full h-auto drop-shadow-[0_4px_20px_rgba(0,0,0,0.42)]"
               />
-            </a>
+            </div>
             <div
               className="mt-14 h-[1.66px] w-full bg-(--kanna-color)"
               style={{ opacity: heroLogoOpacity }}
@@ -105,13 +98,10 @@ export default function Home() {
         </section>
       </main>
 
-      <section
-        id="custom-order"
-        className="relative bg-stone-100 px-4 py-20 md:px-8 md:py-28"
-      >
-        <div ref={customOrderRef} className="mx-auto max-w-6xl">
+      <section id="custom-order" className="relative bg-stone-100 px-6 py-20">
+        <div ref={customOrderRef} className="w-full">
           <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_33%] lg:items-stretch">
-            <div className="flex h-full flex-col lg:justify-between">
+            <div className="flex h-full flex-col">
               <div>
                 <SectionPill>Custom Order</SectionPill>
                 <h2
@@ -124,12 +114,16 @@ export default function Home() {
                 >
                   Made-to-measure bicycles.
                 </h2>
+                <p className="mt-5 max-w-2xl text-sm leading-7 text-slate-600 md:text-base">
+                  We will build the bicycle you have been imagining around your
+                  fit, riding style, and intended use.
+                </p>
               </div>
 
-              <div className="pt-8">
+              <div className="pt-8 lg:mt-auto">
                 <Link
                   to="/pre-order"
-                  className="inline-flex h-40 w-40 items-center justify-center rounded-full border border-transparent bg-black px-6 text-center text-lg font-semibold leading-tight text-white transition hover:border-black hover:bg-white hover:text-black uppercase"
+                  className="inline-flex h-[15rem] w-[15rem] items-center justify-center rounded-full border border-transparent bg-black px-8 text-center text-[1.35rem] font-semibold leading-tight text-white transition hover:border-black hover:bg-white hover:text-black uppercase"
                 >
                   Order custom bike
                 </Link>
@@ -147,7 +141,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-black px-4 py-20 text-white md:px-8 md:py-28">
+      <section className="relative overflow-hidden bg-black px-6 py-20 text-white">
         <div
           aria-hidden="true"
           className="absolute inset-0 bg-cover bg-center"
@@ -155,11 +149,61 @@ export default function Home() {
             backgroundImage: `url(${baseUrl}2013_DSF6372_jakubkanna.png)`,
           }}
         />
-        <div className="relative z-10 mx-auto min-h-[34rem] max-w-6xl" />
+        <div className="relative z-10 w-full flex min-h-[34rem] items-start">
+          <div className="max-w-3xl">
+            <SectionPill tone="dark">New Bike</SectionPill>
+            <h2
+              className="mt-4 text-4xl tracking-tight text-white md:text-6xl"
+              style={{
+                fontFamily: "var(--font-kanna)",
+                fontVariationSettings: '"wdth" 125, "wght" 900',
+                fontWeight: 900,
+              }}
+            >
+              Walker
+            </h2>
+            <p className="mt-5 max-w-2xl text-sm leading-7 text-white md:text-base">
+              32&quot;, Pinion / Effigear gearbox compatible, drop-bar mtb
+            </p>
+          </div>
+          <p className="absolute bottom-0 left-0 text-xs font-semibold uppercase tracking-[0.18em] text-white">
+            Coming soon
+          </p>
+        </div>
       </section>
 
-      <section className="relative overflow-hidden bg-white px-4 py-20 md:px-8 md:py-28">
-        <div className="mx-auto min-h-[28rem] max-w-6xl" />
+      <section className="relative overflow-hidden bg-white">
+        <div className="relative grid min-h-[28rem] gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="flex items-start px-6 py-20">
+            <div>
+              <SectionPill>Survivor Chainring</SectionPill>
+              <h2
+                className="mt-4 max-w-3xl text-4xl tracking-tight text-slate-900 md:text-6xl"
+                style={{
+                  fontFamily: "var(--font-kanna)",
+                  fontVariationSettings: '"wdth" 125, "wght" 900',
+                  fontWeight: 900,
+                }}
+              >
+                Survivor Chainring
+              </h2>
+              <p className="mt-5 max-w-2xl text-sm leading-7 text-slate-600 md:text-base">
+                Old steel fan? Resurrect your old 5-hole crankset with a new
+                chainring.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center justify-end">
+            <img
+              src={`${baseUrl}Survior_Chainring_v147_2024-Jan-10_05-04-08PM-000_CustomizedView27250563922.png`}
+              alt="Survivor chainring"
+              className="w-full max-w-xl object-contain"
+            />
+          </div>
+          <p className="absolute bottom-6 left-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-900 md:left-8">
+            Coming soon
+          </p>
+        </div>
       </section>
     </div>
   );

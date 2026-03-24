@@ -42,8 +42,8 @@ export function SiteFooter() {
   }, [pathname]);
 
   const footerClassName = useHomeKannaState
-    ? "relative overflow-hidden bg-[var(--kanna-color)] px-4 py-20 text-black md:px-8 md:py-32"
-    : "relative overflow-hidden bg-black px-4 py-20 text-white md:px-8 md:py-32";
+    ? "relative overflow-hidden bg-[var(--kanna-color)] px-4 py-20 text-black"
+    : "relative overflow-hidden bg-black px-4 py-20 text-white";
   const secondaryTextClassName = useHomeKannaState
     ? "text-black"
     : "text-white";
@@ -54,11 +54,11 @@ export function SiteFooter() {
 
   return (
     <footer className={footerClassName}>
-      <div className="mx-auto flex min-h-[55svh] max-w-6xl flex-col justify-between gap-14">
+      <div className="w-full md:px-4 flex min-h-[55svh] flex-col justify-between gap-14">
         <div
-          className={`space-y-14 text-sm leading-7 ${secondaryTextClassName}`}
+          className={`space-y-25 text-sm leading-7 ${secondaryTextClassName}`}
         >
-          <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
+          <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
             <h2
               className="max-w-4xl text-4xl tracking-tight md:text-7xl"
               style={{
@@ -69,21 +69,6 @@ export function SiteFooter() {
             >
               Handbuilt with passion in Poland
             </h2>
-            <p
-              className={`pt-4 self-start text-l text-right md:text-xl ${secondaryTextClassName}`}
-            >
-              Kanna Bikes Studio
-              <br />
-              Placeholder Street 12
-              <br />
-              00-001 Warsaw
-              <br />
-              Poland
-            </p>
-          </div>
-
-          <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-            <div />
             <div className="grid gap-8 sm:grid-cols-3">
               <div className="text-right">
                 <p className={`text-xs uppercase ${secondaryTextClassName}`}>
@@ -135,6 +120,21 @@ export function SiteFooter() {
               </div>
             </div>
           </div>
+
+          <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+            <div />
+            <p
+              className={`pt-4 self-start text-l text-right md:text-xl ${secondaryTextClassName}`}
+            >
+              Kanna Bikes Studio
+              <br />
+              Placeholder Street 12
+              <br />
+              00-001 Warsaw
+              <br />
+              Poland
+            </p>
+          </div>
         </div>
 
         <div
@@ -152,6 +152,14 @@ export function SiteFooter() {
               className={linkClassName}
             >
               Instagram
+            </a>
+            <a
+              href="https://www.youtube.com/@kannabikes"
+              target="_blank"
+              rel="noreferrer"
+              className={linkClassName}
+            >
+              YouTube
             </a>
           </div>
         </div>
