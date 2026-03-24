@@ -23,8 +23,6 @@ const SITE_URL = (
 const BASE_URL = import.meta.env.BASE_URL;
 const OG_IMAGE = `${BASE_URL}kannabikes_logo.svg`;
 const OG_IMAGE_URL = `${SITE_URL}${OG_IMAGE}`;
-const KANNA_FONT_STYLESHEET =
-  "https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,900&display=swap";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -34,8 +32,11 @@ export const links: Route.LinksFunction = () => [
     href: "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap",
   },
   {
-    rel: "stylesheet",
-    href: KANNA_FONT_STYLESHEET,
+    rel: "preload",
+    href: `${BASE_URL}kanna-font.ttf`,
+    as: "font",
+    type: "font/ttf",
+    crossOrigin: "anonymous",
   },
   { rel: "icon", href: `${BASE_URL}kannabikes_logo.svg`, type: "image/svg+xml" },
   { rel: "apple-touch-icon", href: `${BASE_URL}kannabikes_logo.svg` },

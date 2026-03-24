@@ -69,7 +69,7 @@ export default function Home() {
         />
 
         <section className="relative z-20 flex h-full flex-col items-stretch justify-end text-center text-white">
-          <div className="px-2 pb-28 md:px-3">
+          <div className="px-4 pb-28 md:px-6">
             <a
               href="https://instagram.com/kannabikes"
               target="_blank"
@@ -90,7 +90,7 @@ export default function Home() {
             />
           </div>
 
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between px-[0.625rem] pb-9 md:px-[0.875rem]">
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between px-4 pb-9 md:px-6">
             <div className="flex w-[1.15rem] justify-center">
               <div className="hero-chevron">
                 <span className="hero-chevron-line" />

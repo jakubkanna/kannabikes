@@ -1,13 +1,64 @@
-import { Link } from "react-router";
+import { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router";
 
 export function SiteFooter() {
+  const { pathname } = useLocation();
   const currentYear = new Date().getFullYear();
+  const [useHomeKannaState, setUseHomeKannaState] = useState(pathname === "/");
+
+  useEffect(() => {
+    if (pathname !== "/") {
+      setUseHomeKannaState(false);
+      return;
+    }
+
+    const updateHomeState = () => {
+      const customOrderSection = document.getElementById("custom-order");
+
+      if (!customOrderSection) {
+        setUseHomeKannaState(true);
+        return;
+      }
+
+      const fadeDistance = customOrderSection.offsetTop;
+
+      if (fadeDistance <= 0) {
+        setUseHomeKannaState(false);
+        return;
+      }
+
+      const progress = Math.min(Math.max(window.scrollY / fadeDistance, 0), 1);
+      setUseHomeKannaState(progress < 1);
+    };
+
+    updateHomeState();
+    window.addEventListener("scroll", updateHomeState, { passive: true });
+    window.addEventListener("resize", updateHomeState);
+
+    return () => {
+      window.removeEventListener("scroll", updateHomeState);
+      window.removeEventListener("resize", updateHomeState);
+    };
+  }, [pathname]);
+
+  const footerClassName = useHomeKannaState
+    ? "relative overflow-hidden bg-[var(--kanna-color)] px-4 py-20 text-black md:px-8 md:py-32"
+    : "relative overflow-hidden bg-black px-4 py-20 text-white md:px-8 md:py-32";
+  const secondaryTextClassName = useHomeKannaState
+    ? "text-black"
+    : "text-white";
+  const dividerClassName = "border-white";
+  const linkClassName = useHomeKannaState
+    ? "transition hover:text-black"
+    : "transition hover:text-white";
 
   return (
-    <footer className="relative overflow-hidden bg-black px-4 py-20 text-white md:px-8 md:py-32">
+    <footer className={footerClassName}>
       <div className="mx-auto flex min-h-[55svh] max-w-6xl flex-col justify-between gap-14">
-        <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-          <div>
+        <div
+          className={`space-y-14 text-sm leading-7 ${secondaryTextClassName}`}
+        >
+          <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
             <h2
               className="max-w-4xl text-4xl tracking-tight md:text-7xl"
               style={{
@@ -18,55 +69,66 @@ export function SiteFooter() {
             >
               Handbuilt with passion in Poland
             </h2>
+            <p
+              className={`pt-4 self-start text-l text-right md:text-xl ${secondaryTextClassName}`}
+            >
+              Kanna Bikes Studio
+              <br />
+              Placeholder Street 12
+              <br />
+              00-001 Warsaw
+              <br />
+              Poland
+            </p>
           </div>
 
-          <div className="space-y-14 text-sm leading-7 text-white">
-            <div className="pt-4 text-l text-right text-white md:text-2xl">
-              <p>Kanna Bikes Studio</p>
-              <p>Placeholder Street 12</p>
-              <p>00-001 Warsaw</p>
-              <p>Poland</p>
-            </div>
-
+          <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+            <div />
             <div className="grid gap-8 sm:grid-cols-3">
               <div className="text-right">
-                <p className="text-xs uppercase text-white">Products</p>
+                <p className={`text-xs uppercase ${secondaryTextClassName}`}>
+                  Products
+                </p>
                 <div className="mt-3 flex flex-col items-end gap-0.5">
-                  <a href="#" className="transition hover:text-white">
+                  <a href="#" className={linkClassName}>
                     Custom Road
                   </a>
-                  <a href="#" className="transition hover:text-white">
+                  <a href="#" className={linkClassName}>
                     All-Road
                   </a>
-                  <a href="#" className="transition hover:text-white">
+                  <a href="#" className={linkClassName}>
                     Commuter
                   </a>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-xs uppercase text-white">Company</p>
+                <p className={`text-xs uppercase ${secondaryTextClassName}`}>
+                  Company
+                </p>
                 <div className="mt-3 flex flex-col items-end gap-0.5">
-                  <Link to="/about" className="transition hover:text-white">
+                  <Link to="/about" className={linkClassName}>
                     About
                   </Link>
-                  <Link to="/blog" className="transition hover:text-white">
+                  <Link to="/blog" className={linkClassName}>
                     Blog
                   </Link>
-                  <a href="#" className="transition hover:text-white">
+                  <a href="#" className={linkClassName}>
                     Studio
                   </a>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-xs uppercase text-white">Support</p>
+                <p className={`text-xs uppercase ${secondaryTextClassName}`}>
+                  Support
+                </p>
                 <div className="mt-3 flex flex-col items-end gap-0.5">
-                  <Link to="/contact" className="transition hover:text-white">
+                  <Link to="/contact" className={linkClassName}>
                     Contact
                   </Link>
-                  <a href="#" className="transition hover:text-white">
+                  <a href="#" className={linkClassName}>
                     Delivery
                   </a>
-                  <a href="#" className="transition hover:text-white">
+                  <a href="#" className={linkClassName}>
                     Warranty
                   </a>
                 </div>
@@ -75,17 +137,19 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 border-t border-white/10 pt-8 text-xs text-white md:flex-row md:items-center md:justify-between">
+        <div
+          className={`flex flex-col gap-4 border-t pt-8 text-xs md:flex-row md:items-center md:justify-between ${dividerClassName} ${secondaryTextClassName}`}
+        >
           <p>{`© Kanna Bikes ${currentYear}`}</p>
           <div className="flex flex-wrap gap-5">
-            <Link to="/privacy-terms" className="transition hover:text-white">
+            <Link to="/privacy-terms" className={linkClassName}>
               Privacy & Terms
             </Link>
             <a
               href="https://instagram.com/kannabikes"
               target="_blank"
               rel="noreferrer"
-              className="transition hover:text-white"
+              className={linkClassName}
             >
               Instagram
             </a>

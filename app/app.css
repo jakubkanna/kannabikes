@@ -1,7 +1,16 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Kanna";
+  src: url("/kanna-font.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 900;
+  font-stretch: expanded;
+  font-display: block;
+}
+
 :root {
-  --font-kanna: "Archivo", sans-serif;
+  --font-kanna: "Kanna", sans-serif;
   --kanna-color: #ffd400;
   --site-header-height: 4.5rem;
 }
