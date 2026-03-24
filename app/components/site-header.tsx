@@ -1,7 +1,7 @@
 import { Link, NavLink } from "react-router";
 
 const NAV_ITEMS = [
-  { to: "/#custom-order", label: "Custom order", kind: "link" },
+  { to: "/pre-order", label: "Custom order", kind: "nav" },
   { to: "/shop", label: "Shop", kind: "nav" },
   { to: "/about", label: "About", kind: "nav" },
   { to: "/contact", label: "Contact", kind: "nav" },
@@ -40,26 +40,17 @@ export function SiteHeader() {
         >
           {NAV_ITEMS.map((item) => (
             <li key={item.to}>
-              {item.kind === "link" ? (
-                <Link
-                  to={item.to}
-                  className="opacity-100 transition duration-200 hover:scale-[1.2] hover:text-[1.2em]"
-                >
-                  {item.label}
-                </Link>
-              ) : (
-                <NavLink
-                  to={item.to}
-                  className={({ isActive }) =>
-                    [
-                      "opacity-100 transition duration-200 hover:scale-[1.2] hover:text-[1.2em]",
-                      isActive ? "scale-100" : "",
-                    ].join(" ")
-                  }
-                >
-                  {item.label}
-                </NavLink>
-              )}
+              <NavLink
+                to={item.to}
+                className={({ isActive }) =>
+                  [
+                    "opacity-100 transition duration-200 hover:scale-[1.2] hover:text-[1.2em]",
+                    isActive ? "scale-100" : "",
+                  ].join(" ")
+                }
+              >
+                {item.label}
+              </NavLink>
             </li>
           ))}
         </ul>

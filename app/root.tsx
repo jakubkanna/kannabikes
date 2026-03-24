@@ -12,6 +12,7 @@ import { defineCustomElements } from "ionicons/loader";
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { SiteFooter } from "./components/site-footer";
 import { SiteHeader } from "./components/site-header";
 
 export const SITE_NAME = "Kanna Bikes";
@@ -28,6 +29,10 @@ const KANNA_FONT_STYLESHEET =
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+  {
+    rel: "stylesheet",
+    href: "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap",
+  },
   {
     rel: "stylesheet",
     href: KANNA_FONT_STYLESHEET,
@@ -76,7 +81,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body className="bg-white text-slate-900 antialiased">
+      <body
+        className="bg-white text-slate-900 antialiased"
+        style={{ fontFamily: '"Lato", sans-serif' }}
+      >
         {children}
         <ScrollRestoration />
         <Scripts />
@@ -96,6 +104,7 @@ export default function App() {
       <div className={shouldOffsetContent ? "pt-[var(--site-header-height)]" : ""}>
         <Outlet />
       </div>
+      <SiteFooter />
     </>
   );
 }
