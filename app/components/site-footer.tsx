@@ -91,14 +91,14 @@ export function SiteFooter() {
   }, []);
 
   const footerClassName = useHomeKannaState
-    ? "relative overflow-hidden bg-[var(--kanna-color)] px-4 py-20 text-black"
-    : "relative overflow-hidden bg-black px-4 py-20 text-white";
+    ? "relative overflow-hidden bg-[var(--kanna-color)] px-4 py-20 text-[var(--kanna-ink)]"
+    : "relative overflow-hidden bg-[var(--kanna-ink)] px-4 py-20 text-white";
   const secondaryTextClassName = useHomeKannaState
-    ? "text-black"
+    ? "text-[var(--kanna-ink)]"
     : "text-white";
   const dividerClassName = "border-white";
   const linkClassName = useHomeKannaState
-    ? "transition hover:text-black"
+    ? "transition hover:text-[var(--kanna-ink)]"
     : "transition hover:text-white";
 
   return (
@@ -190,7 +190,19 @@ export function SiteFooter() {
         <div
           className={`flex flex-col gap-4 border-t pt-8 text-xs md:flex-row md:items-center md:justify-between ${dividerClassName} ${secondaryTextClassName}`}
         >
-          <p>{`© Kanna Bikes ${currentYear}`}</p>
+          <p className="flex flex-wrap items-center gap-2">
+            <span>{`© Kanna Bikes ${currentYear}`}</span>
+            <span aria-hidden="true">·</span>
+            <span>designed and developed by</span>
+            <a
+              href="https://studio.jakubkanna.com"
+              target="_blank"
+              rel="noreferrer"
+              className={linkClassName}
+            >
+              STUDIO JKN
+            </a>
+          </p>
           <div className="flex flex-wrap gap-5">
             <Link to="/privacy-terms" className={linkClassName}>
               Privacy & Terms

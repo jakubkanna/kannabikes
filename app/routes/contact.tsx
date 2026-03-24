@@ -122,7 +122,7 @@ export default function ContactPage() {
       <div className="mx-auto max-w-4xl">
         <section className="rounded-[28px] border border-stone-200 bg-white p-6 shadow-sm md:p-8">
           <SectionPill>Contact</SectionPill>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl">
+          <h1 className="page-heading mt-4 max-w-4xl text-4xl tracking-tight text-[var(--kanna-ink)] md:text-7xl">
             Get in touch
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600">
@@ -352,7 +352,7 @@ export default function ContactPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                className="inline-flex items-center justify-center rounded-xl bg-[var(--kanna-ink)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-black"
               >
                 {isSubmitting ? "Sending..." : "Send request"}
               </button>

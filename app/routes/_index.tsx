@@ -3,7 +3,10 @@ import type { Route } from "./+types/_index";
 import { useEffect, useRef, useState } from "react";
 import { SectionPill } from "~/components/section-pill";
 import { SITE_NAME, formatPageTitle } from "~/root";
-import { attachBackgroundParallax, attachPointerParallax } from "~/lib/parallax";
+import {
+  attachBackgroundParallax,
+  attachPointerParallax,
+} from "~/lib/parallax";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: formatPageTitle("Home") }];
@@ -167,15 +170,16 @@ export default function Home() {
 
         <section className="relative z-20 flex h-full flex-col items-stretch justify-end text-center text-white">
           <div className="px-4 pb-28 md:px-6">
-            <div className="block w-full" style={{ opacity: heroLogoOpacity }}>
+            <div className="block w-full">
               <img
                 src={`${baseUrl}kannabikes_logotype.svg`}
                 alt={SITE_NAME}
-                className="w-full h-auto drop-shadow-[0_4px_20px_rgba(0,0,0,0.42)]"
+                className="hero-logo-image h-auto w-full"
+                style={{ opacity: heroLogoOpacity }}
               />
             </div>
             <div
-              className="mt-14 h-[1.66px] w-full bg-(--kanna-color)"
+              className="mx-auto mt-14 h-[1.66px] w-[calc(100%-3rem)] bg-(--kanna-color)"
               style={{ opacity: heroLogoOpacity }}
             />
           </div>
@@ -205,7 +209,7 @@ export default function Home() {
               >
                 <SectionPill>Custom Order</SectionPill>
                 <h2
-                  className="mt-4 max-w-3xl text-4xl tracking-tight text-slate-900 md:text-6xl"
+                  className="mt-4 max-w-3xl text-4xl tracking-tight text-[var(--kanna-ink)] md:text-6xl"
                   style={{
                     fontFamily: "var(--font-kanna)",
                     fontVariationSettings: '"wdth" 125, "wght" 900',
@@ -215,8 +219,8 @@ export default function Home() {
                   Made-to-measure bicycles.
                 </h2>
                 <p className="mt-5 max-w-2xl text-sm leading-7 text-slate-600 md:text-base">
-                  We will build the bicycle you have been imagining around your
-                  fit, riding style, and intended use.
+                  Get handbuild bicycle built around your fit, riding style and
+                  soul.
                 </p>
               </div>
 
@@ -227,7 +231,7 @@ export default function Home() {
                 >
                   <Link
                     to="/pre-order"
-                    className={`reveal-button-up inline-flex h-[15rem] w-[15rem] min-h-[15rem] min-w-[15rem] shrink-0 items-center justify-center rounded-full border border-transparent bg-black p-0 text-center text-[3rem] font-semibold leading-[0.95] text-white uppercase transition hover:border-black hover:bg-white hover:text-black ${revealedSections.customOrderButton ? "is-visible" : ""}`}
+                    className={`reveal-button-up inline-flex h-[15rem] w-[15rem] min-h-[15rem] min-w-[15rem] shrink-0 items-center justify-center rounded-full border border-transparent bg-[var(--kanna-ink)] p-0 text-center text-[3rem] font-semibold leading-[0.95] text-white uppercase transition hover:border-black hover:bg-white hover:text-black ${revealedSections.customOrderButton ? "is-visible" : ""}`}
                   >
                     Order custom bike
                   </Link>
@@ -241,7 +245,7 @@ export default function Home() {
             >
               <Link to="/pre-order" className="block">
                 <img
-                  src={`${baseUrl}wikiimages-welding-67640.jpg`}
+                  src={`${baseUrl}welding-kanna.jpg`}
                   alt="Welding bicycle frame"
                   className="aspect-[4/5] w-full object-cover"
                 />
@@ -251,7 +255,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-black px-6 py-20 text-white">
+      <section className="relative overflow-hidden bg-[var(--kanna-ink)] px-6 py-20 text-white">
         <div
           ref={walkerBackgroundRef}
           aria-hidden="true"
@@ -295,7 +299,7 @@ export default function Home() {
             >
               <SectionPill>Survivor Chainring</SectionPill>
               <h2
-                className="mt-4 max-w-3xl text-4xl tracking-tight text-slate-900 md:text-6xl"
+                className="mt-4 max-w-3xl text-4xl tracking-tight text-[var(--kanna-ink)] md:text-6xl"
                 style={{
                   fontFamily: "var(--font-kanna)",
                   fontVariationSettings: '"wdth" 125, "wght" 900',

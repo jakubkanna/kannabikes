@@ -39,14 +39,7 @@ export default function PreOrderPage() {
     <main className="bg-stone-100 px-4 py-20 md:px-8 md:py-28">
       <div className="mx-auto max-w-6xl">
         <SectionPill>Custom Order</SectionPill>
-        <h1
-          className="mt-4 max-w-4xl text-4xl tracking-tight text-slate-900 md:text-7xl"
-          style={{
-            fontFamily: "var(--font-kanna)",
-            fontVariationSettings: '"wdth" 125, "wght" 900',
-            fontWeight: 900,
-          }}
-        >
+        <h1 className="page-heading mt-4 max-w-4xl text-4xl tracking-tight text-[var(--kanna-ink)] md:text-7xl">
           Pre-order process
         </h1>
         <p className="mt-5 max-w-2xl text-sm leading-7 text-slate-600 md:text-base">
@@ -74,15 +67,9 @@ export default function PreOrderPage() {
         <div className="mt-12 flex flex-wrap gap-4">
           <Link
             to="/contact"
-            className="inline-flex rounded-full bg-black px-6 py-3 text-sm font-semibold uppercase text-white transition hover:bg-slate-800"
+            className="inline-flex rounded-full bg-[var(--kanna-ink)] px-10 py-5 text-5xl font-semibold uppercase leading-none text-white transition hover:bg-black"
           >
-            Start inquiry
-          </Link>
-          <Link
-            to="/#custom-order"
-            className="inline-flex rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold uppercase text-slate-900 transition hover:border-slate-900"
-          >
-            Back to homepage
+            Contact
           </Link>
         </div>
       </div>

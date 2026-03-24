@@ -11,7 +11,7 @@ export default function AboutPage() {
     <main className="min-h-screen bg-stone-100 px-4 py-8 md:px-8 md:py-12">
       <div className="mx-auto max-w-5xl rounded-[28px] border border-stone-200 bg-white p-6 shadow-sm md:p-8">
         <SectionPill>About</SectionPill>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl">
+        <h1 className="page-heading mt-4 max-w-4xl text-4xl tracking-tight text-[var(--kanna-ink)] md:text-7xl">
           Built around custom steel bikes and direct collaboration.
         </h1>
         <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-600">
