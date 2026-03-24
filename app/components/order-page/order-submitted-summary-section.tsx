@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { SectionPill } from "~/components/section-pill";
 
 const SUBMITTED_SUCCESS_HIGHLIGHT_DELAY_MS = 4000;
 
@@ -49,13 +50,9 @@ export function OrderSubmittedSummarySection({
           aria-expanded={isExpanded}
         >
           <div>
-            <p
-              className={`text-xs font-semibold uppercase tracking-[0.14em] ${
-                hasSuccessHighlight ? "text-emerald-700" : "text-slate-500"
-              }`}
-            >
+            <SectionPill tone={hasSuccessHighlight ? "success" : "light"}>
               {title}
-            </p>
+            </SectionPill>
             <h2 className="mt-2 text-xl font-semibold text-slate-900">{heading}</h2>
             <p
               className={`mt-2 max-w-2xl text-sm leading-6 ${
@@ -90,13 +87,9 @@ export function OrderSubmittedSummarySection({
         </button>
       ) : (
         <div className="mb-5 shrink-0">
-          <p
-            className={`text-xs font-semibold uppercase tracking-[0.14em] ${
-              hasSuccessHighlight ? "text-emerald-700" : "text-slate-500"
-            }`}
-          >
+          <SectionPill tone={hasSuccessHighlight ? "success" : "light"}>
             {title}
-          </p>
+          </SectionPill>
           <h2 className="mt-2 text-xl font-semibold text-slate-900">{heading}</h2>
           <p
             className={`mt-2 max-w-2xl text-sm leading-6 ${

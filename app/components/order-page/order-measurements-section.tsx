@@ -1,5 +1,6 @@
 import type { MeasurementsSectionProps } from "./types";
 import { OrderSubmittedSummarySection } from "./order-submitted-summary-section";
+import { SectionPill } from "~/components/section-pill";
 
 export function OrderMeasurementsSection({
   activeMeasurement,
@@ -85,9 +86,9 @@ export function OrderMeasurementsSection({
           </div>
         </div>
 
-        <h3 className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
-          Measurements
-        </h3>
+        <div className="mt-5">
+          <SectionPill>Measurements</SectionPill>
+        </div>
         <div className="mt-4 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2 xl:grid-cols-3">
           {measurementKeys.map((key) => (
             <div
@@ -113,9 +114,7 @@ export function OrderMeasurementsSection({
       }`}
     >
       <div className="mb-5 shrink-0">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-          Measurements
-        </p>
+        <SectionPill>Measurements</SectionPill>
         <h2 className="mt-2 text-xl font-semibold text-slate-900">
           {isSubmitted ? "Received" : "Submit your body data"}
         </h2>

@@ -22,8 +22,16 @@ const SITE_URL = (
 const BASE_URL = import.meta.env.BASE_URL;
 const OG_IMAGE = `${BASE_URL}kannabikes_logo.svg`;
 const OG_IMAGE_URL = `${SITE_URL}${OG_IMAGE}`;
+const KANNA_FONT_STYLESHEET =
+  "https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,900&display=swap";
 
 export const links: Route.LinksFunction = () => [
+  { rel: "preconnect", href: "https://fonts.googleapis.com" },
+  { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+  {
+    rel: "stylesheet",
+    href: KANNA_FONT_STYLESHEET,
+  },
   { rel: "icon", href: `${BASE_URL}kannabikes_logo.svg`, type: "image/svg+xml" },
   { rel: "apple-touch-icon", href: `${BASE_URL}kannabikes_logo.svg` },
 ];
@@ -80,12 +88,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   const location = useLocation();
   const { pathname } = location;
-  const showHeader = pathname !== "/personalization";
+  const shouldOffsetContent = pathname !== "/";
 
   return (
     <>
-      {showHeader ? <SiteHeader overlay={pathname === "/"} /> : null}
-      <Outlet />
+      <SiteHeader />
+      <div className={shouldOffsetContent ? "pt-[var(--site-header-height)]" : ""}>
+        <Outlet />
+      </div>
     </>
   );
 }

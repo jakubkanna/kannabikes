@@ -1,4 +1,5 @@
 import type { Route } from "./+types/about";
+import { SectionPill } from "~/components/section-pill";
 import { SITE_NAME, formatPageTitle } from "~/root";
 
 export function meta({}: Route.MetaArgs) {
@@ -9,9 +10,7 @@ export default function AboutPage() {
   return (
     <main className="min-h-screen bg-stone-100 px-4 py-8 md:px-8 md:py-12">
       <div className="mx-auto max-w-5xl rounded-[28px] border border-stone-200 bg-white p-6 shadow-sm md:p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700">
-          About
-        </p>
+        <SectionPill>About</SectionPill>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl">
           Built around custom steel bikes and direct collaboration.
         </h1>

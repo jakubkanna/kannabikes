@@ -8,11 +8,12 @@ export function attachBackgroundParallax(target: HTMLElement): Cleanup {
   let rafId = 0;
   let lastX = 0;
   let lastY = 0;
+  let scrollY = 0;
 
   const update = () => {
     rafId = 0;
     target.style.setProperty("--bg-x", `${lastX}px`);
-    target.style.setProperty("--bg-y", `${lastY}px`);
+    target.style.setProperty("--bg-y", `${lastY + scrollY}px`);
   };
 
   const handlePointerMove = (event: PointerEvent) => {
@@ -41,14 +42,65 @@ export function attachBackgroundParallax(target: HTMLElement): Cleanup {
     }
   };
 
+  const handleScroll = () => {
+    scrollY = window.scrollY * 0.18;
+    if (!rafId) {
+      rafId = window.requestAnimationFrame(update);
+    }
+  };
+
   window.addEventListener("pointermove", handlePointerMove, { passive: true });
   window.addEventListener("pointerleave", handlePointerLeave);
   window.addEventListener("blur", handlePointerLeave);
+  window.addEventListener("scroll", handleScroll, { passive: true });
+
+  handleScroll();
 
   return () => {
     window.removeEventListener("pointermove", handlePointerMove);
     window.removeEventListener("pointerleave", handlePointerLeave);
     window.removeEventListener("blur", handlePointerLeave);
+    window.removeEventListener("scroll", handleScroll);
+    if (rafId) window.cancelAnimationFrame(rafId);
+  };
+}
+
+export function attachSectionParallax(
+  target: HTMLElement,
+  options?: { distance?: number; property?: string },
+): Cleanup {
+  const distance = options?.distance ?? 64;
+  const property = options?.property ?? "--section-shift";
+  let rafId = 0;
+
+  const update = () => {
+    rafId = 0;
+    const viewportHeight = window.innerHeight || 1;
+    const rect = target.getBoundingClientRect();
+    const progress = clamp(
+      (viewportHeight - rect.top) / (viewportHeight + rect.height),
+      0,
+      1,
+    );
+    const shift = (progress - 0.5) * distance * 2;
+
+    target.style.setProperty(property, `${shift.toFixed(2)}px`);
+    target.style.setProperty("--section-progress", progress.toFixed(3));
+  };
+
+  const requestUpdate = () => {
+    if (!rafId) {
+      rafId = window.requestAnimationFrame(update);
+    }
+  };
+
+  window.addEventListener("scroll", requestUpdate, { passive: true });
+  window.addEventListener("resize", requestUpdate);
+  requestUpdate();
+
+  return () => {
+    window.removeEventListener("scroll", requestUpdate);
+    window.removeEventListener("resize", requestUpdate);
     if (rafId) window.cancelAnimationFrame(rafId);
   };
 }

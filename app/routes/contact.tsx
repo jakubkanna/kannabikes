@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import { useState } from "react";
 import { chevronDownOutline } from "ionicons/icons";
 import type { Route } from "./+types/contact";
+import { SectionPill } from "~/components/section-pill";
 import { SITE_NAME, formatPageTitle } from "~/root";
 
 const DEFAULT_TOPIC = "Quote request";
@@ -120,9 +121,7 @@ export default function ContactPage() {
     <main className="min-h-screen bg-stone-100 px-4 py-8 md:px-8 md:py-12">
       <div className="mx-auto max-w-4xl">
         <section className="rounded-[28px] border border-stone-200 bg-white p-6 shadow-sm md:p-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700">
-            Contact
-          </p>
+          <SectionPill>Contact</SectionPill>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl">
             Get in touch
           </h1>
@@ -132,7 +131,7 @@ export default function ContactPage() {
           </p>
 
           {isSubmitted ? (
-            <div className="mt-8 rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+            <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-5">
               <h2 className="text-lg font-semibold text-slate-900">
                 Message received
               </h2>
@@ -184,7 +183,7 @@ export default function ContactPage() {
                     className={`w-full rounded-xl bg-white px-4 py-3 text-slate-900 outline-none transition focus:ring-2 ${
                       showValidation && errors.fullName
                         ? "border border-red-300 focus:border-red-400 focus:ring-red-100"
-                        : "border border-slate-300 focus:border-yellow-400 focus:ring-yellow-200"
+                        : "border border-slate-300 focus:border-slate-900 focus:ring-slate-200"
                     }`}
                   />
                   {showValidation && errors.fullName ? (
@@ -209,7 +208,7 @@ export default function ContactPage() {
                     className={`w-full rounded-xl bg-white px-4 py-3 text-slate-900 outline-none transition focus:ring-2 ${
                       showValidation && errors.email
                         ? "border border-red-300 focus:border-red-400 focus:ring-red-100"
-                        : "border border-slate-300 focus:border-yellow-400 focus:ring-yellow-200"
+                        : "border border-slate-300 focus:border-slate-900 focus:ring-slate-200"
                     }`}
                   />
                   {showValidation && errors.email ? (
@@ -234,7 +233,7 @@ export default function ContactPage() {
                     className={`w-full rounded-xl bg-white px-4 py-3 text-slate-900 outline-none transition focus:ring-2 ${
                       showValidation && errors.phoneNumber
                         ? "border border-red-300 focus:border-red-400 focus:ring-red-100"
-                        : "border border-slate-300 focus:border-yellow-400 focus:ring-yellow-200"
+                        : "border border-slate-300 focus:border-slate-900 focus:ring-slate-200"
                     }`}
                   />
                   {showValidation && errors.phoneNumber ? (
@@ -255,7 +254,7 @@ export default function ContactPage() {
                           topic: event.target.value,
                         }))
                       }
-                      className="w-full appearance-none rounded-xl border border-slate-300 bg-white px-4 py-3 pr-12 text-slate-900 outline-none transition focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
+                      className="w-full appearance-none rounded-xl border border-slate-300 bg-white px-4 py-3 pr-12 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
                     >
                       <option value="Quote request">Quote request</option>
                       <option value="General question">General question</option>
@@ -285,7 +284,7 @@ export default function ContactPage() {
                     className={`w-full rounded-xl bg-white px-4 py-3 text-slate-900 outline-none transition focus:ring-2 ${
                       showValidation && errors.message
                         ? "border border-red-300 focus:border-red-400 focus:ring-red-100"
-                        : "border border-slate-300 focus:border-yellow-400 focus:ring-yellow-200"
+                        : "border border-slate-300 focus:border-slate-900 focus:ring-slate-200"
                     }`}
                   />
                   {showValidation && errors.message ? (

@@ -2,6 +2,7 @@ import { City, Country } from "country-state-city";
 import { useEffect, useId, useState, type ReactNode } from "react";
 import { Link } from "react-router";
 import validator from "validator";
+import { SectionPill } from "~/components/section-pill";
 import { Spinner } from "~/components/spinner";
 import {
   MOCK_DELIVERED_ON,
@@ -672,9 +673,7 @@ export function OrderProductionPreviewSection({
   if (effectiveProductionStage === "waiting_for_final_payment") {
     return (
       <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-          Production
-        </p>
+        <SectionPill>Production</SectionPill>
         <h2 className="mt-2 text-xl font-semibold text-slate-900">
           Waiting for final payment
         </h2>
@@ -1130,9 +1129,7 @@ export function OrderProductionPreviewSection({
   if (effectiveProductionStage === "final_payment_in_review") {
     return (
       <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-          Production
-        </p>
+        <SectionPill>Production</SectionPill>
         <h2 className="mt-2 text-xl font-semibold text-slate-900">In review</h2>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
           We are reviewing the final payment. Once it is confirmed, the order
@@ -1163,17 +1160,17 @@ export function OrderProductionPreviewSection({
             : "border border-slate-200 bg-white"
         }`}
       >
-        <p
-          className={`text-xs font-semibold uppercase tracking-[0.14em] ${
+        <SectionPill
+          tone={
             (effectiveProductionStage === "in_production" ||
               effectiveProductionStage === "delivered") &&
             hasProductionHighlight
-              ? "text-emerald-700"
-              : "text-slate-500"
-          }`}
+              ? "success"
+              : "light"
+          }
         >
           Production
-        </p>
+        </SectionPill>
         <h2 className="mt-2 text-xl font-semibold text-slate-900">
           {effectiveProductionStage === "in_production"
             ? "In production"

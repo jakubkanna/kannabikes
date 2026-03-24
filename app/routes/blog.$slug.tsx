@@ -105,7 +105,7 @@ export default function BlogPostPage() {
 
   return (
     <main className="min-h-screen bg-white">
-      <section className="bg-slate-950 px-4 pb-12 pt-10 text-white md:px-8 md:pb-16 md:pt-14">
+      <section className="bg-black px-4 pb-12 pt-10 text-white md:px-8 md:pb-16 md:pt-14">
         <div className="mx-auto max-w-5xl">
           <Link
             to="/blog"
@@ -115,7 +115,7 @@ export default function BlogPostPage() {
           </Link>
 
           {post.publishedAt ? (
-            <p className="mt-8 text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">
+            <p className="mt-8 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
               {formatPublishedDate(post.publishedAt)}
             </p>
           ) : null}

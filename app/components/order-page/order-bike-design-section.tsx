@@ -1,4 +1,5 @@
 import { ORDER_STAGE_DEFINITIONS } from "~/lib/mock-order";
+import { SectionPill } from "~/components/section-pill";
 import { OrderSubmittedSummarySection } from "./order-submitted-summary-section";
 import type { BikeDesignSectionProps } from "./types";
 
@@ -672,9 +673,7 @@ export function OrderBikeDesignSection({
     return (
       <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:p-6">
         <div className="mb-5 shrink-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-            Specification
-          </p>
+          <SectionPill>Specification</SectionPill>
           <h2 className="mt-2 text-xl font-semibold text-slate-900">
             Design waiting for approval
           </h2>
@@ -819,9 +818,7 @@ export function OrderBikeDesignSection({
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:flex md:h-[80vh] md:flex-col md:overflow-hidden md:p-6">
       <div className="mb-5 shrink-0">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-          Specification
-        </p>
+        <SectionPill>Specification</SectionPill>
         <h2 className="mt-2 text-xl font-semibold text-slate-900">
           Define the bike specification
         </h2>

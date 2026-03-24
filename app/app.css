@@ -1,8 +1,97 @@
 @import "tailwindcss";
 
 :root {
-  --kanna-yellow: #ffd400;
+  --font-kanna: "Archivo", sans-serif;
+  --kanna-color: #ffd400;
   --site-header-height: 4.5rem;
+}
+
+.hero-chevron {
+  animation: heroChevronPulse 1.8s ease-in-out infinite;
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+}
+
+.hero-chevron-line {
+  border-bottom: 4px solid var(--kanna-color);
+  border-right: 4px solid var(--kanna-color);
+  display: block;
+  height: 1.15rem;
+  transform: rotate(45deg);
+  width: 1.15rem;
+}
+
+.chainring-stack {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: 22rem;
+  position: relative;
+  width: min(30rem, 100%);
+}
+
+.chainring-ring {
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  position: absolute;
+}
+
+.chainring-ring::before {
+  background: repeating-conic-gradient(
+    from -8deg,
+    rgba(15, 23, 42, 0.96) 0deg 5deg,
+    rgba(15, 23, 42, 0) 5deg 16deg
+  );
+  border-radius: inherit;
+  content: "";
+  inset: 0;
+  position: absolute;
+}
+
+.chainring-ring::after {
+  background: #ffffff;
+  border-radius: inherit;
+  content: "";
+  inset: 17%;
+  position: absolute;
+}
+
+.chainring-ring-lg {
+  width: min(28rem, 100%);
+}
+
+.chainring-ring-md {
+  opacity: 0.46;
+  transform: rotate(8deg) translate(18%, 20%);
+  width: min(14rem, 56%);
+}
+
+.chainring-ring-md::after {
+  inset: 24%;
+}
+
+.chainring-ring-sm {
+  opacity: 0.18;
+  transform: rotate(-14deg) translate(-52%, -46%);
+  width: min(10rem, 38%);
+}
+
+.chainring-ring-sm::after {
+  inset: 27%;
+}
+
+@keyframes heroChevronPulse {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translateY(0.5rem);
+  }
 }
 
 .blog-content > * + * {
@@ -58,7 +147,7 @@
 }
 
 .blog-content blockquote {
-  border-left: 3px solid #ffd400;
+  border-left: 3px solid #0f172a;
   padding-left: 1rem;
 }
 

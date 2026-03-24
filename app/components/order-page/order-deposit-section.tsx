@@ -6,6 +6,7 @@ import type {
   StoredDepositPayment,
 } from "~/lib/mock-order";
 import { formatOrderMoney, getInclusiveTaxBreakdown } from "~/lib/order-tax";
+import { SectionPill } from "~/components/section-pill";
 
 const DEPOSIT_SUCCESS_HIGHLIGHT_DELAY_MS = 4000;
 function validatePasswords(password: string, repeatPassword: string) {
@@ -151,13 +152,9 @@ export function OrderDepositSection({
         {isDepositStillUnderReview ? (
           <div className="flex flex-col gap-3">
             <div className="min-w-0">
-              <p
-                className={`text-xs font-semibold uppercase tracking-[0.14em] ${
-                  useSuccessColors ? "text-emerald-700" : "text-slate-500"
-                }`}
-              >
+              <SectionPill tone={useSuccessColors ? "success" : "light"}>
                 Deposit
-              </p>
+              </SectionPill>
               <div className="mt-1">
                 <h2 className="text-xl font-semibold text-slate-900">
                   In review
@@ -229,13 +226,9 @@ export function OrderDepositSection({
               aria-expanded={isReceivedExpanded}
             >
               <div className="min-w-0">
-                <p
-                  className={`text-xs font-semibold uppercase tracking-[0.14em] ${
-                    useSuccessColors ? "text-emerald-700" : "text-slate-500"
-                  }`}
-                >
+                <SectionPill tone={useSuccessColors ? "success" : "light"}>
                   Deposit
-                </p>
+                </SectionPill>
                 <div className="mt-1">
                   <h2 className="text-xl font-semibold text-slate-900">
                     Received
@@ -316,9 +309,7 @@ export function OrderDepositSection({
     <section className="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-white p-4 shadow-sm md:max-h-[80vh] md:overflow-y-auto md:p-6">
       <div className="grid gap-6 md:grid-cols-[minmax(0,1.8fr)_minmax(320px,0.95fr)] md:items-start">
         <div className="rounded-xl border border-slate-200 bg-white p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">
-            Deposit required
-          </p>
+          <SectionPill>Deposit</SectionPill>
           <h2 className="mt-2 text-2xl font-semibold text-slate-900">
             Waiting for deposit
           </h2>

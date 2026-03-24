@@ -1,4 +1,5 @@
 import type { Route } from "./+types/privacy-terms";
+import { SectionPill } from "~/components/section-pill";
 import { SITE_NAME, formatPageTitle } from "~/root";
 
 const BUSINESS = {
@@ -21,9 +22,7 @@ export default function PrivacyTermsPage() {
   return (
     <main className="min-h-screen bg-stone-100 px-4 py-8 md:px-8 md:py-12">
       <div className="mx-auto max-w-4xl rounded-[28px] border border-stone-200 bg-white p-6 shadow-sm md:p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700">
-          Legal
-        </p>
+        <SectionPill>Legal</SectionPill>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl">
           Privacy & terms
         </h1>
