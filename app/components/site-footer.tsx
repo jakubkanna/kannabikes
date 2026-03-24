@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
+import { ArchivoInkBleed } from "./archivo-ink-bleed";
 
 export function SiteFooter() {
   const { pathname } = useLocation();
@@ -48,7 +49,9 @@ export function SiteFooter() {
 
     if (!heading) return;
 
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
 
     if (reduceMotion) {
       setIsFooterHeadingVisible(true);
@@ -110,14 +113,14 @@ export function SiteFooter() {
           <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
             <h2
               ref={footerHeadingRef}
-              className={`max-w-4xl text-4xl tracking-tight md:text-7xl reveal-slide-left ${isFooterHeadingVisible ? "is-visible" : ""}`}
-              style={{
-                fontFamily: "var(--font-kanna)",
-                fontVariationSettings: '"wdth" 125, "wght" 900',
-                fontWeight: 900,
-              }}
+              className={`max-w-4xl reveal-slide-left ${isFooterHeadingVisible ? "is-visible" : ""}`}
             >
-              Handbuilt with passion in Poland
+              <ArchivoInkBleed
+                className="block w-full"
+                color={useHomeKannaState ? "var(--kanna-ink)" : "#f3f3ea"}
+                lines={["Handbuilt with", "passion in Poland"]}
+                fontSize={1255}
+              />
             </h2>
             <div className="grid gap-8 sm:grid-cols-3">
               <div className="text-right">

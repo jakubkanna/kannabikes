@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import type { Route } from "./+types/_index";
 import { useEffect, useRef, useState } from "react";
+import { ArchivoInkBleed } from "~/components/archivo-ink-bleed";
 import { SectionPill } from "~/components/section-pill";
 import { SITE_NAME, formatPageTitle } from "~/root";
 import {
@@ -208,15 +209,12 @@ export default function Home() {
                 className={`reveal-slide-left ${revealedSections.customOrderText ? "is-visible" : ""}`}
               >
                 <SectionPill>Custom Order</SectionPill>
-                <h2
-                  className="mt-4 max-w-3xl text-4xl tracking-tight text-[var(--kanna-ink)] md:text-6xl"
-                  style={{
-                    fontFamily: "var(--font-kanna)",
-                    fontVariationSettings: '"wdth" 125, "wght" 900',
-                    fontWeight: 900,
-                  }}
-                >
-                  Made-to-measure bicycles.
+                <h2 className="mt-4 max-w-3xl">
+                  <ArchivoInkBleed
+                    className="block w-full max-w-[54rem]"
+                    color="var(--kanna-ink)"
+                    lines={["Made-to-measure", "bicycles."]}
+                  />
                 </h2>
                 <p className="mt-5 max-w-2xl text-sm leading-7 text-slate-600 md:text-base">
                   Get handbuild bicycle built around your fit, riding style and
@@ -243,11 +241,11 @@ export default function Home() {
               ref={customOrderImageRef}
               className={`overflow-hidden border border-stone-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.08)] reveal-slide-right ${revealedSections.customOrderImage ? "is-visible" : ""}`}
             >
-              <Link to="/pre-order" className="block">
+              <Link to="/pre-order" className="block h-full">
                 <img
                   src={`${baseUrl}welding-kanna.jpg`}
                   alt="Welding bicycle frame"
-                  className="aspect-[4/5] w-full object-cover"
+                  className="h-full w-full object-cover"
                 />
               </Link>
             </div>
@@ -270,15 +268,11 @@ export default function Home() {
             className={`max-w-3xl reveal-slide-left ${revealedSections.walkerText ? "is-visible" : ""}`}
           >
             <SectionPill tone="dark">New Bike</SectionPill>
-            <h2
-              className="mt-4 text-4xl tracking-tight text-white md:text-6xl"
-              style={{
-                fontFamily: "var(--font-kanna)",
-                fontVariationSettings: '"wdth" 125, "wght" 900',
-                fontWeight: 900,
-              }}
-            >
-              Walker
+            <h2 className="mt-4 max-w-3xl">
+              <ArchivoInkBleed
+                className="block w-full max-w-[34rem]"
+                lines={["Walker"]}
+              />
             </h2>
             <p className="mt-5 max-w-2xl text-sm leading-7 text-white md:text-base">
               32&quot;, Pinion / Effigear gearbox compatible, drop-bar mtb
@@ -298,18 +292,15 @@ export default function Home() {
               className={`reveal-slide-left ${revealedSections.chainringText ? "is-visible" : ""}`}
             >
               <SectionPill>Survivor Chainring</SectionPill>
-              <h2
-                className="mt-4 max-w-3xl text-4xl tracking-tight text-[var(--kanna-ink)] md:text-6xl"
-                style={{
-                  fontFamily: "var(--font-kanna)",
-                  fontVariationSettings: '"wdth" 125, "wght" 900',
-                  fontWeight: 900,
-                }}
-              >
-                Survivor Chainring
+              <h2 className="mt-4 max-w-3xl">
+                <ArchivoInkBleed
+                  className="block w-full max-w-[54rem]"
+                  color="var(--kanna-ink)"
+                  lines={["Survivor", "Chainring"]}
+                />
               </h2>
               <p className="mt-5 max-w-2xl text-sm leading-7 text-slate-600 md:text-base">
-                Old steel fan? Resurrect your old 5-hole crankset with a new
+                Retro school fan? Resurrect your old 5-hole crankset with a new
                 chainring.
               </p>
             </div>

@@ -32,6 +32,10 @@ export const links: Route.LinksFunction = () => [
     href: "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap",
   },
   {
+    rel: "stylesheet",
+    href: "https://fonts.googleapis.com/css2?family=Archivo:wght@900&display=swap",
+  },
+  {
     rel: "preload",
     href: `${BASE_URL}kanna-font.ttf`,
     as: "font",

@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import { useState } from "react";
 import { chevronDownOutline } from "ionicons/icons";
 import type { Route } from "./+types/contact";
+import { ArchivoInkBleed } from "~/components/archivo-ink-bleed";
 import { SectionPill } from "~/components/section-pill";
 import { SITE_NAME, formatPageTitle } from "~/root";
 
@@ -120,10 +121,15 @@ export default function ContactPage() {
   return (
     <main className="min-h-screen bg-stone-100 px-4 py-8 md:px-8 md:py-12">
       <div className="mx-auto max-w-4xl">
-        <section className="rounded-[28px] border border-stone-200 bg-white p-6 shadow-sm md:p-8">
+        <section>
           <SectionPill>Contact</SectionPill>
-          <h1 className="page-heading mt-4 max-w-4xl text-4xl tracking-tight text-[var(--kanna-ink)] md:text-7xl">
-            Get in touch
+          <h1 className="mt-4 max-w-4xl">
+            <ArchivoInkBleed
+              className="block w-full"
+              color="var(--kanna-ink)"
+              fontSize={160}
+              lines={["Get in touch"]}
+            />
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600">
             Choose the topic that fits your inquiry and send us the details.
