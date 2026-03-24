@@ -77,7 +77,7 @@ export default function PreOrderPage() {
             <img
               src={`${baseUrl}cards-work-process.svg`}
               alt="Pre-order process steps"
-              className="block h-auto w-full max-w-full"
+              className="mx-auto block h-auto w-full max-w-full"
             />
           </div>
         </div>
