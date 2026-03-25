@@ -1,4 +1,10 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
+import { DetailPanel } from "~/components/commerce/detail-panel";
+import {
+  BankTransferIcon,
+  PaymentOption,
+  StripeCardIcon,
+} from "~/components/commerce/payment-option";
 import { InputField, LockedField } from "~/components/form-field";
 import { LocalizedLink } from "~/components/localized-link";
 import { useLocale } from "~/components/locale-provider";
@@ -322,16 +328,11 @@ export function OrderDepositSection({
             deposit, we will begin designing your dream bike.
           </p>
 
-          <div className="mt-6 rounded-xl border border-stone-200 bg-stone-50 p-4">
-            <div>
-              <p className="text-sm font-semibold text-slate-900">
-                Order details
-              </p>
-              <p className="mt-1 text-sm text-slate-600">
-                We will use this data to contact you about your order.
-              </p>
-            </div>
-
+          <DetailPanel
+            className="mt-6"
+            title="Order details"
+            description="We will use this data to contact you about your order."
+          >
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <span className="mb-2 block text-sm font-semibold text-slate-700">
@@ -427,34 +428,34 @@ export function OrderDepositSection({
               ) : null}
             </div>
 
-            <div className="mt-6 border-t border-stone-200 pt-5">
-              <p className="text-sm font-semibold text-slate-900">
-                Payment options
-              </p>
-              <div className="mt-3 grid gap-2">
-                {availablePaymentMethods.map((method) => (
-                  <PaymentOption
-                    key={method}
-                    icon={
-                      method === "classic_transfer" ? (
-                        <BankTransferIcon />
-                      ) : (
-                        <StripeCardIcon />
-                      )
-                    }
-                    isSelected={paymentMethod === method}
-                    onSelect={() => setPaymentMethod(method)}
-                    title={
-                      method === "classic_transfer"
-                        ? "Classic bank transfer"
-                        : "Stripe"
-                    }
-                    helper=""
-                  />
-                ))}
+              <div className="mt-6 border-t border-stone-200 pt-5">
+                <p className="text-sm font-semibold text-slate-900">
+                  Payment options
+                </p>
+                <div className="mt-3 grid gap-2">
+                  {availablePaymentMethods.map((method) => (
+                    <PaymentOption
+                      key={method}
+                      icon={
+                        method === "classic_transfer" ? (
+                          <BankTransferIcon />
+                        ) : (
+                          <StripeCardIcon />
+                        )
+                      }
+                      isSelected={paymentMethod === method}
+                      onSelect={() => setPaymentMethod(method)}
+                      title={
+                        method === "classic_transfer"
+                          ? "Classic bank transfer"
+                          : "Stripe"
+                      }
+                      helper=""
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          </div>
+            </DetailPanel>
         </div>
 
         <div className="md:sticky md:top-4">
@@ -541,135 +542,5 @@ export function OrderDepositSection({
         </div>
       </div>
     </AnimatedOrderSection>
-  );
-}
-
-function PaymentOption({
-  helper,
-  icon,
-  isSelected,
-  onSelect,
-  title,
-}: {
-  helper: string;
-  icon: ReactNode;
-  isSelected: boolean;
-  onSelect: () => void;
-  title: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      aria-pressed={isSelected}
-      className={`rounded-lg border px-3 py-3 text-left transition ${
-        isSelected
-          ? "border-[var(--kanna-ink)] bg-[var(--kanna-ink)] text-white"
-          : "border-stone-200 bg-white text-slate-900 hover:border-stone-300"
-      }`}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-start gap-3">
-          <span
-            className={`shrink-0 ${
-              isSelected ? "text-white" : "text-slate-500"
-            }`}
-            aria-hidden="true"
-          >
-            {icon}
-          </span>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold">{title}</p>
-            <p
-              className={`mt-1 text-xs ${
-                isSelected ? "text-slate-300" : "text-slate-500"
-              }`}
-            >
-              {helper}
-            </p>
-          </div>
-        </div>
-        <span
-          className={`mt-0.5 h-4 w-4 rounded-full border ${
-            isSelected
-              ? "border-white bg-white ring-4 ring-slate-700"
-              : "border-stone-300 bg-white"
-          }`}
-          aria-hidden="true"
-        />
-      </div>
-    </button>
-  );
-}
-
-function StripeCardIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="block h-5 w-5" fill="none">
-      <rect
-        x="3.25"
-        y="5.25"
-        width="17.5"
-        height="13.5"
-        rx="2.5"
-        stroke="currentColor"
-        strokeWidth="1.5"
-      />
-      <path
-        d="M3.75 9.25H20.25"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-      <path
-        d="M7.5 14.75H11.5"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function BankTransferIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="block h-5 w-5" fill="none">
-      <path
-        d="M4 9L12 4L20 9"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M5.5 9.75V17.5"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-      <path
-        d="M9.5 9.75V17.5"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-      <path
-        d="M14.5 9.75V17.5"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-      <path
-        d="M18.5 9.75V17.5"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-      <path
-        d="M4 19.5H20"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
   );
 }

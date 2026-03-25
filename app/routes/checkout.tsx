@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 
 import type { Route } from "./+types/checkout";
+import { DetailPanel } from "~/components/commerce/detail-panel";
+import {
+  BankTransferIcon,
+  PaymentOption,
+  StripeCardIcon,
+} from "~/components/commerce/payment-option";
 import { LocalizedLink } from "~/components/localized-link";
 import {
   AnimatedOrderSection,
@@ -26,6 +32,8 @@ import {
 } from "~/lib/store-api";
 import { formatPageTitle } from "~/root";
 
+type CheckoutPaymentMethod = "stripe" | "classic_transfer";
+
 export function meta({ location }: Route.MetaArgs) {
   const locale = getLocaleFromPath(location.pathname);
   const messages = getMessages(locale);
@@ -45,6 +53,8 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [paymentMethod, setPaymentMethod] =
+    useState<CheckoutPaymentMethod>("stripe");
   const [formValues, setFormValues] = useState({
     address1: "",
     city: "",
@@ -106,7 +116,7 @@ export default function CheckoutPage() {
             postcode: formValues.postcode,
           },
           customer_note: formValues.note,
-          payment_method: "cod",
+          payment_method: paymentMethod === "classic_transfer" ? "bacs" : "stripe",
           shipping_address: {
             address_1: formValues.address1,
             city: formValues.city,
@@ -162,11 +172,7 @@ export default function CheckoutPage() {
                 className="space-y-6"
                 onSubmit={handleSubmit}
               >
-                <div className="rounded-xl border border-stone-200 bg-stone-50 p-4">
-                  <h3 className="text-sm font-semibold text-slate-900">
-                    Shipping details
-                  </h3>
-
+                <DetailPanel title="Shipping details">
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
                     <label className="block">
                       <span className="mb-2 block text-sm font-semibold text-slate-700">
@@ -325,7 +331,24 @@ export default function CheckoutPage() {
                       />
                     </label>
                   </div>
-                </div>
+                </DetailPanel>
+
+                <DetailPanel title={messages.checkout.paymentOptions}>
+                  <div className="mt-3 grid gap-2">
+                    <PaymentOption
+                      icon={<StripeCardIcon />}
+                      isSelected={paymentMethod === "stripe"}
+                      onSelect={() => setPaymentMethod("stripe")}
+                      title={messages.checkout.stripe}
+                    />
+                    <PaymentOption
+                      icon={<BankTransferIcon />}
+                      isSelected={paymentMethod === "classic_transfer"}
+                      onSelect={() => setPaymentMethod("classic_transfer")}
+                      title={messages.checkout.classicTransfer}
+                    />
+                  </div>
+                </DetailPanel>
 
                 {submitError ? (
                   <p className="text-sm text-red-700">{submitError}</p>
@@ -388,6 +411,14 @@ export default function CheckoutPage() {
                           </div>
                         ) : null}
                       </div>
+                    </div>
+                    <div className="flex items-center justify-between gap-4 text-sm text-slate-700">
+                      <span>{messages.checkout.paymentMethod}</span>
+                      <span className="font-semibold text-[var(--kanna-ink)]">
+                        {paymentMethod === "classic_transfer"
+                          ? messages.checkout.classicTransfer
+                          : messages.checkout.stripe}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between gap-4 text-sm text-slate-700">
                       <span>{messages.cart.vat}</span>
