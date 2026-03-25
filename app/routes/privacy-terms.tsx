@@ -1,4 +1,10 @@
 import type { Route } from "./+types/privacy-terms";
+import { useMessages } from "~/components/locale-provider";
+import {
+  buildLocalizedMeta,
+  getLocaleFromPath,
+  getMessages,
+} from "~/lib/i18n";
 import { SectionPill } from "~/components/section-pill";
 import { SITE_NAME, formatPageTitle } from "~/root";
 
@@ -14,22 +20,28 @@ const BUSINESS = {
     "[replace with your real processors, e.g. hosting provider, email provider, CRM, payment processor]",
 };
 
-export function meta({}: Route.MetaArgs) {
-  return [{ title: formatPageTitle("Privacy & Terms") }];
+export function meta({ location }: Route.MetaArgs) {
+  const locale = getLocaleFromPath(location.pathname);
+  const messages = getMessages(locale);
+  return buildLocalizedMeta({
+    description: messages.meta.legal.description,
+    locale,
+    pathname: location.pathname,
+    title: formatPageTitle(messages.meta.legal.title),
+  });
 }
 
 export default function PrivacyTermsPage() {
+  const messages = useMessages();
   return (
     <main className="min-h-screen bg-stone-100 px-4 py-8 md:px-8 md:py-12">
       <div className="mx-auto max-w-4xl rounded-[28px] border border-stone-200 bg-white p-6 shadow-sm md:p-8">
-        <SectionPill>Legal</SectionPill>
+        <SectionPill>{messages.legal.pill}</SectionPill>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl">
-          Privacy & terms
+          {messages.legal.title}
         </h1>
         <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-600">
-          This page sets out the privacy information and order terms for
-          customers contacting {SITE_NAME} through the website across three
-          stages: contact and quote, deposit, and delivery.
+          {messages.legal.intro.replace("Kanna Bikes", SITE_NAME)}
         </p>
 
         <div className="mt-8 space-y-8 text-sm leading-6 text-slate-700">

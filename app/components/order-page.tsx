@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
+import { useLocale } from "~/components/locale-provider";
 import { InputField } from "~/components/form-field";
 import { SectionPill } from "~/components/section-pill";
 import {
@@ -39,6 +40,7 @@ import {
   type OrderStage,
   type StoredDepositPayment,
 } from "~/lib/mock-order";
+import { localizePath } from "~/lib/i18n";
 import { SITE_NAME } from "~/root";
 
 type MeasurementKey = "A" | "B" | "C" | "D" | "E" | "F";
@@ -143,6 +145,7 @@ export function OrderPage({
   claimToken?: string;
   orderNumber: string;
 }) {
+  const locale = useLocale();
   const productionSectionRef = useRef<HTMLDivElement | null>(null);
   const shouldScrollToProductionRef = useRef(false);
   const [agreementAccepted, setAgreementAccepted] = useState(false);
@@ -513,7 +516,11 @@ export function OrderPage({
     setPortalBuild(claimed.build);
     setRequiresLogin(false);
     setDepositClaimError(null);
-    window.history.replaceState({}, document.title, `/order/${orderNumber}`);
+    window.history.replaceState(
+      {},
+      document.title,
+      localizePath(`/order/${orderNumber}`, locale),
+    );
 
     return claimed;
   };

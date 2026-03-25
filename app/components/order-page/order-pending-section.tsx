@@ -1,6 +1,6 @@
 import { useEffect, useId, useState, type ReactNode } from "react";
-import { Link } from "react-router";
 import { InputField } from "~/components/form-field";
+import { LocalizedLink } from "~/components/localized-link";
 import { SectionPill } from "~/components/section-pill";
 import { Spinner } from "~/components/spinner";
 import { AnimatedOrderSection } from "./order-motion";
@@ -1194,12 +1194,12 @@ export function OrderProductionPreviewSection({
                       {quotedShipping.shippingCost === null ? (
                         <>
                           {" "}
-                          <Link
+                          <LocalizedLink
                             to="/contact"
                             className="font-semibold underline underline-offset-2"
                           >
                             Contact us
-                          </Link>
+                          </LocalizedLink>
                           .
                         </>
                       ) : null}

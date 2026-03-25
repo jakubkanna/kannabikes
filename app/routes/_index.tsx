@@ -1,19 +1,33 @@
-import { Link } from "react-router";
 import type { Route } from "./+types/_index";
 import { useEffect, useRef, useState } from "react";
 import { ArchivoInkBleed } from "~/components/archivo-ink-bleed";
+import { LocalizedLink } from "~/components/localized-link";
+import { useMessages } from "~/components/locale-provider";
 import { SectionPill } from "~/components/section-pill";
 import { SITE_NAME, formatPageTitle } from "~/root";
 import {
   attachBackgroundParallax,
   attachPointerParallax,
 } from "~/lib/parallax";
+import {
+  buildLocalizedMeta,
+  getLocaleFromPath,
+  getMessages,
+} from "~/lib/i18n";
 
-export function meta({}: Route.MetaArgs) {
-  return [{ title: formatPageTitle("Home") }];
+export function meta({ location }: Route.MetaArgs) {
+  const locale = getLocaleFromPath(location.pathname);
+  const messages = getMessages(locale);
+  return buildLocalizedMeta({
+    description: messages.meta.home.description,
+    locale,
+    pathname: location.pathname,
+    title: formatPageTitle(messages.meta.home.title),
+  });
 }
 
 export default function Home() {
+  const messages = useMessages();
   const backgroundRef = useRef<HTMLDivElement | null>(null);
   const walkerBackgroundRef = useRef<HTMLDivElement | null>(null);
   const customOrderRef = useRef<HTMLDivElement | null>(null);
@@ -208,17 +222,16 @@ export default function Home() {
                 ref={customOrderTextRef}
                 className={`reveal-slide-left ${revealedSections.customOrderText ? "is-visible" : ""}`}
               >
-                <SectionPill>Custom Order</SectionPill>
+                <SectionPill>{messages.home.customOrder.pill}</SectionPill>
                 <h2 className="mt-4 max-w-3xl">
                   <ArchivoInkBleed
                     className="block w-full max-w-[54rem]"
                     color="var(--kanna-ink)"
-                    lines={["Made-to-measure", "bicycles."]}
+                    lines={[...messages.home.customOrder.titleLines]}
                   />
                 </h2>
                 <p className="mt-5 max-w-2xl text-sm leading-7 text-slate-600 md:text-base">
-                  Get handbuild bicycle built around your fit, riding style and
-                  soul.
+                  {messages.home.customOrder.description}
                 </p>
               </div>
 
@@ -227,12 +240,12 @@ export default function Home() {
                   ref={customOrderButtonRef}
                   className="h-[15rem] w-[15rem] overflow-hidden"
                 >
-                  <Link
+                  <LocalizedLink
                     to="/pre-order"
                     className={`reveal-button-up inline-flex h-[15rem] w-[15rem] min-h-[15rem] min-w-[15rem] shrink-0 items-center justify-center rounded-full border border-transparent bg-[var(--kanna-ink)] p-0 text-center text-[3rem] font-semibold leading-[0.95] text-white uppercase transition hover:border-black hover:bg-white hover:text-black ${revealedSections.customOrderButton ? "is-visible" : ""}`}
                   >
-                    Order custom bike
-                  </Link>
+                    {messages.home.customOrder.button}
+                  </LocalizedLink>
                 </div>
               </div>
             </div>
@@ -241,13 +254,13 @@ export default function Home() {
               ref={customOrderImageRef}
               className={`overflow-hidden border border-stone-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.08)] reveal-slide-right ${revealedSections.customOrderImage ? "is-visible" : ""}`}
             >
-              <Link to="/pre-order" className="block h-full">
+              <LocalizedLink to="/pre-order" className="block h-full">
                 <img
                   src={`${baseUrl}welding-kanna.jpg`}
-                  alt="Welding bicycle frame"
+                  alt={messages.home.customOrder.imageAlt}
                   className="h-full w-full object-cover"
                 />
-              </Link>
+              </LocalizedLink>
             </div>
           </div>
         </div>
@@ -267,19 +280,19 @@ export default function Home() {
             ref={walkerTextRef}
             className={`max-w-3xl reveal-slide-left ${revealedSections.walkerText ? "is-visible" : ""}`}
           >
-            <SectionPill tone="dark">New Bike</SectionPill>
+            <SectionPill tone="dark">{messages.home.walker.pill}</SectionPill>
             <h2 className="mt-4 max-w-3xl">
               <ArchivoInkBleed
                 className="block w-full max-w-[34rem]"
-                lines={["Walker"]}
+                lines={[...messages.home.walker.titleLines]}
               />
             </h2>
             <p className="mt-5 max-w-2xl text-sm leading-7 text-white md:text-base">
-              32&quot;, Pinion / Effigear gearbox compatible, drop-bar mtb
+              {messages.home.walker.description}
             </p>
           </div>
           <p className="absolute bottom-0 left-0 text-xs font-semibold uppercase tracking-[0.18em] text-white">
-            Coming soon
+            {messages.common.comingSoon}
           </p>
         </div>
       </section>
@@ -291,17 +304,16 @@ export default function Home() {
               ref={chainringTextRef}
               className={`reveal-slide-left ${revealedSections.chainringText ? "is-visible" : ""}`}
             >
-              <SectionPill>Survivor Chainring</SectionPill>
+              <SectionPill>{messages.home.chainring.pill}</SectionPill>
               <h2 className="mt-4 max-w-3xl">
                 <ArchivoInkBleed
                   className="block w-full max-w-[54rem]"
                   color="var(--kanna-ink)"
-                  lines={["Survivor", "Chainring"]}
+                  lines={[...messages.home.chainring.titleLines]}
                 />
               </h2>
               <p className="mt-5 max-w-2xl text-sm leading-7 text-slate-600 md:text-base">
-                Retro school fan? Resurrect your old 5-hole crankset with a new
-                chainring.
+                {messages.home.chainring.description}
               </p>
             </div>
           </div>
@@ -311,12 +323,12 @@ export default function Home() {
           >
             <img
               src={`${baseUrl}Survior_Chainring_v147_2024-Jan-10_05-04-08PM-000_CustomizedView27250563922.png`}
-              alt="Survivor chainring"
+              alt={messages.home.chainring.imageAlt}
               className="w-full max-w-xl object-contain"
             />
           </div>
           <p className="absolute bottom-6 left-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-900 md:left-8">
-            Coming soon
+            {messages.common.comingSoon}
           </p>
         </div>
       </section>

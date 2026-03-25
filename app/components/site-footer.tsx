@@ -1,16 +1,22 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useLocation } from "react-router";
+import { useLocation } from "react-router";
+import { stripLocalePrefix } from "~/lib/i18n";
 import { ArchivoInkBleed } from "./archivo-ink-bleed";
+import { LocalizedLink } from "./localized-link";
+import { useMessages } from "./locale-provider";
 
 export function SiteFooter() {
   const { pathname } = useLocation();
+  const messages = useMessages();
   const currentYear = new Date().getFullYear();
-  const [useHomeKannaState, setUseHomeKannaState] = useState(pathname === "/");
+  const [useHomeKannaState, setUseHomeKannaState] = useState(
+    stripLocalePrefix(pathname) === "/",
+  );
   const footerHeadingRef = useRef<HTMLHeadingElement | null>(null);
   const [isFooterHeadingVisible, setIsFooterHeadingVisible] = useState(false);
 
   useEffect(() => {
-    if (pathname !== "/") {
+    if (stripLocalePrefix(pathname) !== "/") {
       setUseHomeKannaState(false);
       return;
     }
@@ -118,56 +124,56 @@ export function SiteFooter() {
               <ArchivoInkBleed
                 className="block w-full"
                 color={useHomeKannaState ? "var(--kanna-ink)" : "#f3f3ea"}
-                lines={["Handbuilt with", "passion in Poland"]}
+                lines={[...messages.footer.headingLines]}
                 fontSize={1255}
               />
             </h2>
             <div className="grid gap-8 sm:grid-cols-3">
               <div className="text-right">
                 <p className={`text-xs uppercase ${secondaryTextClassName}`}>
-                  Products
+                  {messages.footer.products}
                 </p>
                 <div className="mt-3 flex flex-col items-end gap-0.5">
                   <a href="#" className={linkClassName}>
-                    Custom Road
+                    {messages.footer.customRoad}
                   </a>
                   <a href="#" className={linkClassName}>
-                    All-Road
+                    {messages.footer.allRoad}
                   </a>
                   <a href="#" className={linkClassName}>
-                    Commuter
+                    {messages.footer.commuter}
                   </a>
                 </div>
               </div>
               <div className="text-right">
                 <p className={`text-xs uppercase ${secondaryTextClassName}`}>
-                  Company
+                  {messages.footer.company}
                 </p>
                 <div className="mt-3 flex flex-col items-end gap-0.5">
-                  <Link to="/about" className={linkClassName}>
-                    About
-                  </Link>
-                  <Link to="/blog" className={linkClassName}>
-                    Blog
-                  </Link>
+                  <LocalizedLink to="/about" className={linkClassName}>
+                    {messages.footer.about}
+                  </LocalizedLink>
+                  <LocalizedLink to="/blog" className={linkClassName}>
+                    {messages.footer.blog}
+                  </LocalizedLink>
                   <a href="#" className={linkClassName}>
-                    Studio
+                    {messages.footer.studio}
                   </a>
                 </div>
               </div>
               <div className="text-right">
                 <p className={`text-xs uppercase ${secondaryTextClassName}`}>
-                  Support
+                  {messages.footer.support}
                 </p>
                 <div className="mt-3 flex flex-col items-end gap-0.5">
-                  <Link to="/contact" className={linkClassName}>
-                    Contact
-                  </Link>
+                  <LocalizedLink to="/contact" className={linkClassName}>
+                    {messages.footer.contact}
+                  </LocalizedLink>
                   <a href="#" className={linkClassName}>
-                    Delivery
+                    {messages.footer.delivery}
                   </a>
                   <a href="#" className={linkClassName}>
-                    Warranty
+                    {messages.footer.warranty}
                   </a>
                 </div>
               </div>
@@ -179,13 +185,12 @@ export function SiteFooter() {
             <p
               className={`pt-4 self-start text-l text-right md:text-xl ${secondaryTextClassName}`}
             >
-              Kanna Bikes Studio
-              <br />
-              Placeholder Street 12
-              <br />
-              00-001 Warsaw
-              <br />
-              Poland
+              {messages.footer.addressLines.map((line, index) => (
+                <span key={line}>
+                  {index > 0 ? <br /> : null}
+                  {line}
+                </span>
+              ))}
             </p>
           </div>
         </div>
@@ -196,7 +201,7 @@ export function SiteFooter() {
           <p className="flex flex-wrap items-center gap-2">
             <span>{`© Kanna Bikes ${currentYear}`}</span>
             <span aria-hidden="true">·</span>
-            <span>designed and developed by</span>
+            <span>{messages.footer.designedBy}</span>
             <a
               href="https://studio.jakubkanna.com"
               target="_blank"
@@ -207,16 +212,16 @@ export function SiteFooter() {
             </a>
           </p>
           <div className="flex flex-wrap gap-5">
-            <Link to="/privacy-terms" className={linkClassName}>
-              Privacy & Terms
-            </Link>
+            <LocalizedLink to="/privacy-terms" className={linkClassName}>
+              {messages.footer.privacyTerms}
+            </LocalizedLink>
             <a
               href="https://instagram.com/kannabikes"
               target="_blank"
               rel="noreferrer"
               className={linkClassName}
             >
-              Instagram
+              {messages.footer.instagram}
             </a>
             <a
               href="https://www.youtube.com/@kannabikes"
@@ -224,7 +229,7 @@ export function SiteFooter() {
               rel="noreferrer"
               className={linkClassName}
             >
-              YouTube
+              {messages.footer.youtube}
             </a>
           </div>
         </div>

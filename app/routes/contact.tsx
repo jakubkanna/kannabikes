@@ -1,4 +1,3 @@
-import { Link } from "react-router";
 import { useState } from "react";
 import type { Route } from "./+types/contact";
 import { ArchivoInkBleed } from "~/components/archivo-ink-bleed";
@@ -7,10 +6,16 @@ import {
   SelectField,
   TextareaField,
 } from "~/components/form-field";
+import { LocalizedLink } from "~/components/localized-link";
+import { useLocale, useMessages } from "~/components/locale-provider";
 import { SectionPill } from "~/components/section-pill";
-import { SITE_NAME, formatPageTitle } from "~/root";
+import { formatPageTitle } from "~/root";
+import {
+  buildLocalizedMeta,
+  getLocaleFromPath,
+  getMessages,
+} from "~/lib/i18n";
 
-const DEFAULT_TOPIC = "Quote request";
 const DEFAULT_WORDPRESS_API_BASE =
   import.meta.env.VITE_WORDPRESS_API_BASE_URL ??
   "http://localhost/wp-json/kanna/v1";
@@ -22,42 +27,60 @@ function validateContactForm(values: {
   message: string;
   phoneNumber: string;
   privacyAccepted: boolean;
-}) {
+}, routeMessages: ReturnType<typeof useMessages>) {
   const errors: Partial<Record<keyof typeof values, string>> = {};
 
   if (values.fullName.trim().length < 2) {
-    errors.fullName = "Enter full name.";
+    errors.fullName = routeMessages.contact.errors.fullName;
   }
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
-    errors.email = "Enter a valid email address.";
+    errors.email = routeMessages.contact.errors.email;
   }
 
   if (values.phoneNumber.replace(/[^\d+]/g, "").length < 7) {
-    errors.phoneNumber = "Enter a valid phone number.";
+    errors.phoneNumber = routeMessages.contact.errors.phoneNumber;
   }
 
   if (values.message.trim().length < 20) {
-    errors.message = "Enter at least 20 characters.";
+    errors.message = routeMessages.contact.errors.message;
   }
 
   if (!values.privacyAccepted) {
-    errors.privacyAccepted = "You must confirm the privacy information.";
+    errors.privacyAccepted = routeMessages.contact.errors.privacyAccepted;
   }
 
   return errors;
 }
 
-export function meta({}: Route.MetaArgs) {
-  return [{ title: formatPageTitle("Contact") }];
+export function meta({ location }: Route.MetaArgs) {
+  const locale = getLocaleFromPath(location.pathname);
+  const messages = getMessages(locale);
+  return buildLocalizedMeta({
+    description: messages.meta.contact.description,
+    locale,
+    pathname: location.pathname,
+    title: formatPageTitle(messages.meta.contact.title),
+  });
 }
 
 export default function ContactPage() {
-  const [formValues, setFormValues] = useState({
+  const locale = useLocale();
+  const messages = useMessages();
+  const [formValues, setFormValues] = useState<{
+    email: string;
+    fullName: string;
+    marketingAccepted: boolean;
+    message: string;
+    phoneNumber: string;
+    privacyAccepted: boolean;
+    topic: string;
+    website: string;
+  }>({
     fullName: "",
     email: "",
     phoneNumber: "",
-    topic: DEFAULT_TOPIC,
+    topic: messages.contact.topicOptions.quote,
     message: "",
     privacyAccepted: false,
     marketingAccepted: false,
@@ -68,7 +91,7 @@ export default function ContactPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const errors = validateContactForm(formValues);
+  const errors = validateContactForm(formValues, messages);
   const hasErrors = Object.keys(errors).length > 0;
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -91,6 +114,7 @@ export default function ContactPage() {
         body: JSON.stringify({
           full_name: formValues.fullName,
           email: formValues.email,
+          locale,
           phone_number: formValues.phoneNumber,
           topic: formValues.topic,
           message: formValues.message,
@@ -107,16 +131,14 @@ export default function ContactPage() {
       if (!response.ok) {
         setSubmitError(
           payload?.message ??
-            "We could not send your message right now. Please try again.",
+            messages.contact.errors.submit,
         );
         return;
       }
 
       setIsSubmitted(true);
     } catch {
-      setSubmitError(
-        "We could not reach the contact service. Please try again in a moment.",
-      );
+      setSubmitError(messages.contact.errors.reachService);
     } finally {
       setIsSubmitting(false);
     }
@@ -126,36 +148,33 @@ export default function ContactPage() {
     <main className="min-h-screen bg-stone-100 px-4 py-8 md:px-8 md:py-12">
       <div className="mx-auto max-w-4xl">
         <section>
-          <SectionPill>Contact</SectionPill>
+          <SectionPill>{messages.contact.pill}</SectionPill>
           <h1 className="mt-4 max-w-4xl">
             <ArchivoInkBleed
               className="block w-full"
               color="var(--kanna-ink)"
               fontSize={160}
-              lines={["Get in touch"]}
+              lines={[...messages.contact.headingLines]}
             />
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600">
-            Choose the topic that fits your inquiry and send us the details.
-            We will get back to you with the right next steps.
+            {messages.contact.description}
           </p>
 
           {isSubmitted ? (
             <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-5">
               <h2 className="text-lg font-semibold text-slate-900">
-                Message received
+                {messages.contact.successTitle}
               </h2>
               <p className="mt-2 text-sm leading-6 text-slate-700">
-                Your inquiry has been sent successfully. We&apos;ve sent a
-                confirmation email to your address. We will reply as quickly as
-                possible, usually within 48 hours. Thank you for your interest.
+                {messages.contact.successBody}
               </p>
-              <Link
+              <LocalizedLink
                 to="/"
                 className="mt-4 inline-flex text-sm font-semibold text-slate-900 underline decoration-slate-300 underline-offset-4 transition hover:decoration-slate-900"
               >
-                Back to homepage
-              </Link>
+                {messages.contact.backHome}
+              </LocalizedLink>
             </div>
           ) : (
             <form className="mt-8 space-y-6" onSubmit={handleSubmit} noValidate>
@@ -178,7 +197,7 @@ export default function ContactPage() {
 
                 <label className="block md:col-span-2">
                   <span className="mb-2 block text-sm font-semibold text-slate-700">
-                    Full name
+                    {messages.contact.fullName}
                   </span>
                   <InputField
                     type="text"
@@ -199,7 +218,7 @@ export default function ContactPage() {
 
                 <label className="block">
                   <span className="mb-2 block text-sm font-semibold text-slate-700">
-                    Email
+                    {messages.contact.email}
                   </span>
                   <InputField
                     type="email"
@@ -220,7 +239,7 @@ export default function ContactPage() {
 
                 <label className="block">
                   <span className="mb-2 block text-sm font-semibold text-slate-700">
-                    Phone number
+                    {messages.contact.phoneNumber}
                   </span>
                   <InputField
                     type="tel"
@@ -241,7 +260,7 @@ export default function ContactPage() {
 
                 <label className="block md:col-span-2">
                   <span className="mb-2 block text-sm font-semibold text-slate-700">
-                    Topic
+                    {messages.contact.topic}
                   </span>
                   <div className="relative">
                     <SelectField
@@ -254,8 +273,12 @@ export default function ContactPage() {
                       }
                       className="appearance-none pr-12"
                     >
-                      <option value="Quote request">Quote request</option>
-                      <option value="General question">General question</option>
+                      <option value={messages.contact.topicOptions.quote}>
+                        {messages.contact.topicOptions.quote}
+                      </option>
+                      <option value={messages.contact.topicOptions.general}>
+                        {messages.contact.topicOptions.general}
+                      </option>
                     </SelectField>
                     <svg
                       viewBox="0 0 24 24"
@@ -274,7 +297,7 @@ export default function ContactPage() {
 
                 <label className="block md:col-span-2">
                   <span className="mb-2 block text-sm font-semibold text-slate-700">
-                    Message
+                    {messages.contact.message}
                   </span>
                   <TextareaField
                     value={formValues.message}
@@ -309,16 +332,20 @@ export default function ContactPage() {
                     className="mt-0.5"
                   />
                   <span>
-                    I confirm that I have read the{" "}
-                    <Link
+                    {messages.contact.privacyConsent.split(
+                      messages.contact.privacyLink,
+                    )[0]}
+                    <LocalizedLink
                       to="/privacy-terms"
                       className="font-medium text-slate-900 underline underline-offset-2"
                     >
-                      privacy information and terms
-                    </Link>{" "}
-                    and want Kanna Bikes to contact me regarding my inquiry.
-                    My data will be processed to respond to my message and
-                    handle further communication related to this request.
+                      {messages.contact.privacyLink}
+                    </LocalizedLink>
+                    {
+                      messages.contact.privacyConsent.split(
+                        messages.contact.privacyLink,
+                      )[1]
+                    }
                   </span>
                 </label>
                 {showValidation && errors.privacyAccepted ? (
@@ -338,8 +365,7 @@ export default function ContactPage() {
                     className="mt-0.5"
                   />
                   <span>
-                    I agree to receive future marketing updates by email. This
-                    consent is optional and can be withdrawn at any time.
+                    {messages.contact.marketingConsent}
                   </span>
                 </label>
               </div>
@@ -355,7 +381,7 @@ export default function ContactPage() {
                 disabled={isSubmitting}
                 className="inline-flex items-center justify-center rounded-xl bg-[var(--kanna-ink)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-black"
               >
-                {isSubmitting ? "Sending..." : "Send request"}
+                {isSubmitting ? messages.contact.sending : messages.contact.send}
               </button>
             </form>
           )}

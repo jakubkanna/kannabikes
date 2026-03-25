@@ -1,11 +1,17 @@
-import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router";
+import { Link } from "react-router";
 
 import type { Route } from "./+types/blog.$slug";
+import { useMessages } from "~/components/locale-provider";
+import {
+  buildLocalizedMeta,
+  getIntlLocale,
+  getLocaleFromPath,
+  getMessages,
+} from "~/lib/i18n";
 import { fetchWordpressPostBySlug, type WordpressPost } from "~/lib/wordpress";
-import { SITE_NAME, formatPageTitle } from "~/root";
+import { formatPageTitle } from "~/root";
 
-function formatPublishedDate(value: string) {
+function formatPublishedDate(value: string, locale: "en" | "pl") {
   if (!value) {
     return "";
   }
@@ -16,107 +22,105 @@ function formatPublishedDate(value: string) {
     return "";
   }
 
-  return new Intl.DateTimeFormat("en-GB", {
+  return new Intl.DateTimeFormat(getIntlLocale(locale), {
     day: "numeric",
     month: "long",
     year: "numeric",
   }).format(date);
 }
 
-export function meta({}: Route.MetaArgs) {
-  return [{ title: formatPageTitle("Blog") }];
+export async function clientLoader({
+  params,
+  request,
+}: Route.ClientLoaderArgs) {
+  const locale = getLocaleFromPath(new URL(request.url).pathname);
+
+  try {
+    const post = await fetchWordpressPostBySlug(params.slug ?? "", locale, "blog");
+
+    return {
+      alternatePaths: post?.translations ?? {
+        en: "/blog",
+        pl: "/pl/blog",
+      },
+      loadError: post ? null : getMessages(locale).blog.notFound,
+      locale,
+      post,
+    };
+  } catch {
+    return {
+      alternatePaths: {
+        en: "/blog",
+        pl: "/pl/blog",
+      },
+      loadError: getMessages(locale).blog.loadError,
+      locale,
+      post: null as WordpressPost | null,
+    };
+  }
 }
 
-export default function BlogPostPage() {
-  const { slug } = useParams();
-  const [post, setPost] = useState<WordpressPost | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
+export function meta({ loaderData, location }: Route.MetaArgs) {
+  const locale = getLocaleFromPath(location.pathname);
+  const messages = getMessages(locale);
+  const title = loaderData?.post?.title ?? messages.meta.blog.title;
 
-  useEffect(() => {
-    let isCancelled = false;
+  return buildLocalizedMeta({
+    alternates: loaderData?.alternatePaths,
+    description: loaderData?.post?.excerpt || messages.meta.blog.description,
+    locale,
+    pathname: location.pathname,
+    title: formatPageTitle(title),
+  });
+}
 
-    const loadPost = async () => {
-      setIsLoading(true);
-      setLoadError(null);
+export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
+  const messages = useMessages();
 
-      try {
-        const result = await fetchWordpressPostBySlug(slug ?? "", "blog");
-
-        if (isCancelled) {
-          return;
-        }
-
-        if (!result) {
-          setPost(null);
-          setLoadError("This blog post was not found.");
-          document.title = `${SITE_NAME} – Blog`;
-          return;
-        }
-
-        setPost(result);
-        document.title = `${SITE_NAME} – ${result.title}`;
-      } catch {
-        if (!isCancelled) {
-          setLoadError("We could not load this blog post right now.");
-          document.title = `${SITE_NAME} – Blog`;
-        }
-      } finally {
-        if (!isCancelled) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    void loadPost();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [slug]);
-
-  if (isLoading) {
+  if (!loaderData.post && !loaderData.loadError) {
     return (
       <main className="min-h-screen bg-white px-4 py-10 md:px-8 md:py-14">
         <article className="mx-auto max-w-3xl text-sm leading-6 text-slate-600">
-          Loading post...
+          {messages.blog.loadingPost}
         </article>
       </main>
     );
   }
 
-  if (loadError || !post) {
+  if (loaderData.loadError || !loaderData.post) {
     return (
       <main className="min-h-screen bg-white px-4 py-10 md:px-8 md:py-14">
         <article className="mx-auto max-w-3xl">
           <Link
-            to="/blog"
+            to={loaderData.locale === "pl" ? "/pl/blog" : "/blog"}
             className="text-sm font-semibold text-slate-900 underline decoration-slate-300 underline-offset-4 transition hover:decoration-slate-900"
           >
-            Back to blog
+            {messages.blog.backToBlog}
           </Link>
           <p className="mt-6 text-sm leading-6 text-slate-600">
-            {loadError ?? "This blog post was not found."}
+            {loaderData.loadError ?? messages.blog.notFound}
           </p>
         </article>
       </main>
     );
   }
 
+  const post = loaderData.post;
+
   return (
     <main className="min-h-screen bg-white">
       <section className="bg-black px-4 pb-12 pt-10 text-white md:px-8 md:pb-16 md:pt-14">
         <div className="mx-auto max-w-5xl">
           <Link
-            to="/blog"
+            to={loaderData.locale === "pl" ? "/pl/blog" : "/blog"}
             className="text-sm font-semibold text-white/80 underline decoration-white/30 underline-offset-4 transition hover:text-white hover:decoration-white"
           >
-            Back to blog
+            {messages.blog.backToBlog}
           </Link>
 
           {post.publishedAt ? (
             <p className="mt-8 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-              {formatPublishedDate(post.publishedAt)}
+              {formatPublishedDate(post.publishedAt, loaderData.locale)}
             </p>
           ) : null}
 

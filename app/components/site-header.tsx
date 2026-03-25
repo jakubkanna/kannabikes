@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink, useLocation } from "react-router";
-
-const NAV_ITEMS = [
-  { to: "/pre-order", label: "Custom order", kind: "nav" },
-  { to: "/shop", label: "Shop", kind: "nav" },
-  { to: "/about", label: "About", kind: "nav" },
-  { to: "/contact", label: "Contact", kind: "nav" },
-] as const;
+import { useLocation } from "react-router";
+import { stripLocalePrefix } from "~/lib/i18n";
+import { LanguageSwitcher } from "./language-switcher";
+import { LocalizedLink, LocalizedNavLink } from "./localized-link";
+import { useMessages } from "./locale-provider";
 
 const KANNA_MENU_FONT_STYLE = {
   fontFamily: "var(--font-kanna)",
@@ -16,8 +13,15 @@ const KANNA_MENU_FONT_STYLE = {
 
 export function SiteHeader() {
   const { pathname } = useLocation();
-  const isHome = pathname === "/";
+  const messages = useMessages();
+  const isHome = stripLocalePrefix(pathname) === "/";
   const [useBlendMode, setUseBlendMode] = useState(!isHome);
+  const navItems = [
+    { to: "/pre-order", label: messages.nav.customOrder },
+    { to: "/shop", label: messages.nav.shop },
+    { to: "/about", label: messages.nav.about },
+    { to: "/contact", label: messages.nav.contact },
+  ] as const;
 
   useEffect(() => {
     if (!isHome) {
@@ -65,7 +69,7 @@ export function SiteHeader() {
         aria-label="Main"
         className="mx-auto flex h-full max-w-none items-center justify-between gap-6"
       >
-        <Link
+        <LocalizedLink
           to="/"
           className="shrink-0 transition duration-200 hover:scale-[1.2]"
         >
@@ -74,30 +78,33 @@ export function SiteHeader() {
             alt="Kanna Bikes"
             className={`h-10 w-auto ${useBlendMode ? "brightness-0 invert" : ""}`}
           />
-        </Link>
+        </LocalizedLink>
 
-        <ul
+        <div
           className={`flex items-center gap-3 text-sm font-black uppercase ${
             useBlendMode ? "text-white" : "text-[var(--kanna-color)]"
           }`}
           style={KANNA_MENU_FONT_STYLE}
         >
-          {NAV_ITEMS.map((item) => (
-            <li key={item.to}>
-              <NavLink
-                to={item.to}
-                className={({ isActive }) =>
-                  [
-                    "opacity-100 transition duration-200 hover:scale-[1.2] hover:text-[1.2em]",
-                    isActive ? "scale-100" : "",
-                  ].join(" ")
-                }
-              >
-                {item.label}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
+          <ul className="flex items-center gap-3">
+            {navItems.map((item) => (
+              <li key={item.to}>
+                <LocalizedNavLink
+                  to={item.to}
+                  className={({ isActive }) =>
+                    [
+                      "opacity-100 transition duration-200 hover:scale-[1.2] hover:text-[1.2em]",
+                      isActive ? "scale-100" : "",
+                    ].join(" ")
+                  }
+                >
+                  {item.label}
+                </LocalizedNavLink>
+              </li>
+            ))}
+          </ul>
+          <LanguageSwitcher />
+        </div>
       </nav>
     </header>
   );

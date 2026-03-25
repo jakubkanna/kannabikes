@@ -14,7 +14,26 @@ export async function loader({ request }: Route.LoaderArgs) {
     : requestUrl.origin;
   const siteUrl = normalizeBaseUrl(envSiteUrl ?? origin);
 
-  const pages = ["/", "/about", "/blog", "/contact", "/pre-order", "/privacy-terms"];
+  const pages = [
+    "/",
+    "/about",
+    "/blog",
+    "/cart",
+    "/checkout",
+    "/contact",
+    "/pre-order",
+    "/privacy-terms",
+    "/shop",
+    "/pl",
+    "/pl/about",
+    "/pl/blog",
+    "/pl/cart",
+    "/pl/checkout",
+    "/pl/contact",
+    "/pl/pre-order",
+    "/pl/privacy-terms",
+    "/pl/shop",
+  ];
   const now = new Date().toISOString();
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

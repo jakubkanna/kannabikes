@@ -1,15 +1,22 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router";
 
 import type { Route } from "./+types/blog._index";
+import { ArchivoInkBleed } from "~/components/archivo-ink-bleed";
+import { useMessages } from "~/components/locale-provider";
 import { SectionPill } from "~/components/section-pill";
+import {
+  buildLocalizedMeta,
+  getIntlLocale,
+  getLocaleFromPath,
+  getMessages,
+} from "~/lib/i18n";
 import {
   fetchWordpressPostsByCategory,
   type WordpressPost,
 } from "~/lib/wordpress";
 import { formatPageTitle } from "~/root";
 
-function formatPublishedDate(value: string) {
+function formatPublishedDate(value: string, locale: "en" | "pl") {
   if (!value) {
     return "";
   }
@@ -20,20 +27,62 @@ function formatPublishedDate(value: string) {
     return "";
   }
 
-  return new Intl.DateTimeFormat("en-GB", {
+  return new Intl.DateTimeFormat(getIntlLocale(locale), {
     day: "numeric",
     month: "long",
     year: "numeric",
   }).format(date);
 }
 
-export function meta({}: Route.MetaArgs) {
-  return [{ title: formatPageTitle("Blog") }];
+export async function clientLoader({ request }: Route.ClientLoaderArgs) {
+  const locale = getLocaleFromPath(new URL(request.url).pathname);
+
+  try {
+    const result = await fetchWordpressPostsByCategory("blog", locale, 1, 24);
+    return {
+      alternatePaths: {
+        en: "/blog",
+        pl: "/pl/blog",
+      },
+      loadError: null,
+      locale,
+      posts: result.posts,
+    };
+  } catch {
+    return {
+      alternatePaths: {
+        en: "/blog",
+        pl: "/pl/blog",
+      },
+      loadError: getMessages(locale).blog.loadError,
+      locale,
+      posts: [] as WordpressPost[],
+    };
+  }
 }
 
-function BlogPostCard({ post }: { post: WordpressPost }) {
+export function meta({ location }: Route.MetaArgs) {
+  const locale = getLocaleFromPath(location.pathname);
+  const messages = getMessages(locale);
+  return buildLocalizedMeta({
+    description: messages.meta.blog.description,
+    locale,
+    pathname: location.pathname,
+    title: formatPageTitle(messages.meta.blog.title),
+  });
+}
+
+function BlogPostCard({
+  locale,
+  messages,
+  post,
+}: {
+  locale: "en" | "pl";
+  messages: ReturnType<typeof useMessages>;
+  post: WordpressPost;
+}) {
   return (
-    <article className="overflow-hidden rounded-[24px] border border-stone-200 bg-white shadow-sm">
+    <article className="overflow-hidden border border-stone-200 bg-white shadow-sm">
       <Link to={post.url ?? `/blog/${post.slug}`} className="block">
         <img
           src={post.image.src}
@@ -47,7 +96,7 @@ function BlogPostCard({ post }: { post: WordpressPost }) {
       <div className="p-6">
         {post.publishedAt ? (
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-            {formatPublishedDate(post.publishedAt)}
+            {formatPublishedDate(post.publishedAt, locale)}
           </p>
         ) : null}
 
@@ -68,81 +117,50 @@ function BlogPostCard({ post }: { post: WordpressPost }) {
           to={post.url ?? `/blog/${post.slug}`}
           className="mt-5 inline-flex text-sm font-semibold text-slate-900 underline decoration-slate-300 underline-offset-4 transition hover:decoration-slate-900"
         >
-          Read article
+          {messages.blog.readArticle}
         </Link>
       </div>
     </article>
   );
 }
 
-export default function BlogPage() {
-  const [posts, setPosts] = useState<WordpressPost[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let isCancelled = false;
-
-    const loadPosts = async () => {
-      setIsLoading(true);
-      setLoadError(null);
-
-      try {
-        const result = await fetchWordpressPostsByCategory("blog", 1, 24);
-
-        if (!isCancelled) {
-          setPosts(result.posts);
-        }
-      } catch {
-        if (!isCancelled) {
-          setLoadError("We could not load the blog posts right now.");
-        }
-      } finally {
-        if (!isCancelled) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    void loadPosts();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, []);
+export default function BlogPage({ loaderData }: Route.ComponentProps) {
+  const messages = useMessages();
 
   return (
     <main className="min-h-screen bg-stone-100 px-4 py-8 md:px-8 md:py-12">
       <div className="mx-auto max-w-6xl">
-        <section className="rounded-[28px] border border-stone-200 bg-white p-6 shadow-sm md:p-8">
-          <SectionPill>Blog</SectionPill>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl">
-            Notes from the workshop and the road.
-          </h1>
-          <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-600">
-            WordPress posts from the <code>blog</code> category are published
-            here under the <code>/blog</code> path.
-          </p>
-        </section>
+        <SectionPill>{messages.blog.pill}</SectionPill>
+        <h1 className="mt-4 max-w-4xl">
+          <ArchivoInkBleed
+            className="block w-full"
+            color="var(--kanna-ink)"
+            fontSize={148}
+            lines={[messages.blog.title]}
+          />
+        </h1>
+        <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-600">
+          {messages.blog.description}
+        </p>
 
-        {isLoading ? (
-          <section className="mt-6 rounded-[28px] border border-stone-200 bg-white p-8 text-sm leading-6 text-slate-600 shadow-sm">
-            Loading blog posts...
+        {loaderData.loadError ? (
+          <section className="mt-6 border border-red-200 bg-white p-8 text-sm leading-6 text-red-700 shadow-sm">
+            {loaderData.loadError}
           </section>
-        ) : loadError ? (
-          <section className="mt-6 rounded-[28px] border border-red-200 bg-white p-8 text-sm leading-6 text-red-700 shadow-sm">
-            {loadError}
-          </section>
-        ) : posts.length > 0 ? (
+        ) : loaderData.posts.length > 0 ? (
           <section className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {posts.map((post) => (
-              <BlogPostCard key={post.id} post={post} />
+            {loaderData.posts.map((post) => (
+              <BlogPostCard
+                key={post.id}
+                locale={loaderData.locale}
+                messages={messages}
+                post={post}
+              />
             ))}
           </section>
         ) : (
-          <section className="mt-6 rounded-[28px] border border-dashed border-stone-300 bg-white p-8 text-sm leading-6 text-slate-600 shadow-sm">
-            No published WordPress posts were found in the <code>blog</code>{" "}
-            category.
+          <section className="mt-6 border border-dashed border-stone-300 bg-white p-8 text-sm leading-6 text-slate-600 shadow-sm">
+            {messages.blog.empty}
           </section>
         )}
       </div>

@@ -10,8 +10,10 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { LocaleProvider } from "./components/locale-provider";
 import { SiteFooter } from "./components/site-footer";
 import { SiteHeader } from "./components/site-header";
+import { getLocaleFromPath, getMessages, stripLocalePrefix } from "./lib/i18n";
 
 export const SITE_NAME = "Kanna Bikes";
 const DEFAULT_SITE_DESCRIPTION = "Kanna Bikes";
@@ -80,8 +82,11 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+  const locale = getLocaleFromPath(location.pathname);
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -92,7 +97,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         className="bg-white text-slate-900 antialiased"
         style={{ fontFamily: '"Lato", sans-serif' }}
       >
-        {children}
+        <LocaleProvider locale={locale}>{children}</LocaleProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -103,12 +108,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   const location = useLocation();
   const { pathname } = location;
-  const shouldOffsetContent = pathname !== "/";
+  const shouldOffsetContent = stripLocalePrefix(pathname) !== "/";
 
   return (
     <>
       <SiteHeader />
-      <div className={shouldOffsetContent ? "pt-(--site-header-height)" : ""}>
+      <div
+        className={shouldOffsetContent ? "pt-[var(--site-header-height)]" : ""}
+      >
         <Outlet />
       </div>
       <SiteFooter />
@@ -117,6 +124,9 @@ export default function App() {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  const location = useLocation();
+  const locale = getLocaleFromPath(location.pathname);
+  const messages = getMessages(locale);
   let message = "Oops!";
   let details = "An unexpected error occurred.";
   let stack: string | undefined;
@@ -137,8 +147,11 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
       <h1 className="text-3xl font-semibold">{message}</h1>
       <p className="mt-3 text-slate-700">{details}</p>
       <p className="mt-4">
-        <a className="text-sm underline" href="/">
-          Go to homepage
+        <a
+          className="text-sm underline"
+          href={locale === "pl" ? "/pl" : "/"}
+        >
+          {messages.contact.backHome}
         </a>
       </p>
       {stack && (

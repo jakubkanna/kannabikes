@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Link } from "react-router";
 import { InputField, LockedField } from "~/components/form-field";
+import { LocalizedLink } from "~/components/localized-link";
 import type {
   DepositPaymentMethod,
   OrderStage,
@@ -513,12 +513,12 @@ export function OrderDepositSection({
               />
               <span>
                 I accept the{" "}
-                <Link
+                <LocalizedLink
                   to="/privacy-terms"
                   className="font-medium text-slate-900 underline underline-offset-2"
                 >
                   order agreement
-                </Link>
+                </LocalizedLink>
                 , deposit terms, and processing of my order data for this bike
                 build. I understand that, once the bike enters production, the
                 deposit becomes non-refundable.
