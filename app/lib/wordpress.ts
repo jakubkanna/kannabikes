@@ -87,6 +87,7 @@ const WORDPRESS_BASE_URL = (() => {
 
   return "http://localhost";
 })();
+const WORDPRESS_REQUEST_BASE = import.meta.env.DEV ? "" : WORDPRESS_BASE_URL;
 const WORDPRESS_BASE_ORIGIN = (() => {
   try {
     return new URL(WORDPRESS_BASE_URL).origin;
@@ -96,6 +97,16 @@ const WORDPRESS_BASE_ORIGIN = (() => {
 })();
 const PLACEHOLDER_SRC = `${APP_BASE}/placeholder.png`;
 const DEFAULT_IMAGE_SIZE = 1400;
+
+function buildWordpressApiUrl(path: string) {
+  const url = `${WORDPRESS_REQUEST_BASE}${path}`;
+
+  if (/^https?:\/\//i.test(url)) {
+    return new URL(url);
+  }
+
+  return new URL(url, window.location.origin);
+}
 
 function sanitizeHtml(input: string | undefined) {
   return (input ?? "")
@@ -216,7 +227,7 @@ async function fetchWordpressCategoryId(
   locale: Locale,
   fetchImpl: typeof fetch = fetch,
 ) {
-  const endpoint = new URL(`${WORDPRESS_BASE_URL}/wp-json/wp/v2/categories`);
+  const endpoint = buildWordpressApiUrl("/wp-json/wp/v2/categories");
   endpoint.searchParams.set("lang", locale);
   endpoint.searchParams.set("slug", slug);
   endpoint.searchParams.set("per_page", "1");
@@ -239,7 +250,7 @@ async function fetchWordpressPostsRequest(
   searchParams: Record<string, string>,
   fetchImpl: typeof fetch = fetch,
 ) {
-  const endpoint = new URL(`${WORDPRESS_BASE_URL}/wp-json/wp/v2/posts`);
+  const endpoint = buildWordpressApiUrl("/wp-json/wp/v2/posts");
 
   for (const [key, value] of Object.entries(searchParams)) {
     endpoint.searchParams.set(key, value);

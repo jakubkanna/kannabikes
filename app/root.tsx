@@ -6,14 +6,23 @@ import {
   Scripts,
   ScrollRestoration,
   useLocation,
+  useNavigate,
 } from "react-router";
+import { useEffect } from "react";
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { CookieConsentBanner } from "./components/cookie-consent-banner";
 import { LocaleProvider } from "./components/locale-provider";
 import { SiteFooter } from "./components/site-footer";
 import { SiteHeader } from "./components/site-header";
-import { getLocaleFromPath, getMessages, stripLocalePrefix } from "./lib/i18n";
+import {
+  getLocaleFromPath,
+  getMessages,
+  getStoredLocale,
+  localizePath,
+  stripLocalePrefix,
+} from "./lib/i18n";
 
 export const SITE_NAME = "Kanna Bikes";
 const DEFAULT_SITE_DESCRIPTION = "Kanna Bikes";
@@ -106,12 +115,29 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const navigate = useNavigate();
   const location = useLocation();
-  const { pathname } = location;
+  const { hash, pathname, search } = location;
   const shouldOffsetContent = stripLocalePrefix(pathname) !== "/";
+
+  useEffect(() => {
+    if (pathname !== "/") {
+      return;
+    }
+
+    const storedLocale = getStoredLocale();
+    if (storedLocale !== "pl") {
+      return;
+    }
+
+    navigate(`${localizePath(pathname, storedLocale)}${search}${hash}`, {
+      replace: true,
+    });
+  }, [hash, navigate, pathname, search]);
 
   return (
     <>
+      <CookieConsentBanner />
       <SiteHeader />
       <div
         className={shouldOffsetContent ? "pt-[var(--site-header-height)]" : ""}

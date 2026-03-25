@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import { useLocale } from "~/components/locale-provider";
 import { InputField } from "~/components/form-field";
+import { PageShell } from "~/components/page-container";
 import { SectionPill } from "~/components/section-pill";
 import {
   OrderBikeDesignSection,
@@ -41,6 +42,7 @@ import {
   type StoredDepositPayment,
 } from "~/lib/mock-order";
 import { localizePath } from "~/lib/i18n";
+import { formatOrderMoney } from "~/lib/order-tax";
 import { SITE_NAME } from "~/root";
 
 type MeasurementKey = "A" | "B" | "C" | "D" | "E" | "F";
@@ -764,7 +766,7 @@ export function OrderPage({
   };
 
   return (
-    <main className="min-h-screen bg-stone-100 px-4 py-8 md:px-8 md:py-12">
+    <PageShell>
       <LayoutGroup id={`order-page-${orderNumber}`}>
         <SectionStack>
           <motion.header
@@ -951,7 +953,11 @@ export function OrderPage({
                 availablePaymentMethods={portalBuild.availablePaymentMethods}
                 currentStage={orderStage}
                 customerDetails={portalBuild.customer}
-                depositAmountLabel={portalBuild.deposit.amount}
+                depositAmountLabel={formatOrderMoney(
+                  portalBuild.deposit.amountValue,
+                  portalBuild.deposit.currency,
+                  locale,
+                )}
                 depositAmountValue={portalBuild.deposit.amountValue}
                 depositCurrency={portalBuild.deposit.currency}
                 depositOrderStatus={portalBuild.deposit.orderStatus}
@@ -1017,7 +1023,11 @@ export function OrderPage({
                     designPreviewSrc={designPreviewSrc}
                     currentStage={orderStage}
                     depositOrderStatus={portalBuild.deposit.orderStatus}
-                    finalAmountLabel={portalBuild.finalPayment.amount}
+                    finalAmountLabel={formatOrderMoney(
+                      portalBuild.finalPayment.amountValue,
+                      portalBuild.finalPayment.currency,
+                      locale,
+                    )}
                     isDepositConfirmed={isDepositConfirmed}
                     isSubmitting={isSubmittingSpecification}
                     isSubmitted={bikeDesignSubmitted}
@@ -1063,6 +1073,6 @@ export function OrderPage({
           ) : null}
         </SectionStack>
       </LayoutGroup>
-    </main>
+    </PageShell>
   );
 }

@@ -1,3 +1,5 @@
+import { getIntlLocale, type Locale } from "./i18n";
+
 const KANNA_VAT_RATE = 0.23;
 
 function roundCurrency(value: number) {
@@ -19,8 +21,22 @@ export function getInclusiveTaxBreakdown(grossAmount: number) {
   };
 }
 
-export function formatOrderMoney(amount: number, currency: string) {
+export function formatOrderMoney(
+  amount: number,
+  currency: string,
+  locale: Locale = "en",
+) {
   const normalizedAmount = roundCurrency(amount);
+
+  if (locale === "pl") {
+    return new Intl.NumberFormat(getIntlLocale(locale), {
+      style: "currency",
+      currency: "PLN",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(normalizedAmount);
+  }
+
   const hasDecimals = Math.abs(normalizedAmount % 1) > 0;
 
   return `${normalizedAmount

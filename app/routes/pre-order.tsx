@@ -1,6 +1,7 @@
 import { ArchivoInkBleed } from "~/components/archivo-ink-bleed";
 import { LocalizedLink } from "~/components/localized-link";
 import { useMessages } from "~/components/locale-provider";
+import { PageContainer, PageShell } from "~/components/page-container";
 import { SectionPill } from "~/components/section-pill";
 import { formatPageTitle } from "~/root";
 import type { Route } from "./+types/pre-order";
@@ -26,8 +27,8 @@ export default function PreOrderPage() {
   const baseUrl = import.meta.env.BASE_URL;
 
   return (
-    <main className="bg-stone-100 px-4 py-20 md:px-8 md:py-28">
-      <div className="mx-auto max-w-6xl">
+    <PageShell>
+      <PageContainer>
         <SectionPill>{messages.pages.preOrder.pill}</SectionPill>
         <h1 className="mt-4 max-w-4xl">
           <ArchivoInkBleed
@@ -72,7 +73,7 @@ export default function PreOrderPage() {
             {messages.pages.preOrder.contact}
           </LocalizedLink>
         </div>
-      </div>
-    </main>
+      </PageContainer>
+    </PageShell>
   );
 }

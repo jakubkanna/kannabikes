@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import { Button } from "~/components/button";
+import { SelectField } from "~/components/form-field";
 import type { Route } from "./+types/shop.product.$slug";
-import { LocalizedLink } from "~/components/localized-link";
 import { useLocale, useMessages } from "~/components/locale-provider";
+import { PageContainer, PageShell } from "~/components/page-container";
 import { SectionPill } from "~/components/section-pill";
 import {
   buildLocalizedMeta,
@@ -11,6 +13,21 @@ import {
 } from "~/lib/i18n";
 import { addStoreCartItem, fetchStoreProductBySlug } from "~/lib/store-api";
 import { formatPageTitle } from "~/root";
+
+function getInitialOptionSelection(
+  product: NonNullable<Route.ComponentProps["loaderData"]>["product"],
+) {
+  if (!product) {
+    return {};
+  }
+
+  return Object.fromEntries(
+    product.optionAttributes.map((attribute) => [
+      attribute.slug,
+      attribute.terms.find((term) => term.isDefault)?.slug ?? "",
+    ]),
+  );
+}
 
 export async function clientLoader({
   params,
@@ -54,42 +71,90 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [addToCartError, setAddToCartError] = useState<string | null>(null);
   const [addedToCart, setAddedToCart] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>(
+    () => getInitialOptionSelection(loaderData?.product ?? null),
+  );
 
   if (!loaderData) {
     return (
-      <main className="min-h-screen bg-stone-100 px-4 py-20 md:px-8 md:py-28">
-        <div className="mx-auto max-w-4xl">
-          <SectionPill>{messages.commerce.shopPill}</SectionPill>
-          <p className="mt-6 text-sm text-slate-600">
-            {messages.commerce.noProducts}
-          </p>
-        </div>
-      </main>
+      <PageShell>
+        <PageContainer>
+          <div className="max-w-4xl">
+            <SectionPill>{messages.commerce.shopPill}</SectionPill>
+            <p className="mt-6 text-sm text-slate-600">
+              {messages.commerce.noProducts}
+            </p>
+          </div>
+        </PageContainer>
+      </PageShell>
     );
   }
 
   if (!loaderData.product) {
     return (
-      <main className="min-h-screen bg-stone-100 px-4 py-20 md:px-8 md:py-28">
-        <div className="mx-auto max-w-4xl">
-          <SectionPill>{messages.commerce.shopPill}</SectionPill>
-          <p className="mt-6 text-sm text-slate-600">
-            {messages.commerce.noProducts}
-          </p>
-        </div>
-      </main>
+      <PageShell>
+        <PageContainer>
+          <div className="max-w-4xl">
+            <SectionPill>{messages.commerce.shopPill}</SectionPill>
+            <p className="mt-6 text-sm text-slate-600">
+              {messages.commerce.noProducts}
+            </p>
+          </div>
+        </PageContainer>
+      </PageShell>
     );
   }
 
   const product = loaderData.product;
+
+  useEffect(() => {
+    setSelectedOptions(getInitialOptionSelection(product));
+  }, [product]);
+
+  const matchedVariationId = useMemo(() => {
+    if (!product.hasOptions) {
+      return product.id;
+    }
+
+    const hasAllSelections = product.optionAttributes.every(
+      (attribute) => selectedOptions[attribute.slug],
+    );
+
+    if (!hasAllSelections) {
+      return null;
+    }
+
+    const matchedVariation = product.variations.find((variation) =>
+      product.optionAttributes.every((attribute) => {
+        const selectedValue = selectedOptions[attribute.slug];
+        const variationValue =
+          variation.attributes[attribute.slug] ??
+          variation.attributes[attribute.name.trim().toLowerCase()];
+
+        return variationValue === selectedValue;
+      }),
+    );
+
+    return matchedVariation?.id ?? null;
+  }, [product, selectedOptions]);
 
   const handleAddToCart = async () => {
     setIsAddingToCart(true);
     setAddedToCart(false);
     setAddToCartError(null);
 
+    if (!matchedVariationId) {
+      setAddToCartError(messages.commerce.optionRequired);
+      setIsAddingToCart(false);
+      return;
+    }
+
     try {
-      await addStoreCartItem({ id: product.id, locale });
+      await addStoreCartItem({
+        id: matchedVariationId,
+        locale,
+        openDrawerOnSuccess: true,
+      });
       setAddedToCart(true);
     } catch (error) {
       setAddToCartError(
@@ -101,8 +166,8 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
   };
 
   return (
-    <main className="min-h-screen bg-stone-100 px-4 py-20 md:px-8 md:py-28">
-      <div className="mx-auto max-w-6xl">
+    <PageShell>
+      <PageContainer>
         <SectionPill>{messages.commerce.shopPill}</SectionPill>
         <div className="mt-8 grid gap-10 lg:grid-cols-[0.95fr_1.05fr]">
           <div className="overflow-hidden border border-stone-200 bg-white shadow-sm">
@@ -116,7 +181,7 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
           </div>
 
           <div>
-            <h1 className="text-4xl font-semibold tracking-tight text-[var(--kanna-ink)] md:text-5xl">
+            <h1 className="page-heading text-[2.35rem] leading-[0.88] text-[var(--kanna-ink)] md:text-[3.8rem]">
               {product.name}
             </h1>
             <p className="mt-4 text-lg font-semibold text-[var(--kanna-ink)]">
@@ -130,28 +195,51 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
               />
             ) : null}
 
+            {product.optionAttributes.length > 0 ? (
+              <div className="mt-8 space-y-4">
+                {product.optionAttributes.map((attribute) => (
+                  <label key={attribute.slug} className="block">
+                    <span className="mb-2 block text-sm font-semibold text-[var(--kanna-ink)]">
+                      {attribute.name}
+                    </span>
+                    <SelectField
+                      value={selectedOptions[attribute.slug] ?? ""}
+                      onChange={(event) => {
+                        const value = event.currentTarget.value;
+                        setAddedToCart(false);
+                        setAddToCartError(null);
+                        setSelectedOptions((current) => ({
+                          ...current,
+                          [attribute.slug]: value,
+                        }));
+                      }}
+                    >
+                      <option value="">{messages.commerce.chooseOption}</option>
+                      {attribute.terms.map((term) => (
+                        <option key={term.slug} value={term.slug}>
+                          {term.name}
+                        </option>
+                      ))}
+                    </SelectField>
+                  </label>
+                ))}
+              </div>
+            ) : null}
+
             <div className="mt-8 flex flex-wrap gap-4">
-              <button
-                type="button"
+              <Button
                 onClick={handleAddToCart}
                 disabled={isAddingToCart}
-                className="inline-flex items-center justify-center rounded-full bg-[var(--kanna-ink)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:opacity-60"
               >
                 {isAddingToCart
                   ? `${messages.commerce.addToCart}...`
                   : messages.commerce.addToCart}
-              </button>
-              <LocalizedLink
-                to="/cart"
-                className="inline-flex items-center justify-center rounded-full border border-[var(--kanna-ink)] px-6 py-3 text-sm font-semibold text-[var(--kanna-ink)] transition hover:bg-white"
-              >
-                {messages.commerce.viewCart}
-              </LocalizedLink>
+              </Button>
             </div>
 
             {addedToCart ? (
               <p className="mt-4 text-sm text-emerald-700">
-                {messages.commerce.viewCart}
+                {messages.commerce.addedToCart}
               </p>
             ) : null}
             {addToCartError ? (
@@ -166,7 +254,7 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
             ) : null}
           </div>
         </div>
-      </div>
-    </main>
+      </PageContainer>
+    </PageShell>
   );
 }

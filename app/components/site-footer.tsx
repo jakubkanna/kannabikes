@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router";
+import {
+  COOKIE_PREFERENCES_EVENT,
+  isAnalyticsConfigured,
+} from "~/lib/analytics";
 import { stripLocalePrefix } from "~/lib/i18n";
 import { ArchivoInkBleed } from "./archivo-ink-bleed";
 import { LocalizedLink } from "./localized-link";
@@ -109,6 +113,7 @@ export function SiteFooter() {
   const linkClassName = useHomeKannaState
     ? "transition hover:text-[var(--kanna-ink)]"
     : "transition hover:text-white";
+  const analyticsEnabled = isAnalyticsConfigured();
 
   return (
     <footer className={footerClassName}>
@@ -212,6 +217,16 @@ export function SiteFooter() {
             </a>
           </p>
           <div className="flex flex-wrap gap-5">
+            {analyticsEnabled ? (
+              <button
+                type="button"
+                data-analytics-ignore="true"
+                onClick={() => window.dispatchEvent(new Event(COOKIE_PREFERENCES_EVENT))}
+                className={`border-0 bg-transparent p-0 text-left ${linkClassName}`}
+              >
+                {messages.footer.cookieSettings}
+              </button>
+            ) : null}
             <LocalizedLink to="/privacy-terms" className={linkClassName}>
               {messages.footer.privacyTerms}
             </LocalizedLink>

@@ -1,8 +1,14 @@
 import { useEffect, useState } from "react";
 
+import { Button } from "~/components/button";
 import type { Route } from "./+types/cart";
 import { LocalizedLink } from "~/components/localized-link";
 import { useLocale, useMessages } from "~/components/locale-provider";
+import { PageShell } from "~/components/page-container";
+import {
+  AnimatedOrderSection,
+} from "~/components/order-page/order-motion";
+import { SectionStack } from "~/components/order-page/section-stack";
 import { SectionPill } from "~/components/section-pill";
 import {
   buildLocalizedMeta,
@@ -86,34 +92,41 @@ export default function CartPage() {
   };
 
   return (
-    <main className="min-h-screen bg-stone-100 px-4 py-20 md:px-8 md:py-28">
-      <div className="mx-auto max-w-5xl">
-        <SectionPill>{messages.commerce.shopPill}</SectionPill>
-        <h1 className="mt-6 text-4xl font-semibold tracking-tight text-[var(--kanna-ink)]">
-          {messages.cart.title}
-        </h1>
+    <PageShell>
+      <SectionStack>
+        <AnimatedOrderSection className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm">
+          <SectionPill>{messages.commerce.shopPill}</SectionPill>
+          <h1 className="mt-6 text-4xl font-semibold tracking-tight text-[var(--kanna-ink)]">
+            {messages.cart.title}
+          </h1>
+        </AnimatedOrderSection>
 
         {isLoading ? (
-          <p className="mt-8 text-sm text-slate-600">{messages.cart.loading}</p>
+          <AnimatedOrderSection className="rounded-xl border border-dashed border-stone-300 bg-stone-100/80 p-6 shadow-sm">
+            <p className="text-sm text-slate-600">{messages.cart.loading}</p>
+          </AnimatedOrderSection>
         ) : error ? (
-          <p className="mt-8 text-sm text-red-700">{error}</p>
+          <AnimatedOrderSection className="rounded-xl border border-red-200 bg-red-50/80 p-6 shadow-sm">
+            <p className="text-sm text-red-700">{error}</p>
+          </AnimatedOrderSection>
         ) : !cart || cart.items.length === 0 ? (
-          <div className="mt-8 space-y-4">
+          <AnimatedOrderSection className="rounded-xl border border-dashed border-stone-300 bg-stone-100/80 p-6 shadow-sm">
             <p className="text-sm text-slate-600">{messages.cart.empty}</p>
             <LocalizedLink
               to="/shop"
-              className="inline-flex rounded-full bg-[var(--kanna-ink)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-black"
+              className="mt-6 inline-flex rounded-full bg-[var(--kanna-ink)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-black"
             >
               {messages.cart.emptyCta}
             </LocalizedLink>
-          </div>
+          </AnimatedOrderSection>
         ) : (
-          <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_20rem]">
+          <AnimatedOrderSection className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm">
+            <div className="grid gap-8 lg:grid-cols-[1fr_20rem]">
             <div className="space-y-4">
               {cart.items.map((item) => (
                 <div
                   key={item.key}
-                  className="flex flex-wrap items-center justify-between gap-4 border border-stone-200 bg-white p-5 shadow-sm"
+                  className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-stone-200 bg-stone-50/50 p-5"
                 >
                   <div className="min-w-0 flex-1">
                     <LocalizedLink
@@ -136,24 +149,26 @@ export default function CartPage() {
                           Number.parseInt(event.target.value, 10) || 1,
                         )
                       }
-                      className="w-20 rounded-md border border-stone-300 px-3 py-2"
+                      className="w-20 rounded-md border border-black/90 bg-white px-3 py-2 text-[var(--kanna-ink)] outline-none transition focus:border-[var(--kanna-color)] focus:ring-[3px] focus:ring-[color:color-mix(in_srgb,var(--kanna-color)_35%,transparent)]"
                     />
                   </label>
                   <p className="text-sm font-semibold text-[var(--kanna-ink)]">
                     {item.total}
                   </p>
-                  <button
-                    type="button"
+                  <Button
                     onClick={() => void handleRemove(item.key)}
-                    className="text-sm font-semibold text-red-700"
+                    size="sm"
+                    variant="secondary"
+                    className="border-red-300 text-red-700 hover:bg-red-50"
                   >
                     {messages.cart.remove}
-                  </button>
+                  </Button>
                 </div>
               ))}
             </div>
 
-            <aside className="h-fit border border-stone-200 bg-white p-5 shadow-sm">
+            <aside className="h-fit rounded-xl border border-stone-200 bg-stone-50/50 p-5 lg:sticky lg:top-[calc(var(--site-header-height)+2rem)]">
+              <SectionPill>{messages.cart.title}</SectionPill>
               <p className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">
                 {messages.cart.subtotal}
               </p>
@@ -167,9 +182,10 @@ export default function CartPage() {
                 {messages.cart.checkout}
               </LocalizedLink>
             </aside>
-          </div>
-        )}
-      </div>
-    </main>
+            </div>
+          </AnimatedOrderSection>
+          )}
+      </SectionStack>
+    </PageShell>
   );
 }

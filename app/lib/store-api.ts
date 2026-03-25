@@ -1,4 +1,9 @@
-import { getLocaleFromPath, localizePath, type Locale } from "./i18n";
+import {
+  getIntlLocale,
+  getLocaleFromPath,
+  localizePath,
+  type Locale,
+} from "./i18n";
 
 type StoreApiImage = {
   alt?: string;
@@ -16,9 +21,34 @@ type StoreApiCategory = {
   slug?: string;
 };
 
+type StoreApiProductAttributeTerm = {
+  default?: boolean;
+  id?: number;
+  name?: string;
+  slug?: string;
+};
+
+type StoreApiProductAttribute = {
+  has_variations?: boolean;
+  id?: number;
+  name?: string;
+  taxonomy?: string;
+  terms?: StoreApiProductAttributeTerm[];
+};
+
+type StoreApiProductVariation = {
+  attributes?: Array<{
+    name?: string;
+    value?: string;
+  }>;
+  id: number;
+};
+
 type StoreApiProduct = {
+  attributes?: StoreApiProductAttribute[];
   categories?: StoreApiCategory[];
   description?: string;
+  has_options?: boolean;
   id: number;
   images?: StoreApiImage[];
   name?: string;
@@ -34,7 +64,9 @@ type StoreApiProduct = {
   slug?: string;
   stock_status?: string;
   summary?: string;
+  type?: string;
   translations?: Record<string, { permalink?: string; slug?: string } | string>;
+  variations?: StoreApiProductVariation[];
 };
 
 type StoreApiCartItem = {
@@ -57,7 +89,17 @@ type StoreApiCartItem = {
 
 type StoreApiCart = {
   items: StoreApiCartItem[];
+  items_count?: number;
+  shipping_rates?: Array<{
+    shipping_rates?: Array<{
+      name?: string;
+      selected?: boolean;
+    }>;
+  }>;
   totals: {
+    total_shipping?: string | null;
+    total_shipping_tax?: string | null;
+    total_tax?: string;
     total_items: string;
     total_items_tax?: string;
     total_price: string;
@@ -73,22 +115,38 @@ export type StoreCategory = {
 };
 
 export type StoreProduct = {
+  categorySlugs: string[];
   currencyCode: string;
   currencyMinorUnit: number;
   descriptionHtml: string;
+  hasOptions: boolean;
   id: number;
   imageAlt: string;
   imageSrc: string | null;
   locale: Locale;
   name: string;
+  optionAttributes: Array<{
+    name: string;
+    slug: string;
+    terms: Array<{
+      isDefault: boolean;
+      name: string;
+      slug: string;
+    }>;
+  }>;
   path: string;
   price: string;
+  productType: string;
   regularPrice: string;
   salePrice: string;
   shortDescriptionHtml: string;
   slug: string;
   stockStatus: string;
   translationPaths: Partial<Record<Locale, string>>;
+  variations: Array<{
+    attributes: Record<string, string>;
+    id: number;
+  }>;
 };
 
 export type StoreCartItem = {
@@ -103,8 +161,20 @@ export type StoreCartItem = {
 
 export type StoreCart = {
   items: StoreCartItem[];
+  shippingCalculated: boolean;
+  shipping: string;
+  shippingMethod: string;
+  subtotal: string;
   total: string;
-  totalItems: string;
+  totalItems: number;
+  vat: string;
+};
+
+export const STORE_CART_UPDATED_EVENT = "kanna:store-cart-updated";
+
+type StoreCartUpdatedDetail = {
+  cart: StoreCart;
+  openDrawer?: boolean;
 };
 
 export type CheckoutPayload = {
@@ -146,14 +216,27 @@ const WORDPRESS_BASE_URL = (() => {
     return DEFAULT_WORDPRESS_API_BASE.replace(/\/wp-json.*$/i, "");
   }
 })();
+const WORDPRESS_REQUEST_BASE = import.meta.env.DEV ? "" : WORDPRESS_BASE_URL;
 
 const STORE_API_BASE = `${WORDPRESS_BASE_URL}/wp-json/wc/store/v1`;
 const CART_TOKEN_STORAGE_KEY = "kanna-store-cart-token";
+const STORE_NONCE_STORAGE_KEY = "kanna-store-nonce";
+
+function buildApiUrl(path: string) {
+  const url = `${WORDPRESS_REQUEST_BASE}/wp-json/wc/store/v1${path}`;
+
+  if (/^https?:\/\//i.test(url)) {
+    return new URL(url);
+  }
+
+  return new URL(url, window.location.origin);
+}
 
 function normalizeMoney(
   rawValue: string | undefined,
   currencyCode: string,
   minorUnit: number,
+  locale: Locale,
 ) {
   const parsedValue = Number.parseInt(rawValue ?? "0", 10);
 
@@ -161,9 +244,11 @@ function normalizeMoney(
     return "";
   }
 
-  return new Intl.NumberFormat(undefined, {
+  const displayCurrency = locale === "pl" ? "PLN" : currencyCode || "EUR";
+
+  return new Intl.NumberFormat(getIntlLocale(locale), {
     style: "currency",
-    currency: currencyCode || "EUR",
+    currency: displayCurrency,
     minimumFractionDigits: minorUnit,
     maximumFractionDigits: minorUnit,
   }).format(parsedValue / 10 ** minorUnit);
@@ -185,6 +270,26 @@ function setStoredCartToken(cartToken: string) {
   window.localStorage.setItem(CART_TOKEN_STORAGE_KEY, cartToken);
 }
 
+function getStoredStoreNonce() {
+  if (typeof window === "undefined") {
+    return "";
+  }
+
+  return window.localStorage.getItem(STORE_NONCE_STORAGE_KEY) ?? "";
+}
+
+function setStoredStoreNonce(nonce: string) {
+  if (typeof window === "undefined" || !nonce) {
+    return;
+  }
+
+  window.localStorage.setItem(STORE_NONCE_STORAGE_KEY, nonce);
+}
+
+function normalizeOptionKey(value: string | undefined) {
+  return value?.trim().toLowerCase() ?? "";
+}
+
 async function storeApiRequest<T>(
   path: string,
   options?: {
@@ -194,7 +299,7 @@ async function storeApiRequest<T>(
     searchParams?: Record<string, string | number | undefined>;
   },
 ) {
-  const endpoint = new URL(`${STORE_API_BASE}${path}`);
+  const endpoint = buildApiUrl(path);
   const locale = options?.locale;
 
   if (locale) {
@@ -207,15 +312,35 @@ async function storeApiRequest<T>(
   }
 
   const cartToken = getStoredCartToken();
+  const nonce = getStoredStoreNonce();
+  const headers = new Headers();
+
+  if (cartToken) {
+    headers.set("Cart-Token", cartToken);
+  }
+
+  if (nonce) {
+    headers.set("Nonce", nonce);
+  }
+
+  if (typeof options?.body === "string") {
+    headers.set("Content-Type", "application/json");
+  }
+
   const response = await fetch(endpoint.toString(), {
     method: options?.method ?? "GET",
-    headers: cartToken ? { "Cart-Token": cartToken } : undefined,
+    headers,
     body: options?.body ?? null,
   });
   const nextCartToken = response.headers.get("Cart-Token");
+  const nextNonce = response.headers.get("Nonce");
 
   if (nextCartToken) {
     setStoredCartToken(nextCartToken);
+  }
+
+  if (nextNonce) {
+    setStoredStoreNonce(nextNonce);
   }
 
   const payload = (await response.json().catch(() => null)) as
@@ -276,16 +401,48 @@ function mapTranslationPaths(
   return mapped;
 }
 
+function mapOptionAttributes(attributes: StoreApiProduct["attributes"]) {
+  return (attributes ?? [])
+    .filter((attribute) => attribute.has_variations)
+    .map((attribute) => ({
+      name: attribute.name ?? "",
+      slug: attribute.taxonomy ?? normalizeOptionKey(attribute.name),
+      terms: (attribute.terms ?? []).map((term) => ({
+        isDefault: Boolean(term.default),
+        name: term.name ?? "",
+        slug: term.slug ?? "",
+      })),
+    }))
+    .filter((attribute) => attribute.name && attribute.terms.length > 0);
+}
+
+function mapProductVariations(variations: StoreApiProduct["variations"]) {
+  return (variations ?? []).map((variation) => ({
+    attributes: Object.fromEntries(
+      (variation.attributes ?? [])
+        .filter((attribute) => attribute.name && attribute.value)
+        .map((attribute) => [normalizeOptionKey(attribute.name), attribute.value ?? ""]),
+    ),
+    id: variation.id,
+  }));
+}
+
 function mapStoreProduct(product: StoreApiProduct, locale: Locale): StoreProduct {
   const prices = product.prices ?? {};
   const currencyCode = prices.currency_code ?? "EUR";
   const currencyMinorUnit = prices.currency_minor_unit ?? 2;
   const path = localizePath(`/shop/products/${product.slug ?? product.id}`, locale);
+  const optionAttributes = mapOptionAttributes(product.attributes);
+  const variations = mapProductVariations(product.variations);
 
   return {
+    categorySlugs: (product.categories ?? [])
+      .map((category) => category.slug ?? "")
+      .filter(Boolean),
     currencyCode,
     currencyMinorUnit,
     descriptionHtml: product.description ?? "",
+    hasOptions: Boolean(product.has_options),
     id: product.id,
     imageAlt: product.images?.[0]?.alt ?? product.images?.[0]?.name ?? product.name ?? "",
     imageSrc:
@@ -294,19 +451,28 @@ function mapStoreProduct(product: StoreApiProduct, locale: Locale): StoreProduct
       null,
     locale,
     name: product.name ?? `Product ${product.id}`,
+    optionAttributes,
     path,
-    price: normalizeMoney(prices.price, currencyCode, currencyMinorUnit),
+    price: normalizeMoney(prices.price, currencyCode, currencyMinorUnit, locale),
+    productType: product.type ?? "simple",
     regularPrice: normalizeMoney(
       prices.regular_price,
       currencyCode,
       currencyMinorUnit,
+      locale,
     ),
-    salePrice: normalizeMoney(prices.sale_price, currencyCode, currencyMinorUnit),
+    salePrice: normalizeMoney(
+      prices.sale_price,
+      currencyCode,
+      currencyMinorUnit,
+      locale,
+    ),
     shortDescriptionHtml:
       product.short_description ?? product.summary ?? product.description ?? "",
     slug: product.slug ?? String(product.id),
     stockStatus: product.stock_status ?? "",
     translationPaths: mapTranslationPaths(product.translations, path),
+    variations,
   };
 }
 
@@ -325,6 +491,10 @@ function mapStoreCart(cart: StoreApiCart, locale: Locale): StoreCart {
     cart.items[0]?.prices.currency_code ?? "EUR";
   const totalMinorUnit =
     cart.items[0]?.prices.currency_minor_unit ?? 2;
+  const selectedShippingRate =
+    cart.shipping_rates
+      ?.flatMap((rateGroup) => rateGroup.shipping_rates ?? [])
+      .find((rate) => rate.selected)?.name ?? "";
 
   return {
     items: cart.items.map((item) => ({
@@ -336,21 +506,68 @@ function mapStoreCart(cart: StoreApiCart, locale: Locale): StoreCart {
         item.prices.price,
         item.prices.currency_code,
         item.prices.currency_minor_unit,
+        locale,
       ),
       quantity: item.quantity,
       total: normalizeMoney(
         item.totals.line_total,
         item.prices.currency_code,
         item.prices.currency_minor_unit,
+        locale,
       ),
     })),
+    shippingCalculated:
+      cart.totals.total_shipping !== null &&
+      cart.totals.total_shipping !== undefined,
+    shipping: normalizeMoney(
+      cart.totals.total_shipping ?? "0",
+      totalCurrencyCode,
+      totalMinorUnit,
+      locale,
+    ),
+    shippingMethod: selectedShippingRate,
+    subtotal: normalizeMoney(
+      cart.totals.total_items,
+      totalCurrencyCode,
+      totalMinorUnit,
+      locale,
+    ),
     total: normalizeMoney(
       cart.totals.total_price,
       totalCurrencyCode,
       totalMinorUnit,
+      locale,
     ),
-    totalItems: cart.totals.total_items,
+    totalItems:
+      cart.items_count ??
+      cart.items.reduce((sum, item) => sum + item.quantity, 0),
+    vat: normalizeMoney(
+      cart.totals.total_tax,
+      totalCurrencyCode,
+      totalMinorUnit,
+      locale,
+    ),
   };
+}
+
+function emitStoreCartUpdated(
+  cart: StoreCart,
+  options?: {
+    openDrawer?: boolean;
+  },
+) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.dispatchEvent(
+    new CustomEvent<StoreCartUpdatedDetail>(STORE_CART_UPDATED_EVENT, {
+      detail: {
+        cart,
+        openDrawer: options?.openDrawer,
+      },
+    }),
+  );
 }
 
 export async function fetchStoreCategories(locale: Locale) {
@@ -418,12 +635,16 @@ export async function fetchStoreProductBySlug({
 
 export async function fetchStoreCart(locale: Locale) {
   const payload = await storeApiRequest<StoreApiCart>("/cart", { locale });
-  return mapStoreCart(payload, locale);
+  const cart = mapStoreCart(payload, locale);
+  emitStoreCartUpdated(cart);
+  return cart;
 }
 
 async function ensureCart(locale: Locale) {
   const cartToken = getStoredCartToken();
-  if (cartToken) {
+  const nonce = getStoredStoreNonce();
+
+  if (cartToken && nonce) {
     return;
   }
 
@@ -434,9 +655,11 @@ export async function addStoreCartItem({
   id,
   locale,
   quantity = 1,
+  openDrawerOnSuccess = false,
 }: {
   id: number;
   locale: Locale;
+  openDrawerOnSuccess?: boolean;
   quantity?: number;
 }) {
   await ensureCart(locale);
@@ -446,7 +669,9 @@ export async function addStoreCartItem({
     locale,
     method: "POST",
   });
-  return mapStoreCart(payload, locale);
+  const cart = mapStoreCart(payload, locale);
+  emitStoreCartUpdated(cart, { openDrawer: openDrawerOnSuccess });
+  return cart;
 }
 
 export async function updateStoreCartItem({
@@ -464,7 +689,9 @@ export async function updateStoreCartItem({
     locale,
     method: "POST",
   });
-  return mapStoreCart(payload, locale);
+  const cart = mapStoreCart(payload, locale);
+  emitStoreCartUpdated(cart);
+  return cart;
 }
 
 export async function removeStoreCartItem({
@@ -480,7 +707,9 @@ export async function removeStoreCartItem({
     locale,
     method: "POST",
   });
-  return mapStoreCart(payload, locale);
+  const cart = mapStoreCart(payload, locale);
+  emitStoreCartUpdated(cart);
+  return cart;
 }
 
 export async function submitStoreCheckout({

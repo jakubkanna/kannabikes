@@ -131,6 +131,10 @@ const DEFAULT_WORDPRESS_API_BASE =
   "http://localhost/wp-json/kanna/v1";
 
 function getApiBase() {
+  if (import.meta.env.DEV) {
+    return "/wp-json/kanna/v1";
+  }
+
   return DEFAULT_WORDPRESS_API_BASE.replace(/\/$/, "");
 }
 

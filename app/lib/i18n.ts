@@ -7,6 +7,7 @@ export const SUPPORTED_LOCALES = ["en", "pl"] as const;
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 
 export const DEFAULT_LOCALE: Locale = "en";
+export const LOCALE_STORAGE_KEY = "kanna-locale";
 const SITE_URL = (
   import.meta.env.VITE_SITE_URL ?? "http://localhost:5173"
 ).replace(/\/$/, "");
@@ -46,6 +47,23 @@ export function localizePath(pathname: string, locale: Locale) {
 
 export function getIntlLocale(locale: Locale) {
   return locale === "pl" ? "pl-PL" : "en-GB";
+}
+
+export function getStoredLocale() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const storedLocale = window.localStorage.getItem(LOCALE_STORAGE_KEY);
+  return isSupportedLocale(storedLocale) ? storedLocale : null;
+}
+
+export function setStoredLocale(locale: Locale) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(LOCALE_STORAGE_KEY, locale);
 }
 
 function buildSiteUrl(pathname: string) {

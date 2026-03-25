@@ -32,6 +32,17 @@
   font-weight: 900;
 }
 
+.page-shell {
+  min-height: 100vh;
+  padding: 2rem 1rem 3rem;
+}
+
+@media (min-width: 768px) {
+  .page-shell {
+    padding: 3rem 2rem 4rem;
+  }
+}
+
 .reveal-slide-left,
 .reveal-slide-right,
 .reveal-scale-in {

@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 
 import type { Route } from "./+types/blog.$slug";
+import { PageContainer } from "~/components/page-container";
 import { useMessages } from "~/components/locale-provider";
 import {
   buildLocalizedMeta,
@@ -80,9 +81,11 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
   if (!loaderData.post && !loaderData.loadError) {
     return (
       <main className="min-h-screen bg-white px-4 py-10 md:px-8 md:py-14">
-        <article className="mx-auto max-w-3xl text-sm leading-6 text-slate-600">
-          {messages.blog.loadingPost}
-        </article>
+        <PageContainer>
+          <article className="max-w-3xl text-sm leading-6 text-slate-600">
+            {messages.blog.loadingPost}
+          </article>
+        </PageContainer>
       </main>
     );
   }
@@ -90,17 +93,19 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
   if (loaderData.loadError || !loaderData.post) {
     return (
       <main className="min-h-screen bg-white px-4 py-10 md:px-8 md:py-14">
-        <article className="mx-auto max-w-3xl">
-          <Link
-            to={loaderData.locale === "pl" ? "/pl/blog" : "/blog"}
-            className="text-sm font-semibold text-slate-900 underline decoration-slate-300 underline-offset-4 transition hover:decoration-slate-900"
-          >
-            {messages.blog.backToBlog}
-          </Link>
-          <p className="mt-6 text-sm leading-6 text-slate-600">
-            {loaderData.loadError ?? messages.blog.notFound}
-          </p>
-        </article>
+        <PageContainer>
+          <article className="max-w-3xl">
+            <Link
+              to={loaderData.locale === "pl" ? "/pl/blog" : "/blog"}
+              className="text-sm font-semibold text-slate-900 underline decoration-slate-300 underline-offset-4 transition hover:decoration-slate-900"
+            >
+              {messages.blog.backToBlog}
+            </Link>
+            <p className="mt-6 text-sm leading-6 text-slate-600">
+              {loaderData.loadError ?? messages.blog.notFound}
+            </p>
+          </article>
+        </PageContainer>
       </main>
     );
   }
@@ -110,7 +115,7 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
   return (
     <main className="min-h-screen bg-white">
       <section className="bg-black px-4 pb-12 pt-10 text-white md:px-8 md:pb-16 md:pt-14">
-        <div className="mx-auto max-w-5xl">
+        <PageContainer className="max-w-5xl">
           <Link
             to={loaderData.locale === "pl" ? "/pl/blog" : "/blog"}
             className="text-sm font-semibold text-white/80 underline decoration-white/30 underline-offset-4 transition hover:text-white hover:decoration-white"
@@ -133,11 +138,11 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
               {post.excerpt}
             </p>
           ) : null}
-        </div>
+        </PageContainer>
       </section>
 
       <article className="px-4 pb-16 pt-8 md:px-8 md:pb-24 md:pt-10">
-        <div className="mx-auto max-w-5xl">
+        <PageContainer className="max-w-5xl">
           <img
             src={post.image.src}
             srcSet={post.image.srcSet}
@@ -152,7 +157,7 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
               dangerouslySetInnerHTML={{ __html: post.contentHtml }}
             />
           </div>
-        </div>
+        </PageContainer>
       </article>
     </main>
   );

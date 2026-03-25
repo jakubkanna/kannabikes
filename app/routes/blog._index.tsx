@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import type { Route } from "./+types/blog._index";
 import { ArchivoInkBleed } from "~/components/archivo-ink-bleed";
 import { useMessages } from "~/components/locale-provider";
+import { PageContainer, PageShell } from "~/components/page-container";
 import { SectionPill } from "~/components/section-pill";
 import {
   buildLocalizedMeta,
@@ -128,8 +129,8 @@ export default function BlogPage({ loaderData }: Route.ComponentProps) {
   const messages = useMessages();
 
   return (
-    <main className="min-h-screen bg-stone-100 px-4 py-8 md:px-8 md:py-12">
-      <div className="mx-auto max-w-6xl">
+    <PageShell>
+      <PageContainer>
         <SectionPill>{messages.blog.pill}</SectionPill>
         <h1 className="mt-4 max-w-4xl">
           <ArchivoInkBleed
@@ -163,7 +164,7 @@ export default function BlogPage({ loaderData }: Route.ComponentProps) {
             {messages.blog.empty}
           </section>
         )}
-      </div>
-    </main>
+      </PageContainer>
+    </PageShell>
   );
 }

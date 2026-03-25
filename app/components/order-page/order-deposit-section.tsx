@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { InputField, LockedField } from "~/components/form-field";
 import { LocalizedLink } from "~/components/localized-link";
+import { useLocale } from "~/components/locale-provider";
 import type {
   DepositPaymentMethod,
   OrderStage,
@@ -75,6 +76,7 @@ export function OrderDepositSection({
   }) => void;
   requiresClaim: boolean;
 }) {
+  const locale = useLocale();
   const depositPaid = currentStage !== "waiting_for_deposit";
   const [hasSuccessHighlight, setHasSuccessHighlight] = useState(false);
   const [isReceivedExpanded, setIsReceivedExpanded] = useState(false);
@@ -477,6 +479,7 @@ export function OrderDepositSection({
                     {formatOrderMoney(
                       depositTaxSummary.netAmount,
                       depositCurrency,
+                      locale,
                     )}
                   </span>
                 </div>
@@ -486,6 +489,7 @@ export function OrderDepositSection({
                     {formatOrderMoney(
                       depositTaxSummary.taxAmount,
                       depositCurrency,
+                      locale,
                     )}
                   </span>
                 </div>

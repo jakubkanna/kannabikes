@@ -1,6 +1,7 @@
 import { useEffect, useId, useState, type ReactNode } from "react";
 import { InputField } from "~/components/form-field";
 import { LocalizedLink } from "~/components/localized-link";
+import { useLocale } from "~/components/locale-provider";
 import { SectionPill } from "~/components/section-pill";
 import { Spinner } from "~/components/spinner";
 import { AnimatedOrderSection } from "./order-motion";
@@ -526,6 +527,7 @@ export function OrderProductionPreviewSection({
     option: "courier" | "pickup";
   }) => void;
 }) {
+  const locale = useLocale();
   const cityListId = useId();
   const countryListId = useId();
   const [shippingOption, setShippingOption] = useState<"courier" | "pickup">(
@@ -647,6 +649,7 @@ export function OrderProductionPreviewSection({
   const finalTransferAmountLabel = formatOrderMoney(
     finalAmountValue + shippingCost,
     currency,
+    locale,
   );
 
   useEffect(() => {
@@ -1147,7 +1150,7 @@ export function OrderProductionPreviewSection({
                 <BankTransferDetails
                   amountLabel={
                     totalTaxSummary
-                      ? formatOrderMoney(totalTaxSummary.grossAmount, currency)
+                      ? formatOrderMoney(totalTaxSummary.grossAmount, currency, locale)
                       : finalTransferAmountLabel
                   }
                   orderNumber={orderNumber}
@@ -1162,13 +1165,13 @@ export function OrderProductionPreviewSection({
               <div className="flex items-center justify-between gap-4">
                 <span className="text-slate-700">Total amount</span>
                 <span className="font-semibold text-slate-900">
-                  {`${totalAmountBeforeDeposit.toLocaleString("en-US").replace(/,/g, " ")} EUR`}
+                  {formatOrderMoney(totalAmountBeforeDeposit, currency, locale)}
                 </span>
               </div>
               <div className="mt-2 flex items-center justify-between gap-4">
                 <span className="text-slate-700">Deposit</span>
                 <span className="font-semibold text-slate-900">
-                  -{depositAmountValue.toLocaleString("en-US").replace(/,/g, " ")} EUR
+                  -{formatOrderMoney(depositAmountValue, currency, locale)}
                 </span>
               </div>
                 <div className="mt-2 flex items-center justify-between gap-4">
@@ -1179,8 +1182,8 @@ export function OrderProductionPreviewSection({
                       ? <PendingValue />
                       : hasShippingQuote
                       ? shippingCost === 0
-                        ? formatOrderMoney(0, currency)
-                        : formatOrderMoney(shippingCost, currency)
+                        ? formatOrderMoney(0, currency, locale)
+                        : formatOrderMoney(shippingCost, currency, locale)
                       : "Fill shipping details"}
                   </span>
                   {quotedShipping?.shippingRateLabel ? (
@@ -1220,7 +1223,7 @@ export function OrderProductionPreviewSection({
                   <span className="text-slate-700">VAT total (23% included)</span>
                   <span className="font-semibold text-slate-900">
                     {totalTaxSummary
-                      ? formatOrderMoney(totalTaxSummary.taxAmount, currency)
+                      ? formatOrderMoney(totalTaxSummary.taxAmount, currency, locale)
                       : isCalculatingShipping
                         ? <PendingValue />
                         : <PendingValue />}
@@ -1232,7 +1235,7 @@ export function OrderProductionPreviewSection({
                   </span>
                   <span className="text-lg font-semibold text-slate-900">
                     {totalTaxSummary
-                      ? formatOrderMoney(totalTaxSummary.grossAmount, currency)
+                      ? formatOrderMoney(totalTaxSummary.grossAmount, currency, locale)
                       : isCalculatingShipping
                         ? <PendingValue />
                         : <PendingValue />}
@@ -1408,7 +1411,7 @@ export function OrderProductionPreviewSection({
                 Amount paid by customer
               </span>
               <p className="text-sm text-slate-900">
-                {formatOrderMoney(totalWithShipping, currency)}
+                {formatOrderMoney(totalWithShipping, currency, locale)}
               </p>
             </div>
           </div>

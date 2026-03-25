@@ -11,34 +11,52 @@ export function LanguageSwitcher() {
   const messages = useMessages();
   const matches = useMatches();
   const currentLocale = getLocaleFromPath(location.pathname);
-  const targetLocale: Locale = currentLocale === "en" ? "pl" : "en";
   const leafMatch = matches[matches.length - 1];
-  const alternatePaths = (leafMatch?.data as MatchDataWithAlternatePaths | undefined)
-    ?.alternatePaths;
-  const targetPath =
-    alternatePaths?.[targetLocale] ?? localizePath(location.pathname, targetLocale);
-  const targetUrl = `${targetPath}${location.search}${location.hash}`;
+  const alternatePaths = (
+    leafMatch?.data as MatchDataWithAlternatePaths | undefined
+  )?.alternatePaths;
+  const getLocaleUrl = (locale: Locale) => {
+    const targetPath =
+      alternatePaths?.[locale] ?? localizePath(location.pathname, locale);
+
+    return `${targetPath}${location.search}${location.hash}`;
+  };
 
   return (
-    <Link
-      to={targetUrl}
+    <div
       aria-label={messages.common.languageLabel}
-      className="inline-flex items-center gap-2 rounded-full border border-current/30 px-2.5 py-1 text-[0.68rem] font-black uppercase tracking-[0.16em] transition hover:scale-[1.08]"
+      className="inline-flex items-center gap-1 rounded-full border border-current/30 p-1 text-[0.68rem] font-black uppercase tracking-[0.16em]"
       style={{
         fontFamily: "var(--font-kanna)",
         fontVariationSettings: '"wdth" 125, "wght" 900',
         fontWeight: 900,
       }}
     >
-      <span className={currentLocale === "en" ? "opacity-100" : "opacity-40"}>
+      <Link
+        to={getLocaleUrl("en")}
+        aria-current={currentLocale === "en" ? "page" : undefined}
+        className={`rounded-full px-2 py-0.5 transition ${
+          currentLocale === "en"
+            ? "border border-current opacity-100"
+            : "opacity-40 hover:opacity-100"
+        }`}
+      >
         EN
-      </span>
+      </Link>
       <span aria-hidden="true" className="opacity-35">
         /
       </span>
-      <span className={currentLocale === "pl" ? "opacity-100" : "opacity-40"}>
+      <Link
+        to={getLocaleUrl("pl")}
+        aria-current={currentLocale === "pl" ? "page" : undefined}
+        className={`rounded-full px-2 py-0.5 transition ${
+          currentLocale === "pl"
+            ? "border border-current opacity-100"
+            : "opacity-40 hover:opacity-100"
+        }`}
+      >
         PL
-      </span>
-    </Link>
+      </Link>
+    </div>
   );
 }

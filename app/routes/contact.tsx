@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Route } from "./+types/contact";
 import { ArchivoInkBleed } from "~/components/archivo-ink-bleed";
+import { PageContainer, PageShell } from "~/components/page-container";
 import {
   InputField,
   SelectField,
@@ -19,7 +20,11 @@ import {
 const DEFAULT_WORDPRESS_API_BASE =
   import.meta.env.VITE_WORDPRESS_API_BASE_URL ??
   "http://localhost/wp-json/kanna/v1";
-const DEFAULT_CONTACT_ENDPOINT = `${DEFAULT_WORDPRESS_API_BASE.replace(/\/$/, "")}/contact`;
+const DEFAULT_CONTACT_ENDPOINT = `${
+  import.meta.env.DEV
+    ? "/wp-json/kanna/v1"
+    : DEFAULT_WORDPRESS_API_BASE.replace(/\/$/, "")
+}/contact`;
 
 function validateContactForm(values: {
   email: string;
@@ -145,39 +150,40 @@ export default function ContactPage() {
   };
 
   return (
-    <main className="min-h-screen bg-stone-100 px-4 py-8 md:px-8 md:py-12">
-      <div className="mx-auto max-w-4xl">
-        <section>
-          <SectionPill>{messages.contact.pill}</SectionPill>
-          <h1 className="mt-4 max-w-4xl">
-            <ArchivoInkBleed
-              className="block w-full"
-              color="var(--kanna-ink)"
-              fontSize={160}
-              lines={[...messages.contact.headingLines]}
-            />
-          </h1>
-          <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600">
-            {messages.contact.description}
-          </p>
+    <PageShell>
+      <PageContainer>
+        <div className="max-w-4xl">
+          <section>
+            <SectionPill>{messages.contact.pill}</SectionPill>
+            <h1 className="mt-4 max-w-4xl">
+              <ArchivoInkBleed
+                className="block w-full"
+                color="var(--kanna-ink)"
+                fontSize={160}
+                lines={[...messages.contact.headingLines]}
+              />
+            </h1>
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600">
+              {messages.contact.description}
+            </p>
 
-          {isSubmitted ? (
-            <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-5">
-              <h2 className="text-lg font-semibold text-slate-900">
-                {messages.contact.successTitle}
-              </h2>
-              <p className="mt-2 text-sm leading-6 text-slate-700">
-                {messages.contact.successBody}
-              </p>
-              <LocalizedLink
-                to="/"
-                className="mt-4 inline-flex text-sm font-semibold text-slate-900 underline decoration-slate-300 underline-offset-4 transition hover:decoration-slate-900"
-              >
-                {messages.contact.backHome}
-              </LocalizedLink>
-            </div>
-          ) : (
-            <form className="mt-8 space-y-6" onSubmit={handleSubmit} noValidate>
+            {isSubmitted ? (
+              <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                <h2 className="text-lg font-semibold text-slate-900">
+                  {messages.contact.successTitle}
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-slate-700">
+                  {messages.contact.successBody}
+                </p>
+                <LocalizedLink
+                  to="/"
+                  className="mt-4 inline-flex text-sm font-semibold text-slate-900 underline decoration-slate-300 underline-offset-4 transition hover:decoration-slate-900"
+                >
+                  {messages.contact.backHome}
+                </LocalizedLink>
+              </div>
+            ) : (
+              <form className="mt-8 space-y-6" onSubmit={handleSubmit} noValidate>
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="hidden" aria-hidden="true">
                   <span>Website</span>
@@ -383,10 +389,11 @@ export default function ContactPage() {
               >
                 {isSubmitting ? messages.contact.sending : messages.contact.send}
               </button>
-            </form>
-          )}
-        </section>
-      </div>
-    </main>
+              </form>
+            )}
+          </section>
+        </div>
+      </PageContainer>
+    </PageShell>
   );
 }

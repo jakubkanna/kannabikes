@@ -14,6 +14,7 @@ Example .env:
 
 ```
 VITE_WORDPRESS_API_BASE_URL=http://localhost/wp-json/kanna/v1
+VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
 ```
 
 WordPress / plugin env:

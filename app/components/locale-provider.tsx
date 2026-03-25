@@ -1,8 +1,9 @@
-import { createContext, useContext, type ReactNode } from "react";
+import { createContext, useContext, useEffect, type ReactNode } from "react";
 import {
   DEFAULT_LOCALE,
   getMessages,
   localizePath,
+  setStoredLocale,
   type AppMessages,
   type Locale,
 } from "~/lib/i18n";
@@ -16,6 +17,10 @@ export function LocaleProvider({
   children: ReactNode;
   locale: Locale;
 }) {
+  useEffect(() => {
+    setStoredLocale(locale);
+  }, [locale]);
+
   return <LocaleContext.Provider value={locale}>{children}</LocaleContext.Provider>;
 }
 

@@ -14,13 +14,19 @@ export const messages = {
     },
     cart: {
       checkout: "Checkout",
+      close: "Close",
       empty: "Your cart is currently empty.",
       emptyCta: "Browse products",
+      items: "Items",
       loading: "Loading cart...",
       quantity: "Quantity",
       remove: "Remove",
+      shipping: "Shipping",
+      shippingPending: "Calculated after address details",
       subtotal: "Subtotal",
+      total: "Total",
       title: "Cart",
+      vat: "VAT",
     },
     checkout: {
       empty: "Your cart is empty. Add a product before checking out.",
@@ -32,10 +38,13 @@ export const messages = {
     },
     commerce: {
       addToCart: "Add to cart",
+      addedToCart: "Added to cart.",
       categories: "Categories",
+      chooseOption: "Choose an option",
       featuredProducts: "Products",
       noCategories: "No categories are available yet.",
       noProducts: "No products are available right now.",
+      optionRequired: "Please choose the product options before adding it to the cart.",
       priceFrom: "From",
       relatedCategory: "Category",
       shopPill: "Shop",
@@ -45,6 +54,20 @@ export const messages = {
       comingSoon: "Coming soon",
       languageLabel: "Language",
       polish: "Polski",
+    },
+    cookieConsent: {
+      accept: "Accept analytics",
+      currentStateAccepted: "Analytics are currently enabled",
+      currentStateRejected: "Analytics are currently disabled",
+      description:
+        "We only load Google Analytics after your consent. If you agree, we measure pageviews and important link or button clicks to improve the website.",
+      detailsAfterLink: ". You can change this choice later at any time.",
+      detailsBeforeLink: "More details are available in our",
+      eyebrow: "Cookie settings",
+      manageTitle: "Review your analytics choice",
+      privacyLink: "privacy policy",
+      reject: "Reject analytics",
+      title: "Can we use analytics cookies?",
     },
     contact: {
       backHome: "Back to homepage",
@@ -100,6 +123,7 @@ export const messages = {
       designedBy: "designed and developed by",
       headingLines: ["Handbuilt with", "passion in Poland"],
       instagram: "Instagram",
+      cookieSettings: "Cookie settings",
       privacyTerms: "Privacy & Terms",
       products: "Products",
       studio: "Studio",
@@ -112,7 +136,7 @@ export const messages = {
         description:
           "Retro school fan? Resurrect your old 5-hole crankset with a new chainring.",
         imageAlt: "Survivor chainring",
-        pill: "Survivor Chainring",
+        pill: "New",
         titleLines: ["Survivor", "Chainring"],
       },
       customOrder: {
@@ -239,13 +263,19 @@ export const messages = {
     },
     cart: {
       checkout: "Przejdź do checkoutu",
+      close: "Zamknij",
       empty: "Twój koszyk jest obecnie pusty.",
       emptyCta: "Przeglądaj produkty",
+      items: "Produkty",
       loading: "Ładowanie koszyka...",
       quantity: "Ilość",
       remove: "Usuń",
+      shipping: "Dostawa",
+      shippingPending: "Wyliczana po uzupełnieniu adresu",
       subtotal: "Suma częściowa",
+      total: "Razem",
       title: "Koszyk",
+      vat: "VAT",
     },
     checkout: {
       empty: "Twój koszyk jest pusty. Dodaj produkt przed checkoutem.",
@@ -257,10 +287,13 @@ export const messages = {
     },
     commerce: {
       addToCart: "Dodaj do koszyka",
+      addedToCart: "Dodano do koszyka.",
       categories: "Kategorie",
+      chooseOption: "Wybierz opcję",
       featuredProducts: "Produkty",
       noCategories: "Brak dostępnych kategorii.",
       noProducts: "Brak dostępnych produktów.",
+      optionRequired: "Wybierz opcje produktu przed dodaniem go do koszyka.",
       priceFrom: "Od",
       relatedCategory: "Kategoria",
       shopPill: "Sklep",
@@ -270,6 +303,20 @@ export const messages = {
       comingSoon: "Wkrótce",
       languageLabel: "Język",
       polish: "Polski",
+    },
+    cookieConsent: {
+      accept: "Akceptuję analitykę",
+      currentStateAccepted: "Analityka jest obecnie włączona",
+      currentStateRejected: "Analityka jest obecnie wyłączona",
+      description:
+        "Google Analytics uruchamiamy dopiero po Twojej zgodzie. Jeśli ją wyrazisz, mierzymy odsłony oraz ważne kliknięcia linków i przycisków, aby ulepszać stronę.",
+      detailsAfterLink: ". W każdej chwili możesz później zmienić tę decyzję.",
+      detailsBeforeLink: "Więcej informacji znajdziesz w naszej",
+      eyebrow: "Ustawienia cookies",
+      manageTitle: "Sprawdź swój wybór dotyczący analityki",
+      privacyLink: "polityce prywatności",
+      reject: "Odrzucam analitykę",
+      title: "Czy możemy używać analitycznych cookies?",
     },
     contact: {
       backHome: "Wróć na stronę główną",
@@ -287,7 +334,7 @@ export const messages = {
         submit: "Nie udało się teraz wysłać wiadomości. Spróbuj ponownie.",
       },
       fullName: "Imię i nazwisko",
-      headingLines: ["Skontaktuj", "się"],
+      headingLines: ["Kontakt"],
       marketingConsent:
         "Wyrażam zgodę na otrzymywanie przyszłych aktualizacji marketingowych e-mailem. Ta zgoda jest opcjonalna i może zostać wycofana w każdej chwili.",
       message: "Wiadomość",
@@ -304,7 +351,7 @@ export const messages = {
       topic: "Temat",
       topicOptions: {
         general: "Pytanie ogólne",
-        quote: "Zapytanie ofertowe",
+        quote: "Poproś o wycenę",
       },
     },
     footer: {
@@ -325,6 +372,7 @@ export const messages = {
       designedBy: "projekt i development",
       headingLines: ["Ręcznie budowane", "z pasją w Polsce"],
       instagram: "Instagram",
+      cookieSettings: "Ustawienia cookies",
       privacyTerms: "Prywatność i warunki",
       products: "Produkty",
       studio: "Studio",
@@ -335,10 +383,10 @@ export const messages = {
     home: {
       chainring: {
         description:
-          "Lubisz retro? Tchnij nowe życie w stary korbowód 5-bolt dzięki nowej zębatce.",
+          "Lubisz retro? Tchnij nowe życie w starą korbę dzięki nowej zębatce.",
         imageAlt: "Zębatka Survivor",
-        pill: "Survivor Chainring",
-        titleLines: ["Survivor", "Chainring"],
+        pill: "Nowość",
+        titleLines: ["Survivor", "Zębatka"],
       },
       customOrder: {
         button: "Zamów rower",
@@ -346,7 +394,7 @@ export const messages = {
           "Ręcznie budowany rower dopasowany do Twojej sylwetki, stylu jazdy i charakteru.",
         imageAlt: "Spawanie ramy rowerowej",
         pill: "Na zamówienie",
-        titleLines: ["Made-to-measure", "bicycles."],
+        titleLines: ["Rowery", "szyte na miarę"],
       },
       walker: {
         description: '32", kompatybilny z Pinion / Effigear, drop-bar mtb',
@@ -441,7 +489,7 @@ export const messages = {
             title: "Dostawa:",
           },
         ],
-        titleLines: ["Proces", "pre-order"],
+        titleLines: ["Proces", "zamówienia"],
         why: "Jak to działa?",
       },
       shop: {

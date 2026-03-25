@@ -1,6 +1,7 @@
 import type { Route } from "./+types/shop.category.$slug";
 import { LocalizedLink } from "~/components/localized-link";
 import { useMessages } from "~/components/locale-provider";
+import { PageContainer, PageShell } from "~/components/page-container";
 import { SectionPill } from "~/components/section-pill";
 import {
   buildLocalizedMeta,
@@ -67,8 +68,8 @@ export default function ShopCategoryPage({ loaderData }: Route.ComponentProps) {
 
   if (!loaderData) {
     return (
-      <main className="min-h-screen bg-stone-100 px-4 py-20 md:px-8 md:py-28">
-        <div className="mx-auto max-w-6xl">
+      <PageShell>
+        <PageContainer>
           <SectionPill>{messages.commerce.shopPill}</SectionPill>
           <h1 className="mt-6 text-4xl font-semibold tracking-tight text-[var(--kanna-ink)]">
             {messages.commerce.categories}
@@ -76,14 +77,14 @@ export default function ShopCategoryPage({ loaderData }: Route.ComponentProps) {
           <p className="mt-8 text-sm text-slate-600">
             {messages.commerce.noProducts}
           </p>
-        </div>
-      </main>
+        </PageContainer>
+      </PageShell>
     );
   }
 
   return (
-    <main className="min-h-screen bg-stone-100 px-4 py-20 md:px-8 md:py-28">
-      <div className="mx-auto max-w-6xl">
+    <PageShell>
+      <PageContainer>
         <SectionPill>{messages.commerce.shopPill}</SectionPill>
         <h1 className="mt-6 text-4xl font-semibold tracking-tight text-[var(--kanna-ink)]">
           {category?.name ?? messages.commerce.categories}
@@ -134,7 +135,7 @@ export default function ShopCategoryPage({ loaderData }: Route.ComponentProps) {
             {messages.commerce.noProducts}
           </p>
         )}
-      </div>
-    </main>
+      </PageContainer>
+    </PageShell>
   );
 }
