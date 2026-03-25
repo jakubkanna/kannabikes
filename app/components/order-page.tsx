@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import { InputField } from "~/components/form-field";
 import { SectionPill } from "~/components/section-pill";
@@ -143,6 +143,8 @@ export function OrderPage({
   claimToken?: string;
   orderNumber: string;
 }) {
+  const productionSectionRef = useRef<HTMLDivElement | null>(null);
+  const shouldScrollToProductionRef = useRef(false);
   const [agreementAccepted, setAgreementAccepted] = useState(false);
   const [activeMeasurement, setActiveMeasurement] =
     useState<MeasurementKey | null>(null);
@@ -304,6 +306,24 @@ export function OrderPage({
     setSpecificationAttachmentFile(null);
     setSpecificationMode(portalBuild.specificationState.specificationMode);
   }, [portalBuild]);
+
+  useEffect(() => {
+    if (
+      !shouldScrollToProductionRef.current ||
+      orderStage !== "waiting_for_final_payment"
+    ) {
+      return;
+    }
+
+    shouldScrollToProductionRef.current = false;
+
+    window.requestAnimationFrame(() => {
+      productionSectionRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+  }, [orderStage]);
 
   useEffect(() => {
     if (
@@ -575,6 +595,7 @@ export function OrderPage({
         publicOrderNumber: orderNumber,
         sessionToken,
       });
+      shouldScrollToProductionRef.current = true;
       setPortalBuild(build);
     } catch (error) {
       setOrderError(
@@ -739,292 +760,301 @@ export function OrderPage({
     <main className="min-h-screen bg-stone-100 px-4 py-8 md:px-8 md:py-12">
       <LayoutGroup id={`order-page-${orderNumber}`}>
         <SectionStack>
-        <motion.header
-          layout
-          transition={{ layout: ORDER_LAYOUT_TRANSITION }}
-          className="rounded-[28px] border border-stone-200 bg-white px-5 py-5 shadow-sm md:px-7 md:py-6"
-        >
-          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-            <div>
-              <SectionPill>Order</SectionPill>
-              <h1 className="page-heading mt-4 text-[2.35rem] leading-[0.88] text-[var(--kanna-ink)] md:text-[3.8rem]">
-                {`Order nb. ${orderNumber}`}
-              </h1>
-            </div>
-            {showHeaderStatus ? (
-              <div className="flex items-center md:justify-end md:pt-1">
-                <OrderStatusBadge displayStatus={headerDisplayStatus} />
+          <motion.header
+            layout
+            transition={{ layout: ORDER_LAYOUT_TRANSITION }}
+            className="rounded-[28px] border border-stone-200 bg-white px-5 py-5 shadow-sm md:px-7 md:py-6"
+          >
+            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <div>
+                <SectionPill>Order</SectionPill>
+                <h1 className="page-heading mt-4 text-[2.35rem] leading-[0.88] text-[var(--kanna-ink)] md:text-[3.8rem]">
+                  {`${orderNumber}`}
+                </h1>
               </div>
-            ) : null}
-          </div>
-        </motion.header>
-
-        <AnimatePresence initial={false} mode="popLayout">
-          {orderError ? (
-            <AnimatedOrderSection
-              key="order-error"
-              className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 shadow-sm"
-            >
-              {orderError}
-            </AnimatedOrderSection>
-          ) : null}
-        </AnimatePresence>
-
-        <AnimatePresence initial={false} mode="popLayout">
-          {isLoadingBuild && !portalBuild ? (
-            <AnimatedOrderSection
-              key="order-loading"
-              className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm"
-            >
-              <p className="text-sm text-slate-600">
-                Loading your bike configurator...
-              </p>
-            </AnimatedOrderSection>
-          ) : null}
-        </AnimatePresence>
-
-        <AnimatePresence initial={false} mode="popLayout">
-        {!isLoadingBuild && requiresLogin ? (
-          <AnimatedOrderSection
-            key="order-login"
-            className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm"
-          >
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-              Protected order
-            </p>
-            <h2 className="mt-2 text-xl font-semibold text-slate-900">
-              Enter your order password
-            </h2>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-              This order page is protected with the password created during the
-              deposit step.
-            </p>
-            <div className="mt-5 max-w-md">
-              <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-700">
-                  Password
-                </span>
-                <InputField
-                  type="password"
-                  value={loginPassword}
-                  onChange={(event) => setLoginPassword(event.target.value)}
-                  placeholder="Enter your order password"
-                  hasError={Boolean(loginError)}
-                  className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
-                />
-              </label>
-              {loginError ? (
-                <p className="mt-3 text-sm text-red-600">{loginError}</p>
+              {showHeaderStatus ? (
+                <div className="flex items-center md:justify-end md:pt-1">
+                  <OrderStatusBadge displayStatus={headerDisplayStatus} />
+                </div>
               ) : null}
-              {passwordResetNotice ? (
-                <p className="mt-3 text-sm text-emerald-700">
-                  {passwordResetNotice}
+            </div>
+          </motion.header>
+
+          <AnimatePresence initial={false} mode="popLayout">
+            {orderError ? (
+              <AnimatedOrderSection
+                key="order-error"
+                className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 shadow-sm"
+              >
+                {orderError}
+              </AnimatedOrderSection>
+            ) : null}
+          </AnimatePresence>
+
+          <AnimatePresence initial={false} mode="popLayout">
+            {isLoadingBuild && !portalBuild ? (
+              <AnimatedOrderSection
+                key="order-loading"
+                className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm"
+              >
+                <p className="text-sm text-slate-600">
+                  Loading your bike configurator...
                 </p>
-              ) : null}
-              <button
-                type="button"
-                onClick={handlePortalLogin}
-                disabled={isLoggingIn}
-                className="mt-4 inline-flex items-center justify-center rounded-md bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:bg-stone-300"
-              >
-                {isLoggingIn ? "Unlocking..." : "Access"}
-              </button>
-              <button
-                type="button"
-                onClick={handleForgotPassword}
-                disabled={isSendingPasswordReset}
-                className="mt-4 ml-4 inline-flex items-center justify-center text-sm font-medium text-slate-700 underline decoration-slate-300 underline-offset-4 transition hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-400"
-              >
-                {isSendingPasswordReset
-                  ? "Sending reset link..."
-                  : "Forgot password?"}
-              </button>
-            </div>
-          </AnimatedOrderSection>
-        ) : null}
-        </AnimatePresence>
-
-        <AnimatePresence initial={false} mode="popLayout">
-        {!isLoadingBuild && requiresPasswordReset ? (
-          <AnimatedOrderSection
-            key="order-password-reset"
-            className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm"
-          >
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-              Reset password
-            </p>
-            <h2 className="mt-2 text-xl font-semibold text-slate-900">
-              Create a new order password
-            </h2>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-              Use this secure link to set a new password and access your order
-              page again.
-            </p>
-            <div className="mt-5 max-w-md space-y-4">
-              <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-700">
-                  New password
-                </span>
-                <InputField
-                  type="password"
-                  value={claimPassword}
-                  onBlur={() => setClaimPasswordTouched(true)}
-                  onChange={(event) => setClaimPassword(event.target.value)}
-                  placeholder="Enter a new password"
-                  hasError={Boolean(claimPasswordFieldError)}
-                  className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
-                />
-                {claimPasswordFieldError ? (
-                  <p className="mt-2 text-sm text-red-600">
-                    {claimPasswordFieldError}
-                  </p>
-                ) : null}
-              </label>
-              <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-700">
-                  Repeat new password
-                </span>
-                <InputField
-                  type="password"
-                  value={claimRepeatPassword}
-                  onBlur={() => setClaimRepeatPasswordTouched(true)}
-                  onChange={(event) =>
-                    setClaimRepeatPassword(event.target.value)
-                  }
-                  placeholder="Repeat your new password"
-                  hasError={Boolean(claimRepeatPasswordFieldError)}
-                  className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
-                />
-                {claimRepeatPasswordFieldError ? (
-                  <p className="mt-2 text-sm text-red-600">
-                    {claimRepeatPasswordFieldError}
-                  </p>
-                ) : null}
-              </label>
-              <button
-                type="button"
-                onClick={handleClaimAccess}
-                disabled={isClaimingAccess}
-                className="inline-flex items-center justify-center rounded-md bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:bg-stone-300"
-              >
-                {isClaimingAccess ? "Saving..." : "Save password and access"}
-              </button>
-            </div>
-          </AnimatedOrderSection>
-        ) : null}
-        </AnimatePresence>
-
-        {portalBuild && !requiresPasswordReset ? (
-          <>
-            <OrderDepositSection
-              agreementAccepted={agreementAccepted}
-              availablePaymentMethods={portalBuild.availablePaymentMethods}
-              currentStage={orderStage}
-              customerDetails={portalBuild.customer}
-              depositAmountLabel={portalBuild.deposit.amount}
-              depositAmountValue={portalBuild.deposit.amountValue}
-              depositCurrency={portalBuild.deposit.currency}
-              depositOrderStatus={portalBuild.deposit.orderStatus}
-              depositPayment={depositPayment}
-              claimError={depositClaimError}
-              isDepositConfirmed={isDepositConfirmed}
-              isProcessingPayment={isProcessingPayment}
-              onAgreementChange={setAgreementAccepted}
-              onClaimErrorChange={setDepositClaimError}
-              orderNumber={orderNumber}
-              onPayDeposit={handlePayDeposit}
-              requiresClaim={portalBuild.accessState === "claim_required"}
-            />
-
-            <AnimatePresence initial={false} mode="popLayout">
-              {measurementsUnlocked ? (
-                <OrderMeasurementsSection
-                  key="order-measurements-active"
-                  activeMeasurement={activeMeasurement}
-                  bodyType={bodyType}
-                  bodyWeight={bodyWeight}
-                  expandedGuidelineKey={expandedGuidelineKey}
-                  isSubmitting={isSubmittingMeasurements}
-                  isSubmitted={measurementsSubmitted}
-                  measurementArrowsSvgMarkup={measurementArrowsSvgMarkup}
-                  measurementKeys={MEASUREMENT_KEYS}
-                  selectedBodySrc={selectedBodySrc}
-                  values={values}
-                  onActivateMeasurement={(key) =>
-                    activateMeasurement(key as MeasurementKey)
-                  }
-                  onDeactivateMeasurement={deactivateMeasurement}
-                  onBodyTypeChange={setBodyType}
-                  onBodyWeightChange={setBodyWeight}
-                  onMeasurementChange={handleMeasurementChange}
-                  onSubmit={handleSubmitMeasurements}
-                  onToggleGuidelines={handleToggleGuidelines}
-                />
-              ) : (
-                <OrderPendingSection
-                  key="order-measurements-pending"
-                  title="Next: measurements"
-                  titleStyle="eyebrow"
-                  description="We will ask you to provide the necessary measurements to start the design process."
-                />
-              )}
-            </AnimatePresence>
-
-            <AnimatePresence initial={false} mode="popLayout">
-              {measurementsUnlocked && !bikeDesignUnlocked ? (
-                <OrderBikeDesignPreviewSection key="order-bike-preview" />
-              ) : null}
-            </AnimatePresence>
-
-            {bikeDesignUnlocked ? (
-              <>
-                <OrderBikeDesignSection
-                  artistNote={portalBuild.designState.artistNote}
-                  isApproving={isApprovingDesign}
-                  bikeDrawingSrc={bikeDrawingSrc}
-                  designValues={portalBuild.designState.values}
-                  designPreviewSrc={designPreviewSrc}
-                  currentStage={orderStage}
-                  depositOrderStatus={portalBuild.deposit.orderStatus}
-                  finalAmountLabel={portalBuild.finalPayment.amount}
-                  isDepositConfirmed={isDepositConfirmed}
-                  isSubmitting={isSubmittingSpecification}
-                  isSubmitted={bikeDesignSubmitted}
-                  specificationMode={specificationMode}
-                  onAttachmentChange={setSpecificationAttachmentFile}
-                  onApprove={handleApproveDesign}
-                  values={bikeSpecification}
-                  onModeChange={handleSpecificationModeChange}
-                  onSubmit={handleSubmitSpecification}
-                  onValueChange={handleBikeSpecificationChange}
-                />
-                <OrderProductionPreviewSection
-                  availablePaymentMethods={portalBuild.availablePaymentMethods}
-                  currentStage={orderStage}
-                  depositAmountValue={portalBuild.deposit.amountValue}
-                  finalAmountValue={portalBuild.finalPayment.amountValue}
-                  currency={portalBuild.finalPayment.currency}
-                  finalPaymentMethod={portalBuild.finalPayment.paymentMethod}
-                  finalPaymentOrderStatus={portalBuild.finalPayment.orderStatus}
-                  finalPaymentPaidAt={portalBuild.finalPayment.paidAt}
-                  initialShippingState={{
-                    address: portalBuild.shippingState.address,
-                    option: portalBuild.shippingState.option,
-                    shippingCost: portalBuild.shippingState.shippingCost,
-                    shippingRateLabel:
-                      portalBuild.shippingState.shippingRateLabel,
-                    trackingUrl: portalBuild.shippingState.trackingUrl,
-                  }}
-                  onCalculateShipping={handleRequestShippingQuote}
-                  isSubmittingFinalPayment={isSubmittingFinalPayment}
-                  orderNumber={orderNumber}
-                  onPayFinalAmount={handleSubmitFinalPayment}
-                />
-              </>
+              </AnimatedOrderSection>
             ) : null}
-          </>
-        ) : null}
-      </SectionStack>
+          </AnimatePresence>
+
+          <AnimatePresence initial={false} mode="popLayout">
+            {!isLoadingBuild && requiresLogin ? (
+              <AnimatedOrderSection
+                key="order-login"
+                className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm"
+              >
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                  Protected order
+                </p>
+                <h2 className="mt-2 text-xl font-semibold text-slate-900">
+                  Enter your order password
+                </h2>
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+                  This order page is protected with the password created during
+                  the deposit step.
+                </p>
+                <div className="mt-5 max-w-md">
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-semibold text-slate-700">
+                      Password
+                    </span>
+                    <InputField
+                      type="password"
+                      value={loginPassword}
+                      onChange={(event) => setLoginPassword(event.target.value)}
+                      placeholder="Enter your order password"
+                      hasError={Boolean(loginError)}
+                      className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
+                    />
+                  </label>
+                  {loginError ? (
+                    <p className="mt-3 text-sm text-red-600">{loginError}</p>
+                  ) : null}
+                  {passwordResetNotice ? (
+                    <p className="mt-3 text-sm text-emerald-700">
+                      {passwordResetNotice}
+                    </p>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={handlePortalLogin}
+                    disabled={isLoggingIn}
+                    className="mt-4 inline-flex items-center justify-center rounded-md bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:bg-stone-300"
+                  >
+                    {isLoggingIn ? "Unlocking..." : "Access"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    disabled={isSendingPasswordReset}
+                    className="mt-4 ml-4 inline-flex items-center justify-center text-sm font-medium text-slate-700 underline decoration-slate-300 underline-offset-4 transition hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-400"
+                  >
+                    {isSendingPasswordReset
+                      ? "Sending reset link..."
+                      : "Forgot password?"}
+                  </button>
+                </div>
+              </AnimatedOrderSection>
+            ) : null}
+          </AnimatePresence>
+
+          <AnimatePresence initial={false} mode="popLayout">
+            {!isLoadingBuild && requiresPasswordReset ? (
+              <AnimatedOrderSection
+                key="order-password-reset"
+                className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm"
+              >
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                  Reset password
+                </p>
+                <h2 className="mt-2 text-xl font-semibold text-slate-900">
+                  Create a new order password
+                </h2>
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+                  Use this secure link to set a new password and access your
+                  order page again.
+                </p>
+                <div className="mt-5 max-w-md space-y-4">
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-semibold text-slate-700">
+                      New password
+                    </span>
+                    <InputField
+                      type="password"
+                      value={claimPassword}
+                      onBlur={() => setClaimPasswordTouched(true)}
+                      onChange={(event) => setClaimPassword(event.target.value)}
+                      placeholder="Enter a new password"
+                      hasError={Boolean(claimPasswordFieldError)}
+                      className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
+                    />
+                    {claimPasswordFieldError ? (
+                      <p className="mt-2 text-sm text-red-600">
+                        {claimPasswordFieldError}
+                      </p>
+                    ) : null}
+                  </label>
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-semibold text-slate-700">
+                      Repeat new password
+                    </span>
+                    <InputField
+                      type="password"
+                      value={claimRepeatPassword}
+                      onBlur={() => setClaimRepeatPasswordTouched(true)}
+                      onChange={(event) =>
+                        setClaimRepeatPassword(event.target.value)
+                      }
+                      placeholder="Repeat your new password"
+                      hasError={Boolean(claimRepeatPasswordFieldError)}
+                      className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
+                    />
+                    {claimRepeatPasswordFieldError ? (
+                      <p className="mt-2 text-sm text-red-600">
+                        {claimRepeatPasswordFieldError}
+                      </p>
+                    ) : null}
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleClaimAccess}
+                    disabled={isClaimingAccess}
+                    className="inline-flex items-center justify-center rounded-md bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:bg-stone-300"
+                  >
+                    {isClaimingAccess
+                      ? "Saving..."
+                      : "Save password and access"}
+                  </button>
+                </div>
+              </AnimatedOrderSection>
+            ) : null}
+          </AnimatePresence>
+
+          {portalBuild && !requiresPasswordReset ? (
+            <>
+              <OrderDepositSection
+                agreementAccepted={agreementAccepted}
+                availablePaymentMethods={portalBuild.availablePaymentMethods}
+                currentStage={orderStage}
+                customerDetails={portalBuild.customer}
+                depositAmountLabel={portalBuild.deposit.amount}
+                depositAmountValue={portalBuild.deposit.amountValue}
+                depositCurrency={portalBuild.deposit.currency}
+                depositOrderStatus={portalBuild.deposit.orderStatus}
+                depositPayment={depositPayment}
+                claimError={depositClaimError}
+                isDepositConfirmed={isDepositConfirmed}
+                isProcessingPayment={isProcessingPayment}
+                onAgreementChange={setAgreementAccepted}
+                onClaimErrorChange={setDepositClaimError}
+                orderNumber={orderNumber}
+                onPayDeposit={handlePayDeposit}
+                requiresClaim={portalBuild.accessState === "claim_required"}
+              />
+
+              <AnimatePresence initial={false} mode="popLayout">
+                {measurementsUnlocked ? (
+                  <OrderMeasurementsSection
+                    key="order-measurements-active"
+                    activeMeasurement={activeMeasurement}
+                    bodyType={bodyType}
+                    bodyWeight={bodyWeight}
+                    expandedGuidelineKey={expandedGuidelineKey}
+                    isSubmitting={isSubmittingMeasurements}
+                    isSubmitted={measurementsSubmitted}
+                    measurementArrowsSvgMarkup={measurementArrowsSvgMarkup}
+                    measurementKeys={MEASUREMENT_KEYS}
+                    selectedBodySrc={selectedBodySrc}
+                    values={values}
+                    onActivateMeasurement={(key) =>
+                      activateMeasurement(key as MeasurementKey)
+                    }
+                    onDeactivateMeasurement={deactivateMeasurement}
+                    onBodyTypeChange={setBodyType}
+                    onBodyWeightChange={setBodyWeight}
+                    onMeasurementChange={handleMeasurementChange}
+                    onSubmit={handleSubmitMeasurements}
+                    onToggleGuidelines={handleToggleGuidelines}
+                  />
+                ) : (
+                  <OrderPendingSection
+                    key="order-measurements-pending"
+                    title="Next: measurements"
+                    titleStyle="eyebrow"
+                    description="We will ask you to provide the necessary measurements to start the design process."
+                  />
+                )}
+              </AnimatePresence>
+
+              <AnimatePresence initial={false} mode="popLayout">
+                {measurementsUnlocked && !bikeDesignUnlocked ? (
+                  <OrderBikeDesignPreviewSection key="order-bike-preview" />
+                ) : null}
+              </AnimatePresence>
+
+              {bikeDesignUnlocked ? (
+                <>
+                  <OrderBikeDesignSection
+                    artistNote={portalBuild.designState.artistNote}
+                    attachmentFile={specificationAttachmentFile}
+                    isApproving={isApprovingDesign}
+                    bikeDrawingSrc={bikeDrawingSrc}
+                    designValues={portalBuild.designState.values}
+                    designPreviewSrc={designPreviewSrc}
+                    currentStage={orderStage}
+                    depositOrderStatus={portalBuild.deposit.orderStatus}
+                    finalAmountLabel={portalBuild.finalPayment.amount}
+                    isDepositConfirmed={isDepositConfirmed}
+                    isSubmitting={isSubmittingSpecification}
+                    isSubmitted={bikeDesignSubmitted}
+                    specificationMode={specificationMode}
+                    onAttachmentChange={setSpecificationAttachmentFile}
+                    onApprove={handleApproveDesign}
+                    values={bikeSpecification}
+                    onModeChange={handleSpecificationModeChange}
+                    onSubmit={handleSubmitSpecification}
+                    onValueChange={handleBikeSpecificationChange}
+                  />
+                  <div ref={productionSectionRef}>
+                    <OrderProductionPreviewSection
+                      availablePaymentMethods={
+                        portalBuild.availablePaymentMethods
+                      }
+                      currentStage={orderStage}
+                      depositAmountValue={portalBuild.deposit.amountValue}
+                      finalAmountValue={portalBuild.finalPayment.amountValue}
+                      currency={portalBuild.finalPayment.currency}
+                      finalPaymentMethod={portalBuild.finalPayment.paymentMethod}
+                      finalPaymentOrderStatus={
+                        portalBuild.finalPayment.orderStatus
+                      }
+                      finalPaymentPaidAt={portalBuild.finalPayment.paidAt}
+                      initialShippingState={{
+                        address: portalBuild.shippingState.address,
+                        option: portalBuild.shippingState.option,
+                        shippingCost: portalBuild.shippingState.shippingCost,
+                        shippingRateLabel:
+                          portalBuild.shippingState.shippingRateLabel,
+                        trackingUrl: portalBuild.shippingState.trackingUrl,
+                      }}
+                      onCalculateShipping={handleRequestShippingQuote}
+                      isSubmittingFinalPayment={isSubmittingFinalPayment}
+                      orderNumber={orderNumber}
+                      onPayFinalAmount={handleSubmitFinalPayment}
+                    />
+                  </div>
+                </>
+              ) : null}
+            </>
+          ) : null}
+        </SectionStack>
       </LayoutGroup>
     </main>
   );

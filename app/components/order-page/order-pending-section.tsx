@@ -150,7 +150,12 @@ function validateShippingDetails(
     errors.email = "Enter a valid email address.";
   }
 
-  if (shippingAddress.phoneNumber.trim().length < 6) {
+  const normalizedPhoneNumber = shippingAddress.phoneNumber.replace(
+    /[^\d+]/g,
+    "",
+  );
+
+  if (normalizedPhoneNumber.length < 7) {
     errors.phoneNumber = "Enter a valid phone number.";
   }
 
@@ -205,7 +210,7 @@ function isShippingFormReady(
     return false;
   }
 
-  if (shippingAddress.phoneNumber.trim().length < 6) {
+  if (shippingAddress.phoneNumber.replace(/[^\d+]/g, "").length < 7) {
     return false;
   }
 
@@ -536,13 +541,16 @@ export function OrderProductionPreviewSection({
   const [showShippingValidation, setShowShippingValidation] = useState(false);
   const [shippingQuoteError, setShippingQuoteError] = useState<string | null>(null);
   const [isCalculatingShipping, setIsCalculatingShipping] = useState(false);
-  const [lastQuotedSignature, setLastQuotedSignature] = useState(() => {
-    if (
+  const hasInitialShippingState =
+    Boolean(initialShippingState) &&
+    Boolean(
       initialShippingState &&
-      (initialShippingState.option === "pickup" ||
-        initialShippingState.shippingCost !== null ||
-        Boolean(initialShippingState.shippingRateLabel))
-    ) {
+        (initialShippingState.option === "pickup" ||
+          initialShippingState.shippingCost !== null ||
+          initialShippingState.shippingRateLabel),
+    );
+  const [lastQuotedSignature, setLastQuotedSignature] = useState(() => {
+    if (hasInitialShippingState && initialShippingState) {
       const address = initialShippingState.address;
 
       return [
@@ -561,10 +569,7 @@ export function OrderProductionPreviewSection({
     currentStage === "in_production" || currentStage === "delivered",
   );
   const [quotedShipping, setQuotedShipping] = useState<OrderShippingState | null>(
-    initialShippingState &&
-      (initialShippingState.option === "pickup" ||
-        (initialShippingState.shippingCost ?? 0) > 0 ||
-        Boolean(initialShippingState.shippingRateLabel))
+    hasInitialShippingState && initialShippingState
       ? {
           address: initialShippingState.address,
           option: initialShippingState.option,
@@ -614,16 +619,19 @@ export function OrderProductionPreviewSection({
     shippingReferenceData !== null,
   );
   const hasShippingErrors = Object.keys(shippingErrors).length > 0;
-  const shippingCost = quotedShipping?.shippingCost ?? 0;
-  const hasShippingQuote = quotedShipping !== null && quotedShipping.shippingCost !== null;
+  const effectiveShippingState =
+    quotedShipping ?? (hasInitialShippingState ? initialShippingState ?? null : null);
+  const shippingCost = effectiveShippingState?.shippingCost ?? 0;
+  const hasShippingQuote =
+    effectiveShippingState !== null && effectiveShippingState.shippingCost !== null;
   const totalAmountBeforeDeposit = finalAmountValue + depositAmountValue;
   const totalWithShipping = finalAmountValue + shippingCost;
-  const paidAmountValue = finalAmountValue + (initialShippingState?.shippingCost ?? 0);
   const formattedPaymentDate = formatPaymentDate(finalPaymentPaidAt);
   const balanceTaxSummary = getInclusiveTaxBreakdown(finalAmountValue);
   const shippingTaxSummary =
-    quotedShipping?.shippingCost !== null && quotedShipping?.shippingCost !== undefined
-      ? getInclusiveTaxBreakdown(quotedShipping.shippingCost)
+    effectiveShippingState?.shippingCost !== null &&
+    effectiveShippingState?.shippingCost !== undefined
+      ? getInclusiveTaxBreakdown(effectiveShippingState.shippingCost)
       : null;
   const totalTaxSummary = hasShippingQuote
     ? getInclusiveTaxBreakdown(totalWithShipping)
@@ -637,7 +645,7 @@ export function OrderProductionPreviewSection({
         ? "in_production"
       : currentStage;
   const finalTransferAmountLabel = formatOrderMoney(
-    finalAmountValue + (initialShippingState?.shippingCost ?? shippingCost),
+    finalAmountValue + shippingCost,
     currency,
   );
 
@@ -681,6 +689,50 @@ export function OrderProductionPreviewSection({
       };
     });
   }, [shippingReferenceData]);
+
+  useEffect(() => {
+    if (!hasInitialShippingState || !initialShippingState) {
+      return;
+    }
+
+    const nextShippingState: OrderShippingState = {
+      address: initialShippingState.address,
+      option: initialShippingState.option,
+      shippingCost: initialShippingState.shippingCost,
+      shippingRateLabel: initialShippingState.shippingRateLabel,
+      shippingEstimateNotice: initialShippingState.shippingEstimateNotice,
+      trackingUrl: initialShippingState.trackingUrl ?? "",
+    };
+
+    setQuotedShipping((previousState) => {
+      if (
+        previousState &&
+        previousState.option === nextShippingState.option &&
+        previousState.shippingCost === nextShippingState.shippingCost &&
+        previousState.shippingRateLabel === nextShippingState.shippingRateLabel &&
+        previousState.shippingEstimateNotice === nextShippingState.shippingEstimateNotice &&
+        previousState.trackingUrl === nextShippingState.trackingUrl &&
+        previousState.address.fullName === nextShippingState.address.fullName &&
+        previousState.address.street === nextShippingState.address.street &&
+        previousState.address.postalCode === nextShippingState.address.postalCode &&
+        previousState.address.city === nextShippingState.address.city &&
+        previousState.address.countryCode === nextShippingState.address.countryCode
+      ) {
+        return previousState;
+      }
+
+      return nextShippingState;
+    });
+
+    setLastQuotedSignature([
+      initialShippingState.option,
+      initialShippingState.address.fullName.trim(),
+      initialShippingState.address.street.trim(),
+      initialShippingState.address.postalCode.trim(),
+      initialShippingState.address.city.trim(),
+      initialShippingState.address.countryCode.trim(),
+    ].join("|"));
+  }, [hasInitialShippingState, initialShippingState]);
 
   useEffect(() => {
     if (availablePaymentMethods.includes(paymentMethod)) {
@@ -1193,12 +1245,12 @@ export function OrderProductionPreviewSection({
             ) : null}
             <button
               type="button"
-              disabled={!hasShippingQuote || isCalculatingShipping}
+              disabled={isCalculatingShipping || isSubmittingFinalPayment}
               onClick={() =>
                 {
                   setShowShippingValidation(true);
 
-                  if (hasShippingErrors) {
+                  if (hasShippingErrors || !hasShippingQuote) {
                     return;
                   }
 
@@ -1356,7 +1408,7 @@ export function OrderProductionPreviewSection({
                 Amount paid by customer
               </span>
               <p className="text-sm text-slate-900">
-                {formatOrderMoney(paidAmountValue, currency)}
+                {formatOrderMoney(totalWithShipping, currency)}
               </p>
             </div>
           </div>

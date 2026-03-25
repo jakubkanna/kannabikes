@@ -1,4 +1,4 @@
-import { ORDER_STAGE_DEFINITIONS } from "~/lib/mock-order";
+import { useEffect, useState } from "react";
 import {
   InputField,
   SelectField,
@@ -9,41 +9,119 @@ import { AnimatedOrderSection } from "./order-motion";
 import { OrderSubmittedSummarySection } from "./order-submitted-summary-section";
 import type { BikeDesignSectionProps } from "./types";
 
-const BIKE_COMPONENT_SECTIONS = [
+const WHEEL_SIZE_OPTIONS = ['32"', '29"', '27.5"', '26"', "700c"] as const;
+const DRIVETRAIN_TYPE_OPTIONS = [
+  { label: "Gearbox", value: "gearbox" },
+  { label: "Hub transmission", value: "hub_transmission" },
+  { label: "Derailleur", value: "derailleur" },
+] as const;
+
+type SpecificationFieldDefinition = {
+  key: string;
+  label: string;
+  kind?: "text" | "select";
+  options?: readonly string[];
+};
+
+type SpecificationSectionDefinition = {
+  title: string;
+  fields: SpecificationFieldDefinition[];
+};
+
+type DrivetrainType = (typeof DRIVETRAIN_TYPE_OPTIONS)[number]["value"];
+
+const DRIVETRAIN_TYPE_KEY = "Drivetrain:Transmission";
+const DRIVETRAIN_FIELDS_BY_TYPE: Record<
+  DrivetrainType,
+  SpecificationFieldDefinition[]
+> = {
+  gearbox: [
+    { key: "Drivetrain:Gearbox", label: "Gearbox" },
+    { key: "Drivetrain:Crankset", label: "Crankset" },
+    { key: "Drivetrain:BeltOrChain", label: "Belt / chain" },
+    { key: "Drivetrain:RearCog", label: "Rear cog" },
+    { key: "Drivetrain:Shifter", label: "Shifter" },
+  ],
+  hub_transmission: [
+    { key: "Drivetrain:Hub", label: "Hub" },
+    { key: "Drivetrain:Crankset", label: "Crankset" },
+    { key: "Drivetrain:Chainring", label: "Chainring" },
+    { key: "Drivetrain:Cog", label: "Cog" },
+    { key: "Drivetrain:BeltOrChain", label: "Belt / chain" },
+    { key: "Drivetrain:Shifter", label: "Shifter" },
+  ],
+  derailleur: [
+    { key: "Drivetrain:Crankset", label: "Crankset" },
+    { key: "Drivetrain:Chainring", label: "Chainring" },
+    { key: "Drivetrain:Cassette", label: "Cassette" },
+    { key: "Drivetrain:RearDerailleur", label: "Rear derailleur" },
+    { key: "Drivetrain:Chain", label: "Chain" },
+    { key: "Drivetrain:Shifters", label: "Shifters" },
+  ],
+};
+const ALL_DRIVETRAIN_FIELD_KEYS = Array.from(
+  new Set(
+    Object.values(DRIVETRAIN_FIELDS_BY_TYPE).flatMap((fields) =>
+      fields.map((field) => field.key),
+    ),
+  ),
+);
+
+const BASE_COMPONENT_SECTIONS: SpecificationSectionDefinition[] = [
   {
     title: "Frameset",
-    fields: ["Frame", "Fork", "Headset", "Cockpit"],
+    fields: [
+      { key: "Frameset:Fork", label: "Fork" },
+      { key: "Frameset:Headset", label: "Headset" },
+      { key: "Frameset:Cockpit", label: "Cockpit" },
+    ],
   },
   {
     title: "Front wheel",
-    fields: ["Size", "Front rim", "Front hub", "Front tire"],
+    fields: [
+      {
+        key: "Front wheel:Size",
+        label: "Size",
+        kind: "select",
+        options: WHEEL_SIZE_OPTIONS,
+      },
+      { key: "Front wheel:Front rim", label: "Front rim" },
+      { key: "Front wheel:Front hub", label: "Front hub" },
+      { key: "Front wheel:Front tire", label: "Front tire" },
+    ],
   },
   {
     title: "Back wheel",
-    fields: ["Size", "Rear rim", "Rear hub", "Rear tire"],
-  },
-  {
-    title: "Drivetrain",
     fields: [
-      "Crankset",
-      "Chainring",
-      "Cassette",
-      "Rear derailleur",
-      "Chain",
-      "Shifters",
+      {
+        key: "Back wheel:Size",
+        label: "Size",
+        kind: "select",
+        options: WHEEL_SIZE_OPTIONS,
+      },
+      { key: "Back wheel:Rear rim", label: "Rear rim" },
+      { key: "Back wheel:Rear hub", label: "Rear hub" },
+      { key: "Back wheel:Rear tire", label: "Rear tire" },
     ],
   },
   {
     title: "Brakes",
-    fields: ["Front brake", "Rear brake", "Rotors"],
+    fields: [
+      { key: "Brakes:Front brake", label: "Front brake" },
+      { key: "Brakes:Rear brake", label: "Rear brake" },
+      { key: "Brakes:Rotors", label: "Rotors" },
+    ],
   },
   {
     title: "Other",
-    fields: ["Saddle", "Seatpost", "Pedals", "Accessories"],
+    fields: [
+      { key: "Other:Saddle", label: "Saddle" },
+      { key: "Other:Seatpost", label: "Seatpost" },
+      { key: "Other:Pedals", label: "Pedals" },
+      { key: "Other:Accessories", label: "Accessories" },
+    ],
   },
-] as const;
-
-const WHEEL_SIZE_OPTIONS = ['32"', '29"', '27.5"', '26"', "700c"] as const;
+];
 
 const GEOMETRY_FIELDS = [
   { title: "Stack", key: "Geometry:Stack" },
@@ -127,6 +205,44 @@ const PAINTJOB_COLOR_OPTIONS = [
   },
 ] as const;
 
+function getDrivetrainType(value: string | undefined): DrivetrainType | null {
+  return DRIVETRAIN_TYPE_OPTIONS.some((option) => option.value === value)
+    ? (value as DrivetrainType)
+    : null;
+}
+
+function getDrivetrainTypeLabel(value: string | undefined) {
+  return (
+    DRIVETRAIN_TYPE_OPTIONS.find((option) => option.value === value)?.label ??
+    value ??
+    ""
+  );
+}
+
+function getComponentSections(
+  drivetrainType: DrivetrainType | null,
+): SpecificationSectionDefinition[] {
+  return [
+    BASE_COMPONENT_SECTIONS[0],
+    BASE_COMPONENT_SECTIONS[1],
+    BASE_COMPONENT_SECTIONS[2],
+    {
+      title: "Drivetrain",
+      fields: [
+        {
+          key: DRIVETRAIN_TYPE_KEY,
+          label: "Transmission",
+          kind: "select",
+          options: DRIVETRAIN_TYPE_OPTIONS.map((option) => option.value),
+        },
+        ...(drivetrainType ? DRIVETRAIN_FIELDS_BY_TYPE[drivetrainType] : []),
+      ],
+    },
+    BASE_COMPONENT_SECTIONS[3],
+    BASE_COMPONENT_SECTIONS[4],
+  ];
+}
+
 function getSelectedValues(value: string | undefined) {
   return (value ?? "")
     .split(",")
@@ -148,6 +264,7 @@ function toggleSelectedValue(value: string | undefined, nextValue: string) {
 
 export function OrderBikeDesignSection({
   artistNote,
+  attachmentFile,
   isApproving,
   bikeDrawingSrc,
   designValues = {},
@@ -195,16 +312,21 @@ export function OrderBikeDesignSection({
   const hasOtherPaintColor = selectedPaintColors.includes("other");
   const uploadedPaintImageName = values[PAINTJOB_IMAGE_KEY] ?? "";
   const uploadedPaintImageUrl = values[PAINTJOB_IMAGE_URL_KEY] ?? "";
+  const [attachmentPreviewUrl, setAttachmentPreviewUrl] = useState<
+    string | null
+  >(null);
   const customPaintColor = values[PAINTJOB_CUSTOM_COLOR_KEY] ?? "";
   const selectedPaintStyles = getSelectedValues(values[PAINTJOB_STYLE_KEY]);
+  const drivetrainType = getDrivetrainType(values[DRIVETRAIN_TYPE_KEY]);
+  const componentSections = getComponentSections(drivetrainType);
   const paintjobComplete =
     paintjobRoute.length > 0 &&
     (!hasCustomPaintDirection ||
       (selectedPaintColors.length > 0 &&
         selectedPaintStyles.length > 0 &&
         (!hasOtherPaintColor || customPaintColor.length > 0)));
-  const specificationFields = BIKE_COMPONENT_SECTIONS.flatMap((section) =>
-    section.fields.map((field) => `${section.title}:${field}`),
+  const specificationFields = componentSections.flatMap((section) =>
+    section.fields.map((field) => field.key),
   );
   const completedFields = specificationFields.filter(
     (fieldKey) => values[fieldKey]?.trim().length > 0,
@@ -224,6 +346,35 @@ export function OrderBikeDesignSection({
   const progressPercent = Math.round((completedFields / totalFields) * 100);
   const resolveSpecificationFieldValue = (fieldKey: string) =>
     designValues[fieldKey] || values[fieldKey] || "";
+  const displayedPaintImageUrl = attachmentPreviewUrl || uploadedPaintImageUrl;
+  const handleDrivetrainTypeChange = (nextType: DrivetrainType) => {
+    onValueChange(DRIVETRAIN_TYPE_KEY, nextType);
+
+    const nextFieldKeys = new Set(
+      DRIVETRAIN_FIELDS_BY_TYPE[nextType].map((field) => field.key),
+    );
+
+    ALL_DRIVETRAIN_FIELD_KEYS.forEach((fieldKey) => {
+      if (!nextFieldKeys.has(fieldKey) && (values[fieldKey] ?? "") !== "") {
+        onValueChange(fieldKey, "");
+      }
+    });
+  };
+
+  useEffect(() => {
+    if (!attachmentFile) {
+      setAttachmentPreviewUrl(null);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(attachmentFile);
+    setAttachmentPreviewUrl(objectUrl);
+
+    return () => {
+      URL.revokeObjectURL(objectUrl);
+    };
+  }, [attachmentFile]);
+
   const renderRidingSection = () => (
     <div className="rounded-lg border border-stone-200 bg-white p-4">
       <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -464,21 +615,15 @@ export function OrderBikeDesignSection({
                 }}
                 className="px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-[var(--kanna-ink)] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
               />
-              {uploadedPaintImageName ? (
-                <div className="mt-2 space-y-2">
-                  <p className="text-sm text-slate-600">
-                    {uploadedPaintImageName}
-                  </p>
-                  {uploadedPaintImageUrl ? (
-                    <a
-                      href={uploadedPaintImageUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex text-sm font-semibold text-slate-900 underline decoration-stone-300 underline-offset-4 transition hover:decoration-slate-900"
-                    >
-                      Open uploaded image
-                    </a>
-                  ) : null}
+              {displayedPaintImageUrl ? (
+                <div className="mt-2">
+                  <div className="w-full overflow-hidden rounded-lg border border-stone-200 bg-stone-50 sm:w-1/3">
+                    <img
+                      src={displayedPaintImageUrl}
+                      alt={uploadedPaintImageName || "Paint reference image"}
+                      className="h-auto max-h-56 w-full object-contain"
+                    />
+                  </div>
                 </div>
               ) : null}
             </label>
@@ -531,28 +676,13 @@ export function OrderBikeDesignSection({
               <span className="mb-2 block text-sm font-semibold text-slate-700">
                 Attach image
               </span>
-              {uploadedPaintImageName ? (
-                <div className="space-y-2">
-                  <p className="text-sm text-slate-900">
-                    {uploadedPaintImageName}
-                  </p>
-                  {uploadedPaintImageUrl ? (
-                    <a
-                      href={uploadedPaintImageUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex text-sm font-semibold text-slate-900 underline decoration-stone-300 underline-offset-4 transition hover:decoration-slate-900"
-                    >
-                      Open uploaded image
-                    </a>
-                  ) : null}
-                  {uploadedPaintImageUrl ? (
-                    <img
-                      src={uploadedPaintImageUrl}
-                      alt={uploadedPaintImageName}
-                      className="max-h-40 rounded-lg border border-stone-200 object-cover"
-                    />
-                  ) : null}
+              {displayedPaintImageUrl ? (
+                <div className="w-full overflow-hidden rounded-lg border border-stone-200 bg-stone-50 sm:w-1/3">
+                  <img
+                    src={displayedPaintImageUrl}
+                    alt={uploadedPaintImageName || "Paint reference image"}
+                    className="h-auto max-h-56 w-full object-contain"
+                  />
                 </div>
               ) : (
                 <p className="text-sm text-slate-900">-</p>
@@ -568,6 +698,43 @@ export function OrderBikeDesignSection({
             </div>
           </>
         ) : null}
+      </div>
+    </div>
+  );
+  const renderComponentsSummary = () => (
+    <div className="rounded-lg border border-stone-200 bg-white p-4">
+      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+        Components
+      </h3>
+      <div className="mt-4 space-y-5">
+        {componentSections.map((section, sectionIndex) => (
+          <div
+            key={section.title}
+            className={sectionIndex > 0 ? "border-t border-stone-200 pt-5" : ""}
+          >
+            <h4 className="text-sm font-semibold text-slate-900">
+              {section.title}
+            </h4>
+            <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+              {section.fields.map((field) => {
+                const fieldValue = resolveSpecificationFieldValue(field.key);
+
+                return (
+                  <div key={field.key}>
+                    <span className="mb-2 block text-sm font-semibold text-slate-700">
+                      {field.label}
+                    </span>
+                    <p className="text-sm text-slate-900">
+                      {field.key === DRIVETRAIN_TYPE_KEY
+                        ? getDrivetrainTypeLabel(fieldValue) || "-"
+                        : fieldValue || "-"}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -612,66 +779,12 @@ export function OrderBikeDesignSection({
           </p>
         </div>
       ) : (
-        <>
-          {BIKE_COMPONENT_SECTIONS.map((section) => (
-            <div
-              key={section.title}
-              className="mt-5 rounded-lg border border-stone-200 bg-white p-4"
-            >
-              <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
-                {section.title}
-              </h3>
-              <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-                {section.fields.map((field) => {
-                  const fieldKey = `${section.title}:${field}`;
-
-                  return (
-                    <div key={fieldKey}>
-                      <span className="mb-2 block text-sm font-semibold text-slate-700">
-                        {field}
-                      </span>
-                      <p className="text-sm text-slate-900">
-                        {resolveSpecificationFieldValue(fieldKey) || "-"}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </>
+        <div className="mt-5">{renderComponentsSummary()}</div>
       )}
     </>
   );
   const renderPartsSummary = () => (
-    <>
-      {BIKE_COMPONENT_SECTIONS.map((section) => (
-        <div
-          key={section.title}
-          className="mt-5 rounded-lg border border-stone-200 bg-white p-4"
-        >
-          <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
-            {section.title}
-          </h3>
-          <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-            {section.fields.map((field) => {
-              const fieldKey = `${section.title}:${field}`;
-
-              return (
-                <div key={fieldKey}>
-                  <span className="mb-2 block text-sm font-semibold text-slate-700">
-                    {field}
-                  </span>
-                  <p className="text-sm text-slate-900">
-                    {resolveSpecificationFieldValue(fieldKey) || "-"}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      ))}
-    </>
+    <div className="mt-5">{renderComponentsSummary()}</div>
   );
   const renderGeometrySummary = () => (
     <div className="rounded-lg border border-stone-200 bg-white p-4">
@@ -694,7 +807,9 @@ export function OrderBikeDesignSection({
   );
   const renderArtistMessage = () => (
     <div className="rounded-lg border border-stone-200 bg-white p-4">
-      <h3 className="text-sm font-semibold text-slate-900">From the artist</h3>
+      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+        From the artist
+      </h3>
       <p className="mt-2 text-sm leading-6 text-slate-600">
         {artistNote ||
           "The geometry and component direction are prepared based on your submitted measurements and project goals. Please review the setup below and approve it if everything looks right."}
@@ -844,7 +959,12 @@ export function OrderBikeDesignSection({
       >
         {isApprovedDesign ? (
           <div className="space-y-5 pt-3">
-            <div>{renderBuildDataSummary()}</div>
+            <div>
+              {renderBuildDataSummary()}
+              {specificationMode === "guided_by_designer"
+                ? renderPartsSummary()
+                : null}
+            </div>
             <div className="grid gap-5 md:grid-cols-2 md:items-start">
               <div className="space-y-5">
                 <div>{renderGeometrySummary()}</div>
@@ -915,13 +1035,13 @@ export function OrderBikeDesignSection({
                             value={values[DESIGNER_LED_BUDGET_KEY] ?? ""}
                             onClick={(event) => event.stopPropagation()}
                             onChange={(event) =>
-                            onValueChange(
+                              onValueChange(
                                 DESIGNER_LED_BUDGET_KEY,
                                 event.target.value,
                               )
                             }
                             placeholder="Budget"
-                            className="w-[6ch] border-white/70 bg-white px-3 py-2 text-[var(--kanna-ink)] placeholder:text-stone-400 focus:border-[var(--kanna-color)] focus:ring-2 focus:ring-white/35"
+                            className="w-[12ch]! border-white/70 bg-white px-3 py-2 text-[var(--kanna-ink)] placeholder:text-stone-400 focus:border-[var(--kanna-color)] focus:ring-2 focus:ring-white/35"
                           />
                           <button
                             type="button"
@@ -999,11 +1119,9 @@ export function OrderBikeDesignSection({
                     Specification
                   </h3>
                   <div className="mt-4 space-y-4">
-                    {BIKE_COMPONENT_SECTIONS.map((section) => {
+                    {componentSections.map((section) => {
                       const visibleFields = section.fields.filter((field) => {
-                        const fieldKey = `${section.title}:${field}`;
-
-                        return visibleSpecificationFieldKeys.has(fieldKey);
+                        return visibleSpecificationFieldKeys.has(field.key);
                       });
 
                       if (visibleFields.length === 0) {
@@ -1020,44 +1138,51 @@ export function OrderBikeDesignSection({
                           </h4>
                           <div className="mt-3 space-y-3">
                             {visibleFields.map((field) => {
-                              const fieldKey = `${section.title}:${field}`;
-
                               return (
-                                <label key={fieldKey} className="block">
+                                <label key={field.key} className="block">
                                   <span className="mb-2 block text-sm font-semibold text-slate-700">
-                                    {field}
+                                    {field.label}
                                   </span>
-                                  {field === "Size" ? (
+                                  {field.kind === "select" ? (
                                     <SelectField
-                                      value={values[fieldKey] ?? ""}
+                                      value={values[field.key] ?? ""}
                                       onChange={(event) =>
-                                        onValueChange(
-                                          fieldKey,
-                                          event.target.value,
-                                        )
+                                        field.key === DRIVETRAIN_TYPE_KEY
+                                          ? handleDrivetrainTypeChange(
+                                              event.target
+                                                .value as DrivetrainType,
+                                            )
+                                          : onValueChange(
+                                              field.key,
+                                              event.target.value,
+                                            )
                                       }
                                       className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                                     >
                                       <option value="">
-                                        Select wheel size
+                                        {field.key === DRIVETRAIN_TYPE_KEY
+                                          ? "Select transmission"
+                                          : "Select wheel size"}
                                       </option>
-                                      {WHEEL_SIZE_OPTIONS.map((option) => (
+                                      {(field.options ?? []).map((option) => (
                                         <option key={option} value={option}>
-                                          {option}
+                                          {field.key === DRIVETRAIN_TYPE_KEY
+                                            ? getDrivetrainTypeLabel(option)
+                                            : option}
                                         </option>
                                       ))}
                                     </SelectField>
                                   ) : (
                                     <InputField
                                       type="text"
-                                      value={values[fieldKey] ?? ""}
+                                      value={values[field.key] ?? ""}
                                       onChange={(event) =>
                                         onValueChange(
-                                          fieldKey,
+                                          field.key,
                                           event.target.value,
                                         )
                                       }
-                                      placeholder={`Specify ${field.toLowerCase()}`}
+                                      placeholder={`Specify ${field.label.toLowerCase()}`}
                                       className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                                     />
                                   )}

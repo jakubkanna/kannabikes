@@ -35,6 +35,7 @@ export type BikeDesignSectionProps = {
     | "self_specified"
     | "frame_only"
     | null;
+  attachmentFile: File | null;
   onApprove: () => void;
   values: Record<string, string>;
   onModeChange: (
