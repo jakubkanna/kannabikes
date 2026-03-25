@@ -72,9 +72,24 @@ type SelectFieldProps = ComponentPropsWithoutRef<"select"> & {
 export function SelectField({
   className,
   hasError = false,
+  style,
   ...props
 }: SelectFieldProps) {
   return (
-    <select {...props} className={getFieldClassName(hasError, className)} />
+    <select
+      {...props}
+      className={getFieldClassName(
+        hasError,
+        joinClassNames(
+          "appearance-none bg-no-repeat pr-12 [background-position:right_1rem_center] [background-size:1rem_1rem]",
+          className,
+        ),
+      )}
+      style={{
+        backgroundImage:
+          "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M3 6l5 5 5-5' stroke='rgba(0,0,0,0.9)' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\")",
+        ...style,
+      }}
+    />
   );
 }

@@ -233,14 +233,14 @@ export function CartDrawer({
             <LocalizedLink
               to="/cart"
               onClick={onClose}
-              className="inline-flex flex-1 items-center justify-center rounded-full border border-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-[var(--kanna-ink)] transition hover:bg-white"
+              className="inline-flex flex-1 items-center justify-center border border-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-[var(--kanna-ink)] transition hover:bg-white"
             >
               {messages.commerce.viewCart}
             </LocalizedLink>
             <LocalizedLink
               to="/checkout"
               onClick={onClose}
-              className="inline-flex flex-1 items-center justify-center rounded-full bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black"
+              className="inline-flex flex-1 items-center justify-center bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black"
             >
               {messages.cart.checkout}
             </LocalizedLink>

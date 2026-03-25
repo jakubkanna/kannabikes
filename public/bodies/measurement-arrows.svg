@@ -7,28 +7,8 @@
         fill: none;
       }
 
-      .cls-4 {
-        filter: url(#drop-shadow-1);
-      }
-
-      .cls-5 {
-        filter: url(#drop-shadow-3);
-      }
-
-      .cls-6 {
-        filter: url(#drop-shadow-2);
-      }
-
-      .cls-7 {
-        filter: url(#drop-shadow-5);
-      }
-
-      .cls-8 {
-        filter: url(#drop-shadow-4);
-      }
-
-      .cls-14 {
-        filter: url(#drop-shadow-6);
+      .cls-4, .cls-5, .cls-6, .cls-7, .cls-8, .cls-14 {
+        filter: none;
       }
 
       .cls-9 {

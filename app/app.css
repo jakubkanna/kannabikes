@@ -37,6 +37,14 @@
   padding: 2rem 1rem 3rem;
 }
 
+[class*="shadow"] {
+  box-shadow: none !important;
+}
+
+[class*="rounded"]:not([class*="rounded-full"]):not([class*="rounded-[9999px]"]) {
+  border-radius: 0 !important;
+}
+
 @media (min-width: 768px) {
   .page-shell {
     padding: 3rem 2rem 4rem;
@@ -117,10 +125,10 @@
 
 .hero-logo-image {
   -webkit-backface-visibility: hidden;
-  -webkit-filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.42));
+  -webkit-filter: none;
   backface-visibility: hidden;
   display: block;
-  filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.42));
+  filter: none;
   transform: translateZ(0);
   will-change: opacity;
 }

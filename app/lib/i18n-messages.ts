@@ -48,7 +48,8 @@ export const messages = {
       featuredProducts: "Products",
       noCategories: "No categories are available yet.",
       noProducts: "No products are available right now.",
-      optionRequired: "Please choose the product options before adding it to the cart.",
+      optionRequired:
+        "Please choose the product options before adding it to the cart.",
       priceFrom: "From",
       relatedCategory: "Category",
       shopPill: "Shop",
@@ -222,7 +223,7 @@ export const messages = {
         contact: "Contact",
         imageAlt: "Pre-order process steps",
         intro:
-          "We use a proven deposit-based system to guide each order from first contact to final handover.",
+          "We use a proven deposit-based system to guide each order individually from first contact to final handover.",
         pill: "Custom Order",
         steps: [
           {
