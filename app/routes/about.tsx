@@ -4,11 +4,7 @@ import { ImageGallery } from "~/components/image-gallery";
 import { PageContainer, PageShell } from "~/components/page-container";
 import { SectionPill } from "~/components/section-pill";
 import { SITE_NAME, formatPageTitle } from "~/root";
-import {
-  buildLocalizedMeta,
-  getLocaleFromPath,
-  getMessages,
-} from "~/lib/i18n";
+import { buildLocalizedMeta, getLocaleFromPath, getMessages } from "~/lib/i18n";
 import { useMessages } from "~/components/locale-provider";
 
 export function meta({ location }: Route.MetaArgs) {
@@ -43,31 +39,29 @@ export default function AboutPage() {
   return (
     <PageShell>
       <PageContainer>
-        <div className="max-w-5xl">
-          <SectionPill>{messages.pages.about.pill}</SectionPill>
-          <h1 className="mt-4 max-w-4xl">
-            <ArchivoInkBleed
-              className="block w-full"
-              color="var(--kanna-ink)"
-              fontSize={148}
-              lines={[...messages.pages.about.titleLines]}
-            />
-          </h1>
-          <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-600">
-            {messages.pages.about.body.split("Velo-art")[0]}
-            <a
-              href="https://archive.jakubkanna.com/works?tags=Velo-art"
-              target="_blank"
-              rel="noreferrer"
-              className="underline underline-offset-2"
-            >
-              Velo-art
-            </a>
-            {messages.pages.about.body.split("Velo-art")[1]}
-          </p>
+        <SectionPill>{messages.pages.about.pill}</SectionPill>
+        <h1 className="mt-4 max-w-4xl">
+          <ArchivoInkBleed
+            className="block w-full"
+            color="var(--kanna-ink)"
+            fontSize={148}
+            lines={[...messages.pages.about.titleLines]}
+          />
+        </h1>
+        <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-600">
+          {messages.pages.about.body.split("Velo-art")[0]}
+          <a
+            href="https://archive.jakubkanna.com/works?tags=Velo-art"
+            target="_blank"
+            rel="noreferrer"
+            className="underline underline-offset-2"
+          >
+            Velo-art
+          </a>
+          {messages.pages.about.body.split("Velo-art")[1]}
+        </p>
 
-          <ImageGallery images={galleryImages} />
-        </div>
+        <ImageGallery images={galleryImages} />
       </PageContainer>
     </PageShell>
   );

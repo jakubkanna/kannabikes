@@ -10,16 +10,29 @@ export type WordpressImage = {
 };
 
 export type WordpressPost = {
+  commentsOpen: boolean;
   contentHtml: string;
   excerpt: string;
   id: string;
   image: WordpressImage;
   locale: Locale;
+  postId: number;
   publishedAt: string;
   slug: string;
   title: string;
   translations: Partial<Record<Locale, string>>;
   url: string | null;
+};
+
+export type WordpressComment = {
+  authorName: string;
+  avatarUrl: string | null;
+  contentHtml: string;
+  createdAt: string;
+  currentUserVote: -1 | 0 | 1;
+  id: number;
+  status?: "approved" | "pending";
+  voteScore: number;
 };
 
 export type FetchPostsResult = {
@@ -49,6 +62,7 @@ type WordpressPostsApiResponse = Array<{
   };
   categories?: number[];
   content?: { rendered?: string };
+  comment_status?: string;
   date?: string;
   excerpt?: { rendered?: string };
   id: number;
@@ -60,6 +74,19 @@ type WordpressPostsApiResponse = Array<{
   title?: { rendered?: string };
   translations?: Partial<Record<Locale, number>>;
 }>;
+
+type WordpressCommentsApiResponse = {
+  comments: Array<{
+    authorName?: string;
+    avatarUrl?: string;
+    contentHtml?: string;
+    createdAt?: string;
+    currentUserVote?: number;
+    id: number;
+    status?: "approved" | "pending";
+    voteScore?: number;
+  }>;
+};
 
 type WordpressCategoriesApiResponse = Array<{
   id: number;
@@ -204,11 +231,13 @@ function mapWpPost(
 ): WordpressPost {
   const customUrl = pickCustomUrl(post);
   return {
+    commentsOpen: post.comment_status !== "closed",
     contentHtml: typeof post.content?.rendered === "string" ? post.content.rendered : "",
     excerpt: sanitizeHtml(post.excerpt?.rendered),
     id: `post-${post.id}`,
     image: mapWpImage(post.id, post._embedded),
     locale,
+    postId: post.id,
     publishedAt: typeof post.date === "string" ? post.date : "",
     slug: typeof post.slug === "string" ? post.slug : String(post.id),
     title: sanitizeHtml(post.title?.rendered) || `Post ${post.id}`,
@@ -461,4 +490,48 @@ export async function fetchWordpressPostBySlug(
 
   const [mappedPost] = await mapWordpressPostsWithTranslations([post], locale, fetchImpl);
   return mappedPost ?? null;
+}
+
+export async function fetchWordpressComments(
+  postId: number,
+  fetchImpl: typeof fetch = fetch,
+): Promise<WordpressComment[]> {
+  if (!Number.isFinite(postId) || postId <= 0) {
+    return [];
+  }
+
+  const endpoint = buildWordpressApiUrl("/wp-json/kanna-auth/v1/blog/comments");
+  endpoint.searchParams.set("postId", String(postId));
+
+  const response = await fetchImpl(endpoint.toString(), {
+    headers: { Accept: "application/json" },
+  });
+
+  if (!response.ok) {
+    throw new Error(`WordPress comments fetch failed (${response.status})`);
+  }
+
+  const payload = (await response.json()) as WordpressCommentsApiResponse;
+
+  return payload.comments.map((comment) => ({
+    authorName:
+      typeof comment.authorName === "string" && comment.authorName.trim()
+        ? comment.authorName.trim()
+        : "Anonymous",
+    avatarUrl:
+      typeof comment.avatarUrl === "string" && comment.avatarUrl.trim()
+        ? comment.avatarUrl.trim()
+        : null,
+    contentHtml: typeof comment.contentHtml === "string" ? comment.contentHtml : "",
+    createdAt: typeof comment.createdAt === "string" ? comment.createdAt : "",
+    currentUserVote:
+      comment.currentUserVote === 1
+        ? 1
+        : comment.currentUserVote === -1
+          ? -1
+          : 0,
+    id: comment.id,
+    status: comment.status,
+    voteScore: Number.isFinite(comment.voteScore) ? Number(comment.voteScore) : 0,
+  }));
 }

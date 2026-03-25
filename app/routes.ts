@@ -3,6 +3,11 @@ import { index, prefix, route, type RouteConfig } from "@react-router/dev/routes
 const localizedRoutes = [
   index("routes/_index.tsx", { id: "home" }),
   route("about", "routes/about.tsx", { id: "about" }),
+  route("account", "routes/account.tsx", { id: "account" }),
+  route("account/orders", "routes/account.orders.tsx", { id: "account-orders" }),
+  route("account/profile", "routes/account.profile.tsx", { id: "account-profile" }),
+  route("account/addresses", "routes/account.addresses.tsx", { id: "account-addresses" }),
+  route("account/reviews", "routes/account.reviews.tsx", { id: "account-reviews" }),
   route("blog", "routes/blog._index.tsx", { id: "blog" }),
   route("blog/:slug", "routes/blog.$slug.tsx", { id: "blog-post" }),
   route("cart", "routes/cart.tsx", { id: "cart" }),
@@ -18,11 +23,18 @@ const localizedRoutes = [
   route("shop/products/:slug", "routes/shop.product.$slug.tsx", {
     id: "shop-product",
   }),
+  route("sign-in", "routes/sign-in.tsx", { id: "sign-in" }),
+  route("sign-up", "routes/sign-up.tsx", { id: "sign-up" }),
 ];
 
 const polishRoutes = [
   index("routes/_index.tsx", { id: "pl-home" }),
   route("about", "routes/about.tsx", { id: "pl-about" }),
+  route("account", "routes/account.tsx", { id: "pl-account" }),
+  route("account/orders", "routes/account.orders.tsx", { id: "pl-account-orders" }),
+  route("account/profile", "routes/account.profile.tsx", { id: "pl-account-profile" }),
+  route("account/addresses", "routes/account.addresses.tsx", { id: "pl-account-addresses" }),
+  route("account/reviews", "routes/account.reviews.tsx", { id: "pl-account-reviews" }),
   route("blog", "routes/blog._index.tsx", { id: "pl-blog" }),
   route("blog/:slug", "routes/blog.$slug.tsx", { id: "pl-blog-post" }),
   route("cart", "routes/cart.tsx", { id: "pl-cart" }),
@@ -38,6 +50,8 @@ const polishRoutes = [
   route("shop/products/:slug", "routes/shop.product.$slug.tsx", {
     id: "pl-shop-product",
   }),
+  route("sign-in", "routes/sign-in.tsx", { id: "pl-sign-in" }),
+  route("sign-up", "routes/sign-up.tsx", { id: "pl-sign-up" }),
 ];
 
 export default [

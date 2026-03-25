@@ -11,11 +11,7 @@ import { LocalizedLink } from "~/components/localized-link";
 import { useLocale, useMessages } from "~/components/locale-provider";
 import { SectionPill } from "~/components/section-pill";
 import { formatPageTitle } from "~/root";
-import {
-  buildLocalizedMeta,
-  getLocaleFromPath,
-  getMessages,
-} from "~/lib/i18n";
+import { buildLocalizedMeta, getLocaleFromPath, getMessages } from "~/lib/i18n";
 
 const DEFAULT_WORDPRESS_API_BASE =
   import.meta.env.VITE_WORDPRESS_API_BASE_URL ??
@@ -26,13 +22,16 @@ const DEFAULT_CONTACT_ENDPOINT = `${
     : DEFAULT_WORDPRESS_API_BASE.replace(/\/$/, "")
 }/contact`;
 
-function validateContactForm(values: {
-  email: string;
-  fullName: string;
-  message: string;
-  phoneNumber: string;
-  privacyAccepted: boolean;
-}, routeMessages: ReturnType<typeof useMessages>) {
+function validateContactForm(
+  values: {
+    email: string;
+    fullName: string;
+    message: string;
+    phoneNumber: string;
+    privacyAccepted: boolean;
+  },
+  routeMessages: ReturnType<typeof useMessages>,
+) {
   const errors: Partial<Record<keyof typeof values, string>> = {};
 
   if (values.fullName.trim().length < 2) {
@@ -129,15 +128,12 @@ export default function ContactPage() {
         }),
       });
 
-      const payload = (await response.json().catch(() => null)) as
-        | { message?: string }
-        | null;
+      const payload = (await response.json().catch(() => null)) as {
+        message?: string;
+      } | null;
 
       if (!response.ok) {
-        setSubmitError(
-          payload?.message ??
-            messages.contact.errors.submit,
-        );
+        setSubmitError(payload?.message ?? messages.contact.errors.submit);
         return;
       }
 
@@ -152,38 +148,37 @@ export default function ContactPage() {
   return (
     <PageShell>
       <PageContainer>
-        <div className="max-w-4xl">
-          <section>
-            <SectionPill>{messages.contact.pill}</SectionPill>
-            <h1 className="mt-4 max-w-4xl">
-              <ArchivoInkBleed
-                className="block w-full"
-                color="var(--kanna-ink)"
-                fontSize={160}
-                lines={[...messages.contact.headingLines]}
-              />
-            </h1>
-            <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600">
-              {messages.contact.description}
-            </p>
+        <section>
+          <SectionPill>{messages.contact.pill}</SectionPill>
+          <h1 className="mt-4 max-w-4xl">
+            <ArchivoInkBleed
+              className="block w-full"
+              color="var(--kanna-ink)"
+              fontSize={160}
+              lines={[...messages.contact.headingLines]}
+            />
+          </h1>
+          <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600">
+            {messages.contact.description}
+          </p>
 
-            {isSubmitted ? (
-              <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                <h2 className="text-lg font-semibold text-slate-900">
-                  {messages.contact.successTitle}
-                </h2>
-                <p className="mt-2 text-sm leading-6 text-slate-700">
-                  {messages.contact.successBody}
-                </p>
-                <LocalizedLink
-                  to="/"
-                  className="mt-4 inline-flex text-sm font-semibold text-slate-900 underline decoration-slate-300 underline-offset-4 transition hover:decoration-slate-900"
-                >
-                  {messages.contact.backHome}
-                </LocalizedLink>
-              </div>
-            ) : (
-              <form className="mt-8 space-y-6" onSubmit={handleSubmit} noValidate>
+          {isSubmitted ? (
+            <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+              <h2 className="text-lg font-semibold text-slate-900">
+                {messages.contact.successTitle}
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-slate-700">
+                {messages.contact.successBody}
+              </p>
+              <LocalizedLink
+                to="/"
+                className="mt-4 inline-flex text-sm font-semibold text-slate-900 underline decoration-slate-300 underline-offset-4 transition hover:decoration-slate-900"
+              >
+                {messages.contact.backHome}
+              </LocalizedLink>
+            </div>
+          ) : (
+            <form className="mt-8 space-y-6" onSubmit={handleSubmit} noValidate>
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="hidden" aria-hidden="true">
                   <span>Website</span>
@@ -218,7 +213,9 @@ export default function ContactPage() {
                     hasError={showValidation && Boolean(errors.fullName)}
                   />
                   {showValidation && errors.fullName ? (
-                    <p className="mt-2 text-sm text-red-600">{errors.fullName}</p>
+                    <p className="mt-2 text-sm text-red-600">
+                      {errors.fullName}
+                    </p>
                   ) : null}
                 </label>
 
@@ -260,7 +257,9 @@ export default function ContactPage() {
                     hasError={showValidation && Boolean(errors.phoneNumber)}
                   />
                   {showValidation && errors.phoneNumber ? (
-                    <p className="mt-2 text-sm text-red-600">{errors.phoneNumber}</p>
+                    <p className="mt-2 text-sm text-red-600">
+                      {errors.phoneNumber}
+                    </p>
                   ) : null}
                 </label>
 
@@ -318,7 +317,9 @@ export default function ContactPage() {
                     hasError={showValidation && Boolean(errors.message)}
                   />
                   {showValidation && errors.message ? (
-                    <p className="mt-2 text-sm text-red-600">{errors.message}</p>
+                    <p className="mt-2 text-sm text-red-600">
+                      {errors.message}
+                    </p>
                   ) : null}
                 </label>
               </div>
@@ -338,9 +339,11 @@ export default function ContactPage() {
                     className="mt-0.5"
                   />
                   <span>
-                    {messages.contact.privacyConsent.split(
-                      messages.contact.privacyLink,
-                    )[0]}
+                    {
+                      messages.contact.privacyConsent.split(
+                        messages.contact.privacyLink,
+                      )[0]
+                    }
                     <LocalizedLink
                       to="/privacy-terms"
                       className="font-medium text-slate-900 underline underline-offset-2"
@@ -355,7 +358,9 @@ export default function ContactPage() {
                   </span>
                 </label>
                 {showValidation && errors.privacyAccepted ? (
-                  <p className="text-sm text-red-600">{errors.privacyAccepted}</p>
+                  <p className="text-sm text-red-600">
+                    {errors.privacyAccepted}
+                  </p>
                 ) : null}
 
                 <label className="flex items-start gap-3 text-sm text-slate-700">
@@ -370,9 +375,7 @@ export default function ContactPage() {
                     }
                     className="mt-0.5"
                   />
-                  <span>
-                    {messages.contact.marketingConsent}
-                  </span>
+                  <span>{messages.contact.marketingConsent}</span>
                 </label>
               </div>
 
@@ -387,12 +390,13 @@ export default function ContactPage() {
                 disabled={isSubmitting}
                 className="inline-flex items-center justify-center rounded-xl bg-[var(--kanna-ink)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-black"
               >
-                {isSubmitting ? messages.contact.sending : messages.contact.send}
+                {isSubmitting
+                  ? messages.contact.sending
+                  : messages.contact.send}
               </button>
-              </form>
-            )}
-          </section>
-        </div>
+            </form>
+          )}
+        </section>
       </PageContainer>
     </PageShell>
   );

@@ -166,6 +166,25 @@ export function SiteHeader() {
               ))}
             </ul>
             <div className="flex items-center gap-3">
+              <LocalizedLink
+                to="/account"
+                aria-label={messages.account.openAccount}
+                className="inline-flex cursor-pointer items-center justify-center p-1 transition duration-200 hover:scale-[1.15]"
+              >
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 512 512"
+                  className="h-6 w-6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="32"
+                >
+                  <path d="M344 144c-3.92 52.87-47.1 96-88 96s-84.08-43.13-88-96c-4-55.43 35.9-96 88-96s92 40.57 88 96Z" />
+                  <path d="M256 304c-87 0-144 38-144 80v48h288v-48c0-42-57-80-144-80Z" />
+                </svg>
+              </LocalizedLink>
               <AnimatePresence initial={false}>
                 {isShopRoute ? (
                   <motion.button

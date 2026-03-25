@@ -69,6 +69,16 @@ type StoreApiProduct = {
   variations?: StoreApiProductVariation[];
 };
 
+type StoreApiProductReview = {
+  date_created?: string;
+  id: number;
+  rating?: number;
+  review?: string;
+  reviewer?: string;
+  reviewer_avatar_urls?: Record<string, string>;
+  verified?: boolean;
+};
+
 type StoreApiCartItem = {
   id: string;
   key: string;
@@ -147,6 +157,16 @@ export type StoreProduct = {
     attributes: Record<string, string>;
     id: number;
   }>;
+};
+
+export type StoreProductReview = {
+  author: string;
+  avatarSrc: string | null;
+  body: string;
+  createdAt: string;
+  id: number;
+  rating: number;
+  verified: boolean;
 };
 
 export type StoreCartItem = {
@@ -550,6 +570,27 @@ function mapStoreCart(cart: StoreApiCart, locale: Locale): StoreCart {
   };
 }
 
+function stripHtml(value: string | undefined) {
+  return (value ?? "").replace(/<[^>]*>/g, "").trim();
+}
+
+function mapStoreProductReview(
+  review: StoreApiProductReview,
+): StoreProductReview {
+  return {
+    author: review.reviewer ?? "Customer",
+    avatarSrc:
+      review.reviewer_avatar_urls?.["96"] ??
+      review.reviewer_avatar_urls?.["48"] ??
+      null,
+    body: stripHtml(review.review),
+    createdAt: review.date_created ?? "",
+    id: review.id,
+    rating: review.rating ?? 0,
+    verified: Boolean(review.verified),
+  };
+}
+
 function emitStoreCartUpdated(
   cart: StoreCart,
   options?: {
@@ -631,6 +672,27 @@ export async function fetchStoreProductBySlug({
   const product = payload[0];
 
   return product ? mapStoreProduct(product, locale) : null;
+}
+
+export async function fetchStoreProductReviews({
+  locale,
+  productId,
+}: {
+  locale: Locale;
+  productId: number;
+}) {
+  const payload = await storeApiRequest<StoreApiProductReview[]>(
+    "/products/reviews",
+    {
+      locale,
+      searchParams: {
+        per_page: 50,
+        product_id: productId,
+      },
+    },
+  );
+
+  return payload.map((review) => mapStoreProductReview(review));
 }
 
 export async function fetchStoreCart(locale: Locale) {
