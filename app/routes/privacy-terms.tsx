@@ -295,7 +295,7 @@ function PolicySectionBlock({
 }) {
   return (
     <section>
-      <h2 className="text-lg font-semibold text-slate-900">{section.title}</h2>
+      <h2 className="text-lg font-semibold text-[var(--kanna-ink)]">{section.title}</h2>
       {section.paragraphs?.map((paragraph) => (
         <p key={paragraph} className="mt-3">
           {paragraph}
@@ -313,7 +313,7 @@ function PolicySectionBlock({
           type="button"
           data-analytics-ignore="true"
           onClick={() => window.dispatchEvent(new Event(COOKIE_PREFERENCES_EVENT))}
-          className="mt-4 inline-flex items-center justify-center rounded-xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-900"
+          className="mt-4 inline-flex items-center justify-center rounded-xl border border-stone-300 px-4 py-3 text-sm font-semibold text-[var(--kanna-ink)] transition hover:border-black/70"
         >
           {section.actionLabel}
         </button>
@@ -332,19 +332,19 @@ export default function PrivacyTermsPage() {
       <PageContainer>
         <div className="max-w-4xl rounded-[28px] border border-stone-200 bg-white p-6 shadow-sm md:p-8">
           <SectionPill>{messages.legal.pill}</SectionPill>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl">
+          <h1 className="page-heading mt-3 text-[2.35rem] leading-[0.88] text-[var(--kanna-ink)] md:text-[3.8rem]">
             {messages.legal.title}
           </h1>
-          <p className="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+          <p className="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
             {content.updatedAt}
           </p>
-          <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-600">
+          <p className="mt-4 max-w-3xl text-sm leading-6 text-stone-600">
             {content.privacyLead}
           </p>
 
-          <div className="mt-8 space-y-8 text-sm leading-6 text-slate-700">
+          <div className="mt-8 space-y-8 text-sm leading-6 text-stone-700">
             <section>
-              <h2 className="text-xl font-semibold text-slate-900">
+              <h2 className="text-xl font-semibold text-[var(--kanna-ink)]">
                 {content.privacyHeading}
               </h2>
             </section>
@@ -354,7 +354,7 @@ export default function PrivacyTermsPage() {
             ))}
 
             <section>
-              <h2 className="text-xl font-semibold text-slate-900">
+              <h2 className="text-xl font-semibold text-[var(--kanna-ink)]">
                 {content.termsHeading}
               </h2>
               <p className="mt-3">{content.termsLead}</p>

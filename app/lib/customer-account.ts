@@ -12,6 +12,7 @@ export type CustomerUser = {
 
 export type CustomerAccountPaths = {
   addresses: string;
+  comments: string;
   orders: string;
   overview: string;
   profile: string;
@@ -97,6 +98,15 @@ export type CustomerBlogComment = {
   contentHtml: string;
   createdAt: string;
   id: number;
+  status: "approved" | "pending";
+};
+
+export type CustomerAccountComment = {
+  contentHtml: string;
+  createdAt: string;
+  id: number;
+  postPath: string;
+  postTitle: string;
   status: "approved" | "pending";
 };
 
@@ -210,6 +220,23 @@ export async function loginCustomerSession({
   });
 }
 
+export async function requestCustomerPasswordReset({
+  locale,
+  login,
+}: {
+  locale: Locale;
+  login: string;
+}) {
+  return customerAccountRequest<{ success: boolean }>("/forgot-password", {
+    body: JSON.stringify({
+      locale,
+      login,
+    }),
+    locale,
+    method: "POST",
+  });
+}
+
 export async function fetchCustomerAccount(locale: Locale) {
   return customerAccountRequest<CustomerAccount>("/account", { locale });
 }
@@ -218,6 +245,15 @@ export async function fetchCustomerOrders(locale: Locale) {
   return customerAccountRequest<{ orders: CustomerOrderSummary[] }>("/account/orders", {
     locale,
   });
+}
+
+export async function fetchCustomerComments(locale: Locale) {
+  return customerAccountRequest<{ comments: CustomerAccountComment[] }>(
+    "/account/comments",
+    {
+      locale,
+    },
+  );
 }
 
 export async function fetchCustomerAddresses(locale: Locale) {
@@ -272,6 +308,41 @@ export async function updateCustomerProfile({
       method: "PUT",
     },
   );
+}
+
+export async function uploadCustomerAvatar({
+  csrfToken,
+  file,
+  locale,
+}: {
+  csrfToken: string;
+  file: File;
+  locale: Locale;
+}) {
+  const endpoint = buildApiUrl("/account/avatar");
+  endpoint.searchParams.set("locale", locale);
+
+  const body = new FormData();
+  body.append("avatar", file);
+
+  const response = await fetch(endpoint.toString(), {
+    body,
+    credentials: "include",
+    headers: {
+      "X-Kanna-CSRF": csrfToken,
+    },
+    method: "POST",
+  });
+
+  const payload = (await response.json().catch(() => null)) as
+    | ({ message?: string; success: boolean; user: CustomerUser })
+    | null;
+
+  if (!response.ok) {
+    throw new Error(payload?.message ?? `Customer avatar upload failed (${response.status})`);
+  }
+
+  return payload as { success: boolean; user: CustomerUser };
 }
 
 export async function fetchCustomerReviews(locale: Locale) {

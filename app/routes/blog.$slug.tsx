@@ -116,7 +116,7 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
     return (
       <main className="min-h-screen bg-white px-4 py-10 md:px-8 md:py-14">
         <PageContainer>
-          <article className="max-w-3xl text-sm leading-6 text-slate-600">
+          <article className="max-w-3xl text-sm leading-6 text-stone-600">
             {messages.blog.loadingPost}
           </article>
         </PageContainer>
@@ -131,11 +131,11 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
           <article className="max-w-3xl">
             <Link
               to={loaderData.locale === "pl" ? "/pl/blog" : "/blog"}
-              className="text-sm font-semibold text-slate-900 underline decoration-slate-300 underline-offset-4 transition hover:decoration-slate-900"
+              className="text-sm font-semibold text-[var(--kanna-ink)] underline decoration-black/20 underline-offset-4 transition hover:decoration-black/70"
             >
               {messages.blog.backToBlog}
             </Link>
-            <p className="mt-6 text-sm leading-6 text-slate-600">
+            <p className="mt-6 text-sm leading-6 text-stone-600">
               {loaderData.loadError ?? messages.blog.notFound}
             </p>
           </article>
@@ -217,17 +217,17 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
           </Link>
 
           {post.publishedAt ? (
-            <p className="mt-8 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+            <p className="mt-8 text-xs font-semibold uppercase tracking-[0.18em] text-white/55">
               {formatPublishedDate(post.publishedAt, loaderData.locale)}
             </p>
           ) : null}
 
-          <h1 className="mt-3 max-w-4xl text-4xl font-semibold tracking-tight md:text-6xl">
+          <h1 className="page-heading mt-3 max-w-4xl text-[2.7rem] leading-[0.9] text-white md:text-[4.8rem]">
             {post.title}
           </h1>
 
           {post.excerpt ? (
-            <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300 md:text-lg">
+            <p className="mt-5 max-w-3xl text-base leading-7 text-white/72 md:text-lg">
               {post.excerpt}
             </p>
           ) : null}
@@ -425,7 +425,7 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
                               {comment.authorName}
                             </p>
                             {comment.createdAt ? (
-                              <p className="text-xs uppercase tracking-[0.08em] text-black/45">
+                              <p className="ml-auto text-xs uppercase tracking-[0.08em] text-black/45">
                                 {new Intl.DateTimeFormat(
                                   getIntlLocale(loaderData.locale),
                                   {
@@ -539,7 +539,11 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
                         />
                       </label>
 
-                      <Button disabled={commentSubmitting}>
+                      <Button
+                        type="submit"
+                        disabled={commentSubmitting}
+                        className="rounded-none"
+                      >
                         {messages.blog.submitComment}
                       </Button>
 

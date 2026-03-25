@@ -12,8 +12,16 @@ export const messages = {
       addressesTitle: "Addresses",
       address1Label: "Address 1",
       address2Label: "Address 2",
+      avatarSaveError: "We could not update your avatar right now.",
+      avatarSaved: "Avatar updated.",
+      avatarUpload: "Update avatar",
+      avatarUploading: "Uploading...",
       billingAddress: "Billing address",
       cityLabel: "City",
+      commentPending: "Pending moderation",
+      commentsBody:
+        "Your published and pending blog comments appear here, linked back to the original posts.",
+      commentsTitle: "Comments",
       companyLabel: "Company",
       confirmPasswordLabel: "Confirm password",
       continueWithGoogle: "Continue with Google",
@@ -23,6 +31,14 @@ export const messages = {
       emailLabel: "e-mail",
       emailReadOnly: "Email is managed by your WordPress / Google sign-in.",
       firstNameLabel: "First name",
+      forgotPasswordDescription:
+        "Enter the e-mail address or username linked to your account and we will send you a password reset link.",
+      forgotPasswordError:
+        "We could not send the password reset email right now. Please try again later.",
+      forgotPasswordSubmit: "Send reset link",
+      forgotPasswordSuccess:
+        "If an account exists for that e-mail or username, a password reset link has been sent.",
+      forgotPasswordTitle: "Forgot password",
       forgotPassword: "Forgot password?",
       googleAuthNotConfigured:
         "Google sign-in is not connected yet. Add VITE_GOOGLE_AUTH_URL to enable the live auth flow.",
@@ -32,6 +48,7 @@ export const messages = {
       joinPrompt: "Want to join?",
       loadError: "We could not load this account section right now.",
       logout: "Log out",
+      noComments: "You have not added any blog comments yet.",
       noOrders: "No orders are linked to this account yet.",
       noReviewableProducts:
         "There are no purchased products waiting for a review right now.",
@@ -191,7 +208,8 @@ export const messages = {
       email: "Email",
       errors: {
         email: "Enter a valid email address.",
-        fullName: "Enter full name.",
+        firstName: "Enter first name.",
+        lastName: "Enter last name.",
         message: "Enter at least 20 characters.",
         phoneNumber: "Enter a valid phone number.",
         privacyAccepted: "You must confirm the privacy information.",
@@ -199,8 +217,9 @@ export const messages = {
           "We could not reach the contact service. Please try again in a moment.",
         submit: "We could not send your message right now. Please try again.",
       },
-      fullName: "Full name",
+      firstName: "First name",
       headingLines: ["Get in touch"],
+      lastName: "Last name",
       marketingConsent:
         "I agree to receive future marketing updates by email. This consent is optional and can be withdrawn at any time.",
       message: "Message",
@@ -376,8 +395,16 @@ export const messages = {
       addressesTitle: "Adresy",
       address1Label: "Adres 1",
       address2Label: "Adres 2",
+      avatarSaveError: "Nie udało się teraz zaktualizować avatara.",
+      avatarSaved: "Avatar został zaktualizowany.",
+      avatarUpload: "Zmień avatar",
+      avatarUploading: "Wysyłanie...",
       billingAddress: "Adres rozliczeniowy",
       cityLabel: "Miasto",
+      commentPending: "Oczekuje na moderację",
+      commentsBody:
+        "Tutaj pojawiają się Twoje opublikowane i oczekujące komentarze na blogu wraz z linkami do wpisów.",
+      commentsTitle: "Komentarze",
       companyLabel: "Firma",
       confirmPasswordLabel: "Potwierdź hasło",
       continueWithGoogle: "Kontynuuj z Google",
@@ -387,6 +414,14 @@ export const messages = {
       emailLabel: "e-mail",
       emailReadOnly: "E-mail jest zarządzany przez logowanie WordPress / Google.",
       firstNameLabel: "Imię",
+      forgotPasswordDescription:
+        "Wpisz adres e-mail lub nazwę użytkownika powiązaną z Twoim kontem, a wyślemy link do zresetowania hasła.",
+      forgotPasswordError:
+        "Nie udało się teraz wysłać wiadomości resetującej hasło. Spróbuj ponownie później.",
+      forgotPasswordSubmit: "Wyślij link resetujący",
+      forgotPasswordSuccess:
+        "Jeśli konto o takim adresie e-mail lub nazwie użytkownika istnieje, wysłaliśmy link do zresetowania hasła.",
+      forgotPasswordTitle: "Nie pamiętasz hasła",
       forgotPassword: "Nie pamiętasz hasła?",
       googleAuthNotConfigured:
         "Logowanie Google nie jest jeszcze podłączone. Dodaj VITE_GOOGLE_AUTH_URL, aby uruchomić właściwy przepływ logowania.",
@@ -396,6 +431,7 @@ export const messages = {
       joinPrompt: "Chcesz dołączyć?",
       loadError: "Nie udało się teraz załadować tej sekcji konta.",
       logout: "Wyloguj się",
+      noComments: "Nie dodałeś(-aś) jeszcze żadnych komentarzy na blogu.",
       noOrders: "Z tym kontem nie są jeszcze powiązane żadne zamówienia.",
       noReviewableProducts:
         "Nie ma teraz żadnych kupionych produktów oczekujących na opinię.",
@@ -555,7 +591,8 @@ export const messages = {
       email: "E-mail",
       errors: {
         email: "Wpisz poprawny adres e-mail.",
-        fullName: "Wpisz imię i nazwisko.",
+        firstName: "Wpisz imię.",
+        lastName: "Wpisz nazwisko.",
         message: "Wpisz co najmniej 20 znaków.",
         phoneNumber: "Wpisz poprawny numer telefonu.",
         privacyAccepted: "Musisz potwierdzić informacje o prywatności.",
@@ -563,8 +600,9 @@ export const messages = {
           "Nie udało się połączyć z formularzem kontaktowym. Spróbuj ponownie za chwilę.",
         submit: "Nie udało się teraz wysłać wiadomości. Spróbuj ponownie.",
       },
-      fullName: "Imię i nazwisko",
+      firstName: "Imię",
       headingLines: ["Kontakt"],
+      lastName: "Nazwisko",
       marketingConsent:
         "Wyrażam zgodę na otrzymywanie przyszłych aktualizacji marketingowych e-mailem. Ta zgoda jest opcjonalna i może zostać wycofana w każdej chwili.",
       message: "Wiadomość",

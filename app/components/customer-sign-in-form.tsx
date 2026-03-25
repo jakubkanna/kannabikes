@@ -4,7 +4,7 @@ import { InputField } from "~/components/form-field";
 import { GoogleAuthButton } from "~/components/google-auth-button";
 import { LocalizedLink } from "~/components/localized-link";
 import { useMessages } from "~/components/locale-provider";
-import { getGoogleAuthUrl, getWordpressLostPasswordUrl } from "~/lib/auth";
+import { getForgotPasswordPath, getGoogleAuthUrl } from "~/lib/auth";
 import { loginCustomerSession, type CustomerSession } from "~/lib/customer-account";
 import type { Locale } from "~/lib/i18n";
 
@@ -34,9 +34,9 @@ export function CustomerSignInForm({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const isPageVariant = variant === "page";
 
-  const lostPasswordUrl = useMemo(
+  const forgotPasswordPath = useMemo(
     () =>
-      getWordpressLostPasswordUrl({
+      getForgotPasswordPath({
         locale,
         redirectTo,
       }),
@@ -149,12 +149,12 @@ export function CustomerSignInForm({
               : "flex items-center justify-between gap-4"
           }
         >
-          <a
-            href={lostPasswordUrl}
+          <LocalizedLink
+            to={forgotPasswordPath}
             className="text-sm font-semibold text-[var(--kanna-ink)] transition hover:text-black"
           >
             {messages.account.forgotPassword}
-          </a>
+          </LocalizedLink>
           <Button
             type="submit"
             disabled={isSubmitting}

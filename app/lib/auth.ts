@@ -76,20 +76,20 @@ export function getWordpressLoginUrl({
   return url.toString();
 }
 
-export function getWordpressLostPasswordUrl({
+export function getForgotPasswordPath({
   locale,
   redirectTo,
 }: {
   locale: Locale;
   redirectTo?: string | null;
 }) {
-  const redirectUrl = getFrontendRedirectUrl({ locale, redirectTo });
-  const url = new URL("/wp-login.php", WORDPRESS_BASE_URL);
+  const url = new URL(localizePath("/forgot-password", locale), SITE_URL);
 
-  url.searchParams.set("action", "lostpassword");
-  url.searchParams.set("redirect_to", redirectUrl.toString());
+  if (redirectTo) {
+    url.searchParams.set("redirect", redirectTo);
+  }
 
-  return url.toString();
+  return `${url.pathname}${url.search}`;
 }
 
 export function getFrontendAccountRedirect({

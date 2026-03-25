@@ -2,11 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router";
 
 import { Button } from "~/components/button";
-import { InputField, SelectField, TextareaField } from "~/components/form-field";
+import { CustomerSignInForm } from "~/components/customer-sign-in-form";
+import { SelectField, TextareaField } from "~/components/form-field";
 import type { Route } from "./+types/shop.product.$slug";
-import { GoogleAuthButton } from "~/components/google-auth-button";
 import { useLocale, useMessages } from "~/components/locale-provider";
-import { LocalizedLink } from "~/components/localized-link";
 import { PageContainer, PageShell } from "~/components/page-container";
 import { SectionPill } from "~/components/section-pill";
 import {
@@ -15,10 +14,6 @@ import {
   getLocaleFromPath,
   getMessages,
 } from "~/lib/i18n";
-import {
-  getGoogleAuthUrl,
-  getWordpressLostPasswordUrl,
-} from "~/lib/auth";
 import {
   addStoreCartItem,
   fetchStoreProductBySlug,
@@ -29,7 +24,6 @@ import {
   createCustomerReview,
   fetchCustomerReviews,
   fetchCustomerSession,
-  loginCustomerSession,
   type ReviewableProduct,
   type CustomerSession,
 } from "~/lib/customer-account";
@@ -99,8 +93,6 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
   const [customerSession, setCustomerSession] = useState<CustomerSession | null>(null);
   const [customerSessionLoading, setCustomerSessionLoading] = useState(true);
   const [reviewableProducts, setReviewableProducts] = useState<ReviewableProduct[]>([]);
-  const [signInEmail, setSignInEmail] = useState("");
-  const [signInPassword, setSignInPassword] = useState("");
   const [reviewRating, setReviewRating] = useState("5");
   const [reviewBody, setReviewBody] = useState("");
   const [reviewSubmitStatus, setReviewSubmitStatus] = useState<string | null>(null);
@@ -141,23 +133,6 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
 
   const product = loaderData.product;
   const reviewRedirectPath = `${location.pathname}${location.search}#reviews`;
-  const lostPasswordUrl = useMemo(
-    () =>
-      getWordpressLostPasswordUrl({
-        locale,
-        redirectTo: reviewRedirectPath,
-      }),
-    [locale, reviewRedirectPath],
-  );
-  const googleAuthUrl = useMemo(
-    () =>
-      getGoogleAuthUrl({
-        intent: "sign-in",
-        locale,
-        redirectTo: reviewRedirectPath,
-      }),
-    [locale, reviewRedirectPath],
-  );
 
   useEffect(() => {
     setSelectedOptions(getInitialOptionSelection(product));
@@ -467,7 +442,7 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
                           onChange={(event) => setReviewBody(event.currentTarget.value)}
                         />
                       </label>
-                      <Button disabled={reviewSubmitting}>
+                      <Button type="submit" disabled={reviewSubmitting}>
                         {messages.account.reviewPublish}
                       </Button>
                       {reviewSubmitStatus ? (
@@ -488,105 +463,23 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
                       <h2 className="text-xl font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
                         {messages.commerce.leaveReview}
                       </h2>
-                      <p className="mt-3 max-w-2xl text-sm leading-relaxed text-black/75">
-                        {messages.commerce.reviewsSignInCta}
-                      </p>
-                      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-black/75">
-                        {messages.commerce.reviewsSignUpCta}
-                      </p>
-                      <form
-                        className="mt-6 space-y-4"
-                        onSubmit={async (event) => {
-                          event.preventDefault();
-                          setReviewSubmitting(true);
+                      <CustomerSignInForm
+                        description={messages.commerce.reviewsSignInCta}
+                        locale={locale}
+                        redirectTo={reviewRedirectPath}
+                        secondaryDescription={messages.commerce.reviewsSignUpCta}
+                        onSuccess={async (session) => {
                           setReviewSubmitStatus(null);
+                          setCustomerSession(session);
 
                           try {
-                            const session = await loginCustomerSession({
-                              locale,
-                              login: signInEmail,
-                              password: signInPassword,
-                            });
-                            setCustomerSession(session);
-                            setSignInPassword("");
-                          } catch (error) {
-                            setReviewSubmitStatus(
-                              error instanceof Error && error.message
-                                ? error.message
-                                : messages.account.signInError,
-                            );
-                          } finally {
-                            setReviewSubmitting(false);
+                            const nextReviewData = await fetchCustomerReviews(locale);
+                            setReviewableProducts(nextReviewData.reviewableProducts);
+                          } catch {
+                            setReviewableProducts([]);
                           }
                         }}
-                      >
-                        <label className="block">
-                          <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
-                            {messages.account.emailLabel}
-                          </span>
-                          <InputField
-                            autoComplete="username"
-                            name="log"
-                            type="text"
-                            value={signInEmail}
-                            onChange={(event) => setSignInEmail(event.currentTarget.value)}
-                          />
-                        </label>
-                        <label className="block">
-                          <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
-                            {messages.account.passwordLabel}
-                          </span>
-                          <InputField
-                            autoComplete="current-password"
-                            name="pwd"
-                            type="password"
-                            value={signInPassword}
-                            onChange={(event) => setSignInPassword(event.currentTarget.value)}
-                          />
-                        </label>
-                        <div className="flex items-center justify-between gap-4">
-                          <a
-                            href={lostPasswordUrl}
-                            className="text-sm font-semibold text-[var(--kanna-ink)] transition hover:text-black"
-                          >
-                            {messages.account.forgotPassword}
-                          </a>
-                          <Button
-                            type="submit"
-                            disabled={reviewSubmitting}
-                            className="min-h-11 rounded-none px-5"
-                          >
-                            {messages.account.signInCta}
-                          </Button>
-                        </div>
-                        {reviewSubmitStatus ? (
-                          <p className="text-sm text-red-600">{reviewSubmitStatus}</p>
-                        ) : null}
-                      </form>
-                      <div className="mt-6 flex items-center gap-4">
-                        <div className="h-px flex-1 bg-black/15" />
-                        <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--kanna-ink)]">
-                          {messages.account.or}
-                        </span>
-                        <div className="h-px flex-1 bg-black/15" />
-                      </div>
-                      <div className="mt-6 space-y-4">
-                        <GoogleAuthButton
-                          href={googleAuthUrl}
-                          className="flex min-h-11 w-full justify-center text-sm"
-                        >
-                          {messages.account.continueWithGoogle}
-                        </GoogleAuthButton>
-                        <p className="text-sm text-[var(--kanna-ink)]">
-                          {messages.account.joinPrompt}{" "}
-                          <LocalizedLink
-                            to={`/sign-up?redirect=${encodeURIComponent(reviewRedirectPath)}`}
-                            className="font-semibold underline underline-offset-2 transition hover:text-black"
-                          >
-                            {messages.account.signUpTitle}
-                          </LocalizedLink>
-                        </p>
-                      </div>
+                      />
                     </>
                   )}
                 </div>
@@ -630,7 +523,7 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
                               </p>
                             ) : null}
                             {review.createdAt ? (
-                              <p className="text-xs uppercase tracking-[0.08em] text-black/45">
+                              <p className="ml-auto text-xs uppercase tracking-[0.08em] text-black/45">
                                 {new Intl.DateTimeFormat(getIntlLocale(locale), {
                                   day: "numeric",
                                   month: "long",

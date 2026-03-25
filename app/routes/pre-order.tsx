@@ -39,7 +39,7 @@ export default function PreOrderPage() {
           />
         </h1>
         <div className="mt-12 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-start">
-          <div className="max-w-4xl text-sm leading-7 text-slate-600 md:text-base">
+          <div className="max-w-4xl text-sm leading-7 text-stone-600 md:text-base">
             <p>{messages.pages.preOrder.intro}</p>
             <p className="mt-5 font-semibold text-[var(--kanna-ink)]">
               {messages.pages.preOrder.why}

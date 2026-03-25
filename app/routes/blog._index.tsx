@@ -96,27 +96,29 @@ function BlogPostCard({
 
       <div className="p-6">
         {post.publishedAt ? (
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
             {formatPublishedDate(post.publishedAt, locale)}
           </p>
         ) : null}
 
-        <h2 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900">
+        <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[var(--kanna-ink)]">
           <Link
             to={post.url ?? `/blog/${post.slug}`}
-            className="transition hover:text-slate-700"
+            className="transition hover:text-black/75"
           >
             {post.title}
           </Link>
         </h2>
 
         {post.excerpt ? (
-          <p className="mt-3 text-sm leading-6 text-slate-600">{post.excerpt}</p>
+          <p className="mt-3 text-sm leading-6 text-stone-600">
+            {post.excerpt}
+          </p>
         ) : null}
 
         <Link
           to={post.url ?? `/blog/${post.slug}`}
-          className="mt-5 inline-flex text-sm font-semibold text-slate-900 underline decoration-slate-300 underline-offset-4 transition hover:decoration-slate-900"
+          className="mt-5 inline-flex text-sm font-semibold text-[var(--kanna-ink)] underline decoration-black/20 underline-offset-4 transition hover:decoration-black/70"
         >
           {messages.blog.readArticle}
         </Link>
@@ -140,9 +142,6 @@ export default function BlogPage({ loaderData }: Route.ComponentProps) {
             lines={[messages.blog.title]}
           />
         </h1>
-        <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-600">
-          {messages.blog.description}
-        </p>
 
         {loaderData.loadError ? (
           <section className="mt-6 border border-red-200 bg-white p-8 text-sm leading-6 text-red-700 shadow-sm">
@@ -160,7 +159,7 @@ export default function BlogPage({ loaderData }: Route.ComponentProps) {
             ))}
           </section>
         ) : (
-          <section className="mt-6 border border-dashed border-stone-300 bg-white p-8 text-sm leading-6 text-slate-600 shadow-sm">
+          <section className="mt-6 border border-dashed border-stone-300 bg-white p-8 text-sm leading-6 text-stone-600 shadow-sm">
             {messages.blog.empty}
           </section>
         )}

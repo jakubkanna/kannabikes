@@ -7,6 +7,7 @@ import {
   fetchCustomerAccount,
   fetchCustomerSession,
   updateCustomerProfile,
+  type CustomerUser,
 } from "~/lib/customer-account";
 import { buildLocalizedMeta, getLocaleFromPath, getMessages } from "~/lib/i18n";
 import { formatPageTitle } from "~/root";
@@ -44,6 +45,7 @@ export default function AccountProfilePage({
   loaderData,
 }: Route.ComponentProps) {
   const messages = useMessages();
+  const [user, setUser] = useState<CustomerUser>(loaderData.account.user);
   const [displayName, setDisplayName] = useState(loaderData.account.user.displayName);
   const [firstName, setFirstName] = useState(loaderData.account.user.firstName);
   const [lastName, setLastName] = useState(loaderData.account.user.lastName);
@@ -52,7 +54,11 @@ export default function AccountProfilePage({
   const [isSaving, setIsSaving] = useState(false);
 
   return (
-    <AccountShell session={loaderData.session} title={messages.account.profileTitle}>
+    <AccountShell
+      session={loaderData.session}
+      title={messages.account.profileTitle}
+      user={user}
+    >
       <form
         className="max-w-3xl space-y-5 border border-black/15 bg-white p-6"
         onSubmit={async (event) => {
@@ -61,11 +67,12 @@ export default function AccountProfilePage({
           setStatus(null);
 
           try {
-            await updateCustomerProfile({
+            const response = await updateCustomerProfile({
               csrfToken: loaderData.session.csrfToken,
               locale: loaderData.locale,
               payload: { displayName, firstName, lastName, phone },
             });
+            setUser(response.user);
             setStatus(messages.account.profileSaved);
           } catch {
             setStatus(messages.account.saveError);

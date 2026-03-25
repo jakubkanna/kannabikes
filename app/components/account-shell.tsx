@@ -1,32 +1,42 @@
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "~/components/button";
 import { LocalizedNavLink } from "~/components/localized-link";
 import { PageContainer, PageShell } from "~/components/page-container";
 import { SectionPill } from "~/components/section-pill";
 import { useLocale, useMessages } from "./locale-provider";
-import type { CustomerSession } from "~/lib/customer-account";
-import { logoutCustomerSession } from "~/lib/customer-account";
+import type { CustomerSession, CustomerUser } from "~/lib/customer-account";
+import { logoutCustomerSession, uploadCustomerAvatar } from "~/lib/customer-account";
 import { localizePath } from "~/lib/i18n";
 
 export function AccountShell({
   children,
   session,
   title,
+  user,
 }: {
   children: ReactNode;
   session: CustomerSession;
   title: string;
+  user?: CustomerUser | null;
 }) {
   const locale = useLocale();
   const messages = useMessages();
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [displayUser, setDisplayUser] = useState(user ?? session.user);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const navItems = [
     { label: messages.account.ordersTitle, to: "/account/orders" },
     { label: messages.account.profileTitle, to: "/account/profile" },
     { label: messages.account.addressesTitle, to: "/account/addresses" },
+    { label: messages.account.commentsTitle, to: "/account/comments" },
     { label: messages.account.reviewsTitle, to: "/account/reviews" },
   ] as const;
+
+  useEffect(() => {
+    setDisplayUser(user ?? session.user);
+  }, [session.user, user]);
 
   return (
     <PageShell>
@@ -37,10 +47,67 @@ export function AccountShell({
             <h1 className="page-heading mt-4 text-[2.35rem] leading-[0.88] text-[var(--kanna-ink)] md:text-[3.8rem]">
               {title}
             </h1>
-            {session.user ? (
-              <p className="mt-4 text-sm leading-6 text-slate-600">
-                {session.user.displayName || session.user.email}
-              </p>
+            {displayUser ? (
+              <div className="mt-4 flex items-center gap-4">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/gif"
+                  className="hidden"
+                  onChange={async (event) => {
+                    const file = event.currentTarget.files?.[0];
+
+                    if (!file || !session.csrfToken) {
+                      return;
+                    }
+
+                    setIsUploadingAvatar(true);
+
+                    try {
+                      const response = await uploadCustomerAvatar({
+                        csrfToken: session.csrfToken,
+                        file,
+                        locale,
+                      });
+                      setDisplayUser(response.user);
+                    } finally {
+                      event.currentTarget.value = "";
+                      setIsUploadingAvatar(false);
+                    }
+                  }}
+                />
+
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploadingAvatar || !session.csrfToken}
+                  className="group relative flex h-14 w-14 cursor-pointer items-center justify-center overflow-hidden border border-black/15 bg-white disabled:cursor-not-allowed disabled:opacity-60"
+                  aria-label={messages.account.avatarUpload}
+                  title={messages.account.avatarUpload}
+                >
+                  {displayUser.avatarUrl ? (
+                    <img
+                      src={displayUser.avatarUrl}
+                      alt={displayUser.displayName || displayUser.email}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-sm font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
+                      {(displayUser.displayName || displayUser.email).slice(0, 1)}
+                    </div>
+                  )}
+
+                  <span className="absolute inset-x-0 bottom-0 bg-black px-1 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-white opacity-0 transition group-hover:opacity-100">
+                    {isUploadingAvatar
+                      ? messages.account.avatarUploading
+                      : messages.account.avatarUpload}
+                  </span>
+                </button>
+
+                <p className="text-sm leading-6 text-slate-600">
+                  {displayUser.displayName || displayUser.email}
+                </p>
+              </div>
             ) : null}
           </div>
 

@@ -25,7 +25,8 @@ const DEFAULT_CONTACT_ENDPOINT = `${
 function validateContactForm(
   values: {
     email: string;
-    fullName: string;
+    firstName: string;
+    lastName: string;
     message: string;
     phoneNumber: string;
     privacyAccepted: boolean;
@@ -34,8 +35,12 @@ function validateContactForm(
 ) {
   const errors: Partial<Record<keyof typeof values, string>> = {};
 
-  if (values.fullName.trim().length < 2) {
-    errors.fullName = routeMessages.contact.errors.fullName;
+  if (values.firstName.trim().length < 2) {
+    errors.firstName = routeMessages.contact.errors.firstName;
+  }
+
+  if (values.lastName.trim().length < 2) {
+    errors.lastName = routeMessages.contact.errors.lastName;
   }
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
@@ -73,7 +78,8 @@ export default function ContactPage() {
   const messages = useMessages();
   const [formValues, setFormValues] = useState<{
     email: string;
-    fullName: string;
+    firstName: string;
+    lastName: string;
     marketingAccepted: boolean;
     message: string;
     phoneNumber: string;
@@ -81,8 +87,9 @@ export default function ContactPage() {
     topic: string;
     website: string;
   }>({
-    fullName: "",
     email: "",
+    firstName: "",
+    lastName: "",
     phoneNumber: "",
     topic: messages.contact.topicOptions.quote,
     message: "",
@@ -116,7 +123,7 @@ export default function ContactPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          full_name: formValues.fullName,
+          full_name: `${formValues.firstName.trim()} ${formValues.lastName.trim()}`.trim(),
           email: formValues.email,
           locale,
           phone_number: formValues.phoneNumber,
@@ -158,21 +165,21 @@ export default function ContactPage() {
               lines={[...messages.contact.headingLines]}
             />
           </h1>
-          <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600">
+          <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
             {messages.contact.description}
           </p>
 
           {isSubmitted ? (
-            <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-5">
-              <h2 className="text-lg font-semibold text-slate-900">
+            <div className="mt-8 rounded-2xl border border-stone-200 bg-stone-50 p-5">
+              <h2 className="text-lg font-semibold text-[var(--kanna-ink)]">
                 {messages.contact.successTitle}
               </h2>
-              <p className="mt-2 text-sm leading-6 text-slate-700">
+              <p className="mt-2 text-sm leading-6 text-stone-700">
                 {messages.contact.successBody}
               </p>
               <LocalizedLink
                 to="/"
-                className="mt-4 inline-flex text-sm font-semibold text-slate-900 underline decoration-slate-300 underline-offset-4 transition hover:decoration-slate-900"
+                className="mt-4 inline-flex text-sm font-semibold text-[var(--kanna-ink)] underline decoration-black/20 underline-offset-4 transition hover:decoration-black/70"
               >
                 {messages.contact.backHome}
               </LocalizedLink>
@@ -196,31 +203,54 @@ export default function ContactPage() {
                   />
                 </label>
 
-                <label className="block md:col-span-2">
-                  <span className="mb-2 block text-sm font-semibold text-slate-700">
-                    {messages.contact.fullName}
+                <label className="block">
+                  <span className="mb-2 block text-sm font-semibold text-stone-700">
+                    {messages.contact.firstName}
                   </span>
                   <InputField
                     type="text"
-                    value={formValues.fullName}
+                    value={formValues.firstName}
                     onChange={(event) =>
                       setFormValues((prev) => ({
                         ...prev,
-                        fullName: event.target.value,
+                        firstName: event.target.value,
                       }))
                     }
                     onFocus={() => setShowValidation(false)}
-                    hasError={showValidation && Boolean(errors.fullName)}
+                    hasError={showValidation && Boolean(errors.firstName)}
                   />
-                  {showValidation && errors.fullName ? (
+                  {showValidation && errors.firstName ? (
                     <p className="mt-2 text-sm text-red-600">
-                      {errors.fullName}
+                      {errors.firstName}
                     </p>
                   ) : null}
                 </label>
 
                 <label className="block">
-                  <span className="mb-2 block text-sm font-semibold text-slate-700">
+                  <span className="mb-2 block text-sm font-semibold text-stone-700">
+                    {messages.contact.lastName}
+                  </span>
+                  <InputField
+                    type="text"
+                    value={formValues.lastName}
+                    onChange={(event) =>
+                      setFormValues((prev) => ({
+                        ...prev,
+                        lastName: event.target.value,
+                      }))
+                    }
+                    onFocus={() => setShowValidation(false)}
+                    hasError={showValidation && Boolean(errors.lastName)}
+                  />
+                  {showValidation && errors.lastName ? (
+                    <p className="mt-2 text-sm text-red-600">
+                      {errors.lastName}
+                    </p>
+                  ) : null}
+                </label>
+
+                <label className="block">
+                  <span className="mb-2 block text-sm font-semibold text-stone-700">
                     {messages.contact.email}
                   </span>
                   <InputField
@@ -241,7 +271,7 @@ export default function ContactPage() {
                 </label>
 
                 <label className="block">
-                  <span className="mb-2 block text-sm font-semibold text-slate-700">
+                  <span className="mb-2 block text-sm font-semibold text-stone-700">
                     {messages.contact.phoneNumber}
                   </span>
                   <InputField
@@ -264,7 +294,7 @@ export default function ContactPage() {
                 </label>
 
                 <label className="block md:col-span-2">
-                  <span className="mb-2 block text-sm font-semibold text-slate-700">
+                  <span className="mb-2 block text-sm font-semibold text-stone-700">
                     {messages.contact.topic}
                   </span>
                   <div className="relative">
@@ -292,7 +322,7 @@ export default function ContactPage() {
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="pointer-events-none absolute right-4 top-1/2 size-5 -translate-y-1/2 text-slate-500"
+                      className="pointer-events-none absolute right-4 top-1/2 size-5 -translate-y-1/2 text-stone-500"
                       aria-hidden="true"
                     >
                       <path d="m6 9 6 6 6-6" />
@@ -301,7 +331,7 @@ export default function ContactPage() {
                 </label>
 
                 <label className="block md:col-span-2">
-                  <span className="mb-2 block text-sm font-semibold text-slate-700">
+                  <span className="mb-2 block text-sm font-semibold text-stone-700">
                     {messages.contact.message}
                   </span>
                   <TextareaField
@@ -324,8 +354,8 @@ export default function ContactPage() {
                 </label>
               </div>
 
-              <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <label className="flex items-start gap-3 text-sm text-slate-700">
+              <div className="space-y-3 rounded-2xl border border-stone-200 bg-stone-50 p-4">
+                <label className="flex items-start gap-3 text-sm text-stone-700">
                   <input
                     type="checkbox"
                     checked={formValues.privacyAccepted}
@@ -346,7 +376,7 @@ export default function ContactPage() {
                     }
                     <LocalizedLink
                       to="/privacy-terms"
-                      className="font-medium text-slate-900 underline underline-offset-2"
+                      className="font-medium text-[var(--kanna-ink)] underline underline-offset-2"
                     >
                       {messages.contact.privacyLink}
                     </LocalizedLink>
@@ -363,7 +393,7 @@ export default function ContactPage() {
                   </p>
                 ) : null}
 
-                <label className="flex items-start gap-3 text-sm text-slate-700">
+                <label className="flex items-start gap-3 text-sm text-stone-700">
                   <input
                     type="checkbox"
                     checked={formValues.marketingAccepted}

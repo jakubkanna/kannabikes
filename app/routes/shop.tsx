@@ -87,7 +87,7 @@ export default function ShopPage({ loaderData }: Route.ComponentProps) {
             </SelectField>
           </div>
 
-          <p className="mt-8 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+          <p className="mt-8 text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
             {messages.commerce.featuredProducts}
           </p>
           {filteredProducts.length > 0 ? (
@@ -109,7 +109,7 @@ export default function ShopPage({ loaderData }: Route.ComponentProps) {
                     <h2 className="text-xl font-semibold text-[var(--kanna-ink)]">
                       {product.name}
                     </h2>
-                    <p className="mt-2 text-sm text-slate-600">
+                    <p className="mt-2 text-sm text-stone-600">
                       {product.price}
                     </p>
                   </div>
@@ -117,7 +117,7 @@ export default function ShopPage({ loaderData }: Route.ComponentProps) {
               ))}
             </div>
           ) : (
-            <p className="mt-4 text-sm text-slate-600">
+            <p className="mt-4 text-sm text-stone-600">
               {messages.commerce.noProducts}
             </p>
           )}
