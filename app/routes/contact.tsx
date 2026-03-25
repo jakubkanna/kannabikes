@@ -3,6 +3,11 @@ import { useState } from "react";
 import { chevronDownOutline } from "ionicons/icons";
 import type { Route } from "./+types/contact";
 import { ArchivoInkBleed } from "~/components/archivo-ink-bleed";
+import {
+  InputField,
+  SelectField,
+  TextareaField,
+} from "~/components/form-field";
 import { SectionPill } from "~/components/section-pill";
 import { SITE_NAME, formatPageTitle } from "~/root";
 
@@ -158,7 +163,7 @@ export default function ContactPage() {
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="hidden" aria-hidden="true">
                   <span>Website</span>
-                  <input
+                  <InputField
                     type="text"
                     tabIndex={-1}
                     autoComplete="off"
@@ -176,7 +181,7 @@ export default function ContactPage() {
                   <span className="mb-2 block text-sm font-semibold text-slate-700">
                     Full name
                   </span>
-                  <input
+                  <InputField
                     type="text"
                     value={formValues.fullName}
                     onChange={(event) =>
@@ -186,11 +191,7 @@ export default function ContactPage() {
                       }))
                     }
                     onFocus={() => setShowValidation(false)}
-                    className={`w-full rounded-xl bg-white px-4 py-3 text-slate-900 outline-none transition focus:ring-2 ${
-                      showValidation && errors.fullName
-                        ? "border border-red-300 focus:border-red-400 focus:ring-red-100"
-                        : "border border-slate-300 focus:border-slate-900 focus:ring-slate-200"
-                    }`}
+                    hasError={showValidation && Boolean(errors.fullName)}
                   />
                   {showValidation && errors.fullName ? (
                     <p className="mt-2 text-sm text-red-600">{errors.fullName}</p>
@@ -201,7 +202,7 @@ export default function ContactPage() {
                   <span className="mb-2 block text-sm font-semibold text-slate-700">
                     Email
                   </span>
-                  <input
+                  <InputField
                     type="email"
                     value={formValues.email}
                     onChange={(event) =>
@@ -211,11 +212,7 @@ export default function ContactPage() {
                       }))
                     }
                     onFocus={() => setShowValidation(false)}
-                    className={`w-full rounded-xl bg-white px-4 py-3 text-slate-900 outline-none transition focus:ring-2 ${
-                      showValidation && errors.email
-                        ? "border border-red-300 focus:border-red-400 focus:ring-red-100"
-                        : "border border-slate-300 focus:border-slate-900 focus:ring-slate-200"
-                    }`}
+                    hasError={showValidation && Boolean(errors.email)}
                   />
                   {showValidation && errors.email ? (
                     <p className="mt-2 text-sm text-red-600">{errors.email}</p>
@@ -226,7 +223,7 @@ export default function ContactPage() {
                   <span className="mb-2 block text-sm font-semibold text-slate-700">
                     Phone number
                   </span>
-                  <input
+                  <InputField
                     type="tel"
                     value={formValues.phoneNumber}
                     onChange={(event) =>
@@ -236,11 +233,7 @@ export default function ContactPage() {
                       }))
                     }
                     onFocus={() => setShowValidation(false)}
-                    className={`w-full rounded-xl bg-white px-4 py-3 text-slate-900 outline-none transition focus:ring-2 ${
-                      showValidation && errors.phoneNumber
-                        ? "border border-red-300 focus:border-red-400 focus:ring-red-100"
-                        : "border border-slate-300 focus:border-slate-900 focus:ring-slate-200"
-                    }`}
+                    hasError={showValidation && Boolean(errors.phoneNumber)}
                   />
                   {showValidation && errors.phoneNumber ? (
                     <p className="mt-2 text-sm text-red-600">{errors.phoneNumber}</p>
@@ -252,7 +245,7 @@ export default function ContactPage() {
                     Topic
                   </span>
                   <div className="relative">
-                    <select
+                    <SelectField
                       value={formValues.topic}
                       onChange={(event) =>
                         setFormValues((prev) => ({
@@ -260,11 +253,11 @@ export default function ContactPage() {
                           topic: event.target.value,
                         }))
                       }
-                      className="w-full appearance-none rounded-xl border border-slate-300 bg-white px-4 py-3 pr-12 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+                      className="appearance-none pr-12"
                     >
                       <option value="Quote request">Quote request</option>
                       <option value="General question">General question</option>
-                    </select>
+                    </SelectField>
                     <ion-icon
                       icon={chevronDownOutline}
                       className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[20px] text-slate-500"
@@ -277,7 +270,7 @@ export default function ContactPage() {
                   <span className="mb-2 block text-sm font-semibold text-slate-700">
                     Message
                   </span>
-                  <textarea
+                  <TextareaField
                     value={formValues.message}
                     onChange={(event) =>
                       setFormValues((prev) => ({
@@ -287,11 +280,7 @@ export default function ContactPage() {
                     }
                     onFocus={() => setShowValidation(false)}
                     rows={7}
-                    className={`w-full rounded-xl bg-white px-4 py-3 text-slate-900 outline-none transition focus:ring-2 ${
-                      showValidation && errors.message
-                        ? "border border-red-300 focus:border-red-400 focus:ring-red-100"
-                        : "border border-slate-300 focus:border-slate-900 focus:ring-slate-200"
-                    }`}
+                    hasError={showValidation && Boolean(errors.message)}
                   />
                   {showValidation && errors.message ? (
                     <p className="mt-2 text-sm text-red-600">{errors.message}</p>

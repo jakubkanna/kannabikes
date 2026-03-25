@@ -16,6 +16,16 @@
   --site-header-height: 4.5rem;
 }
 
+::selection {
+  background: var(--kanna-color);
+  color: var(--kanna-ink);
+}
+
+::-moz-selection {
+  background: var(--kanna-color);
+  color: var(--kanna-ink);
+}
+
 .page-heading {
   font-family: var(--font-kanna);
   font-variation-settings: "wdth" 125, "wght" 900;
