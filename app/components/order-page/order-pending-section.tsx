@@ -1,9 +1,9 @@
-import { City, Country } from "country-state-city";
 import { useEffect, useId, useState, type ReactNode } from "react";
 import { Link } from "react-router";
-import validator from "validator";
+import { InputField } from "~/components/form-field";
 import { SectionPill } from "~/components/section-pill";
 import { Spinner } from "~/components/spinner";
+import { AnimatedOrderSection } from "./order-motion";
 import {
   MOCK_DELIVERED_ON,
   MOCK_ESTIMATED_DELIVERY_TIME,
@@ -16,72 +16,119 @@ import { formatOrderMoney, getInclusiveTaxBreakdown } from "~/lib/order-tax";
 const PRODUCTION_SUCCESS_HIGHLIGHT_DELAY_MS = 4000;
 const SHIPPING_QUOTE_DEBOUNCE_MS = 450;
 
-const AVAILABLE_COUNTRIES = Country.getAllCountries().map((country) => ({
-  code: country.isoCode,
-  name: country.name,
-}));
+type CountryOption = {
+  code: string;
+  name: string;
+};
 
-const { isPostalCode, isPostalCodeLocales } = validator;
+type ShippingReferenceData = {
+  availableCountries: CountryOption[];
+  getCityOptions: (countryCode: string) => string[];
+  getCountryLabel: (countryCode: string) => string;
+  getCountryCodeByName: (countryName: string) => string;
+  isValidCountry: (countryCode: string) => boolean;
+  isValidPostalCode: (postalCode: string, countryCode: string) => boolean;
+  isEmail: (email: string) => boolean;
+};
 
-const POSTAL_CODE_LOCALES = new Set(
-  isPostalCodeLocales.map((locale) => locale.toUpperCase()),
-);
+let shippingReferenceDataPromise: Promise<ShippingReferenceData> | null = null;
 
-function getCountryLabel(countryCode: string) {
-  const match = AVAILABLE_COUNTRIES.find(
+function getCountryLabel(
+  countryCode: string,
+  availableCountries: CountryOption[],
+) {
+  const match = availableCountries.find(
     (country) => country.code === countryCode.toUpperCase(),
   );
 
   return match?.name ?? "";
 }
 
-function getCountryCodeByName(countryName: string) {
+function getCountryCodeByName(
+  countryName: string,
+  availableCountries: CountryOption[],
+) {
   const normalizedCountryName = countryName.trim().toLowerCase();
-  const match = AVAILABLE_COUNTRIES.find(
+  const match = availableCountries.find(
     (country) => country.name.toLowerCase() === normalizedCountryName,
   );
 
   return match?.code ?? "";
 }
 
-function getCityOptions(countryCode: string) {
-  if (!countryCode) {
-    return [];
+function loadShippingReferenceData() {
+  if (shippingReferenceDataPromise) {
+    return shippingReferenceDataPromise;
   }
 
-  return Array.from(
-    new Set(
-      (City.getCitiesOfCountry(countryCode) ?? [])
-        .map((city) => city.name.trim())
-        .filter(Boolean),
-    ),
-  ).sort((left, right) => left.localeCompare(right));
-}
+  shippingReferenceDataPromise = Promise.all([
+    import("country-state-city"),
+    import("validator"),
+  ]).then(([countryStateCity, validatorModule]) => {
+    const { City, Country } = countryStateCity;
+    const validator = validatorModule.default;
+    const availableCountries = Country.getAllCountries().map((country) => ({
+      code: country.isoCode,
+      name: country.name,
+    }));
+    const postalCodeLocales = new Set(
+      validator.isPostalCodeLocales.map((locale) => locale.toUpperCase()),
+    );
 
-function isValidCountry(countryCode: string) {
-  return AVAILABLE_COUNTRIES.some(
-    (country) => country.code === countryCode.toUpperCase(),
-  );
-}
+    return {
+      availableCountries,
+      getCityOptions(countryCode: string) {
+        if (!countryCode) {
+          return [];
+        }
 
-function isValidPostalCodeForCountry(postalCode: string, countryCode: string) {
-  const trimmedPostalCode = postalCode.trim();
+        return Array.from(
+          new Set(
+            (City.getCitiesOfCountry(countryCode) ?? [])
+              .map((city) => city.name.trim())
+              .filter(Boolean),
+          ),
+        ).sort((left, right) => left.localeCompare(right));
+      },
+      getCountryLabel(countryCode: string) {
+        return getCountryLabel(countryCode, availableCountries);
+      },
+      getCountryCodeByName(countryName: string) {
+        return getCountryCodeByName(countryName, availableCountries);
+      },
+      isValidCountry(countryCode: string) {
+        return availableCountries.some(
+          (country) => country.code === countryCode.toUpperCase(),
+        );
+      },
+      isValidPostalCode(postalCode: string, countryCode: string) {
+        const trimmedPostalCode = postalCode.trim();
 
-  if (!trimmedPostalCode) {
-    return false;
-  }
+        if (!trimmedPostalCode) {
+          return false;
+        }
 
-  const locale = POSTAL_CODE_LOCALES.has(countryCode.toUpperCase())
-    ? (countryCode.toUpperCase() as Parameters<typeof isPostalCode>[1])
-    : "any";
+        const normalizedCountryCode = countryCode.toUpperCase();
+        const locale = postalCodeLocales.has(normalizedCountryCode)
+          ? normalizedCountryCode
+          : "any";
 
-  return isPostalCode(trimmedPostalCode, locale);
+        return validator.isPostalCode(trimmedPostalCode, locale as never);
+      },
+      isEmail(email: string) {
+        return validator.isEmail(email.trim());
+      },
+    };
+  });
+
+  return shippingReferenceDataPromise;
 }
 
 function validateShippingDetails(
   shippingAddress: OrderShippingAddress,
   cityOptions: string[],
   shippingOption: "courier" | "pickup",
+  shippingReferenceData: ShippingReferenceData | null,
 ) {
   const errors: Partial<Record<keyof typeof shippingAddress, string>> = {};
   const [firstName, ...lastNameParts] = shippingAddress.fullName
@@ -95,7 +142,11 @@ function validateShippingDetails(
     errors.fullName = "Enter recipient lastname.";
   }
 
-  if (!shippingAddress.email.trim() || !validator.isEmail(shippingAddress.email.trim())) {
+  const isEmailValid = shippingReferenceData
+    ? shippingReferenceData.isEmail(shippingAddress.email)
+    : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(shippingAddress.email.trim());
+
+  if (!shippingAddress.email.trim() || !isEmailValid) {
     errors.email = "Enter a valid email address.";
   }
 
@@ -107,7 +158,13 @@ function validateShippingDetails(
     if (shippingAddress.street.trim().length < 4) {
       errors.street = "Enter street and house number.";
     }
-    if (!isValidPostalCodeForCountry(shippingAddress.postalCode, shippingAddress.countryCode)) {
+    if (
+      shippingReferenceData &&
+      !shippingReferenceData.isValidPostalCode(
+        shippingAddress.postalCode,
+        shippingAddress.countryCode,
+      )
+    ) {
       errors.postalCode = "Enter a valid postal code for the selected country.";
     }
     if (cityOptions.length > 0) {
@@ -121,7 +178,10 @@ function validateShippingDetails(
     } else if (shippingAddress.city.trim().length < 2) {
       errors.city = "Enter city.";
     }
-    if (!isValidCountry(shippingAddress.countryCode)) {
+    if (
+      shippingReferenceData &&
+      !shippingReferenceData.isValidCountry(shippingAddress.countryCode)
+    ) {
       errors.country = "Select a valid country.";
     }
   }
@@ -132,12 +192,16 @@ function validateShippingDetails(
 function isShippingFormReady(
   shippingAddress: OrderShippingAddress,
   shippingOption: "courier" | "pickup",
+  isShippingReferenceReady: boolean,
 ) {
   if (shippingAddress.fullName.trim().length < 2) {
     return false;
   }
 
-  if (!shippingAddress.email.trim() || !validator.isEmail(shippingAddress.email.trim())) {
+  if (
+    !shippingAddress.email.trim() ||
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(shippingAddress.email.trim())
+  ) {
     return false;
   }
 
@@ -147,6 +211,10 @@ function isShippingFormReady(
 
   if (shippingOption === "pickup") {
     return true;
+  }
+
+  if (!isShippingReferenceReady) {
+    return false;
   }
 
   return (
@@ -202,8 +270,8 @@ function PaymentOption({
       aria-pressed={isSelected}
       className={`rounded-lg border px-3 py-3 text-left transition ${
         isSelected
-          ? "border-slate-900 bg-slate-900 text-white"
-          : "border-slate-200 bg-white text-slate-900 hover:border-slate-300"
+          ? "border-[var(--kanna-ink)] bg-[var(--kanna-ink)] text-white"
+          : "border-stone-200 bg-white text-slate-900 hover:border-stone-300"
       }`}
     >
       <div className="flex items-start justify-between gap-3">
@@ -231,7 +299,7 @@ function PaymentOption({
           className={`mt-0.5 h-4 w-4 rounded-full border ${
             isSelected
               ? "border-white bg-white ring-4 ring-slate-700"
-              : "border-slate-300 bg-white"
+              : "border-stone-300 bg-white"
           }`}
           aria-hidden="true"
         />
@@ -320,7 +388,7 @@ function BankTransferDetails({
   orderNumber: string;
 }) {
   return (
-    <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+    <div className="mt-4 rounded-lg border border-stone-200 bg-stone-50 p-4">
       <p className="text-sm font-semibold text-slate-900">
         Bank transfer details
       </p>
@@ -378,7 +446,7 @@ export function OrderPendingSection({
   const isEyebrowTitle = titleStyle === "eyebrow";
 
   return (
-    <section className="rounded-xl border border-dashed border-slate-300 bg-slate-100/70 p-6 shadow-sm">
+    <AnimatedOrderSection className="rounded-xl border border-dashed border-stone-300 bg-stone-100/80 p-6 shadow-sm">
       {eyebrow ? (
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
           {eyebrow}
@@ -396,7 +464,7 @@ export function OrderPendingSection({
       <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
         {description}
       </p>
-    </section>
+    </AnimatedOrderSection>
   );
 }
 
@@ -506,10 +574,8 @@ export function OrderProductionPreviewSection({
         }
       : null,
   );
-
-  const initialCountryCode =
-    initialShippingState?.address.countryCode ||
-    getCountryCodeByName(initialShippingState?.address.country ?? "");
+  const [shippingReferenceData, setShippingReferenceData] =
+    useState<ShippingReferenceData | null>(null);
   const [shippingAddress, setShippingAddress] = useState({
     fullName: initialShippingState?.address.fullName ?? "",
     email: initialShippingState?.address.email ?? "",
@@ -517,15 +583,18 @@ export function OrderProductionPreviewSection({
     street: initialShippingState?.address.street ?? "",
     postalCode: initialShippingState?.address.postalCode ?? "",
     city: initialShippingState?.address.city ?? "",
-    country: initialShippingState?.address.country ?? getCountryLabel(initialCountryCode),
-    countryCode: initialCountryCode,
+    country: initialShippingState?.address.country ?? "",
+    countryCode: initialShippingState?.address.countryCode ?? "",
   });
   const trackingUrl = initialShippingState?.trackingUrl?.trim() ?? "";
-  const cityOptions = getCityOptions(shippingAddress.countryCode);
+  const availableCountries = shippingReferenceData?.availableCountries ?? [];
+  const cityOptions =
+    shippingReferenceData?.getCityOptions(shippingAddress.countryCode) ?? [];
   const shippingErrors = validateShippingDetails(
     shippingAddress,
     cityOptions,
     shippingOption,
+    shippingReferenceData,
   );
   const [shippingFirstName, ...shippingLastNameParts] = shippingAddress.fullName
     .split(/\s+/)
@@ -539,7 +608,11 @@ export function OrderProductionPreviewSection({
     shippingAddress.city.trim(),
     shippingAddress.countryCode.trim(),
   ].join("|");
-  const isShippingReady = isShippingFormReady(shippingAddress, shippingOption);
+  const isShippingReady = isShippingFormReady(
+    shippingAddress,
+    shippingOption,
+    shippingReferenceData !== null,
+  );
   const hasShippingErrors = Object.keys(shippingErrors).length > 0;
   const shippingCost = quotedShipping?.shippingCost ?? 0;
   const hasShippingQuote = quotedShipping !== null && quotedShipping.shippingCost !== null;
@@ -567,6 +640,47 @@ export function OrderProductionPreviewSection({
     finalAmountValue + (initialShippingState?.shippingCost ?? shippingCost),
     currency,
   );
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    void loadShippingReferenceData().then((data) => {
+      if (!isCancelled) {
+        setShippingReferenceData(data);
+      }
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!shippingReferenceData) {
+      return;
+    }
+
+    setShippingAddress((prev) => {
+      const nextCountryCode =
+        prev.countryCode ||
+        shippingReferenceData.getCountryCodeByName(prev.country);
+      const nextCountry =
+        prev.country || shippingReferenceData.getCountryLabel(nextCountryCode);
+
+      if (
+        nextCountryCode === prev.countryCode &&
+        nextCountry === prev.country
+      ) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        country: nextCountry,
+        countryCode: nextCountryCode,
+      };
+    });
+  }, [shippingReferenceData]);
 
   useEffect(() => {
     if (availablePaymentMethods.includes(paymentMethod)) {
@@ -599,6 +713,10 @@ export function OrderProductionPreviewSection({
 
   useEffect(() => {
     if (currentStage !== "waiting_for_final_payment") {
+      return;
+    }
+
+    if (shippingOption === "courier" && shippingReferenceData === null) {
       return;
     }
 
@@ -668,11 +786,12 @@ export function OrderProductionPreviewSection({
     shippingOption,
     shippingQuoteError,
     shippingRequestSignature,
+    shippingReferenceData,
   ]);
 
   if (effectiveProductionStage === "waiting_for_final_payment") {
     return (
-      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <AnimatedOrderSection className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm">
         <SectionPill>Production</SectionPill>
         <h2 className="mt-2 text-xl font-semibold text-slate-900">
           Waiting for final payment
@@ -684,7 +803,7 @@ export function OrderProductionPreviewSection({
           delivery time. (Usually 4-6 weeks)
         </p>
         <div className="mt-6 grid gap-6 md:grid-cols-[minmax(0,1.7fr)_minmax(280px,1fr)] md:items-start">
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div className="rounded-xl border border-stone-200 bg-stone-50 p-4">
             <h3 className="text-sm font-semibold text-slate-900">
               Shipping details
             </h3>
@@ -694,7 +813,7 @@ export function OrderProductionPreviewSection({
                 <span className="mb-2 block text-sm font-semibold text-slate-700">
                   Name
                 </span>
-                <input
+                <InputField
                   type="text"
                   value={shippingFirstName ?? ""}
                   onChange={(event) =>
@@ -710,18 +829,15 @@ export function OrderProductionPreviewSection({
                   }
                   onFocus={resetShippingQuoteState}
                   placeholder="Name"
-                  className={`w-full rounded-md bg-white px-3 py-2 text-slate-900 outline-none transition focus:ring-2 ${
-                    showShippingValidation && shippingErrors.fullName
-                      ? "border border-red-300 focus:border-red-400 focus:ring-red-100"
-                      : "border border-slate-300 focus:border-yellow-400 focus:ring-yellow-200"
-                  }`}
+                  hasError={showShippingValidation && Boolean(shippingErrors.fullName)}
+                  className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                 />
               </label>
               <label className="block">
                 <span className="mb-2 block text-sm font-semibold text-slate-700">
                   Lastname
                 </span>
-                <input
+                <InputField
                   type="text"
                   value={shippingLastName}
                   onChange={(event) =>
@@ -737,11 +853,8 @@ export function OrderProductionPreviewSection({
                   }
                   onFocus={resetShippingQuoteState}
                   placeholder="Lastname"
-                  className={`w-full rounded-md bg-white px-3 py-2 text-slate-900 outline-none transition focus:ring-2 ${
-                    showShippingValidation && shippingErrors.fullName
-                      ? "border border-red-300 focus:border-red-400 focus:ring-red-100"
-                      : "border border-slate-300 focus:border-yellow-400 focus:ring-yellow-200"
-                  }`}
+                  hasError={showShippingValidation && Boolean(shippingErrors.fullName)}
+                  className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                 />
               </label>
               {showShippingValidation && shippingErrors.fullName ? (
@@ -753,7 +866,7 @@ export function OrderProductionPreviewSection({
                 <span className="mb-2 block text-sm font-semibold text-slate-700">
                   Email
                 </span>
-                <input
+                <InputField
                   type="email"
                   value={shippingAddress.email}
                   onChange={(event) =>
@@ -767,11 +880,8 @@ export function OrderProductionPreviewSection({
                   }
                   onFocus={resetShippingQuoteState}
                   placeholder="Email"
-                  className={`w-full rounded-md bg-white px-3 py-2 text-slate-900 outline-none transition focus:ring-2 ${
-                    showShippingValidation && shippingErrors.email
-                      ? "border border-red-300 focus:border-red-400 focus:ring-red-100"
-                      : "border border-slate-300 focus:border-yellow-400 focus:ring-yellow-200"
-                  }`}
+                  hasError={showShippingValidation && Boolean(shippingErrors.email)}
+                  className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                 />
                 {showShippingValidation && shippingErrors.email ? (
                   <p className="mt-2 text-sm text-red-600">
@@ -783,7 +893,7 @@ export function OrderProductionPreviewSection({
                 <span className="mb-2 block text-sm font-semibold text-slate-700">
                   Phone number
                 </span>
-                <input
+                <InputField
                   type="tel"
                   value={shippingAddress.phoneNumber}
                   onChange={(event) =>
@@ -797,11 +907,8 @@ export function OrderProductionPreviewSection({
                   }
                   onFocus={resetShippingQuoteState}
                   placeholder="Phone number"
-                  className={`w-full rounded-md bg-white px-3 py-2 text-slate-900 outline-none transition focus:ring-2 ${
-                    showShippingValidation && shippingErrors.phoneNumber
-                      ? "border border-red-300 focus:border-red-400 focus:ring-red-100"
-                      : "border border-slate-300 focus:border-yellow-400 focus:ring-yellow-200"
-                  }`}
+                  hasError={showShippingValidation && Boolean(shippingErrors.phoneNumber)}
+                  className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                 />
                 {showShippingValidation && shippingErrors.phoneNumber ? (
                   <p className="mt-2 text-sm text-red-600">
@@ -810,13 +917,15 @@ export function OrderProductionPreviewSection({
                 ) : null}
               </label>
               <label className="block sm:col-span-2">
-                <input
+                <InputField
                   type="text"
                   list={countryListId}
                   value={shippingAddress.country}
                   onChange={(event) => {
                     const nextCountryName = event.target.value;
-                    const nextCountryCode = getCountryCodeByName(nextCountryName);
+                    const nextCountryCode = shippingReferenceData
+                      ? shippingReferenceData.getCountryCodeByName(nextCountryName)
+                      : "";
                     setShippingAddress((prev) => ({
                       ...prev,
                       country: nextCountryName,
@@ -827,14 +936,11 @@ export function OrderProductionPreviewSection({
                     resetShippingQuoteState();
                   }}
                   placeholder="Country"
-                  className={`w-full rounded-md bg-white px-3 py-2 text-slate-900 outline-none transition focus:ring-2 ${
-                    showShippingValidation && shippingErrors.country
-                      ? "border border-red-300 focus:border-red-400 focus:ring-red-100"
-                      : "border border-slate-300 focus:border-yellow-400 focus:ring-yellow-200"
-                  }`}
+                  hasError={showShippingValidation && Boolean(shippingErrors.country)}
+                  className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                 />
                 <datalist id={countryListId}>
-                  {AVAILABLE_COUNTRIES.map((country) => (
+                  {availableCountries.map((country) => (
                     <option key={country.code} value={country.name} />
                   ))}
                 </datalist>
@@ -845,7 +951,7 @@ export function OrderProductionPreviewSection({
                 ) : null}
               </label>
               <label className="block">
-                <input
+                <InputField
                   type="text"
                   value={shippingAddress.postalCode}
                   onChange={(event) =>
@@ -859,11 +965,8 @@ export function OrderProductionPreviewSection({
                   }
                   onFocus={resetShippingQuoteState}
                   placeholder="Postal code"
-                  className={`w-full rounded-md bg-white px-3 py-2 text-slate-900 outline-none transition focus:ring-2 ${
-                    showShippingValidation && shippingErrors.postalCode
-                      ? "border border-red-300 focus:border-red-400 focus:ring-red-100"
-                      : "border border-slate-300 focus:border-yellow-400 focus:ring-yellow-200"
-                  }`}
+                  hasError={showShippingValidation && Boolean(shippingErrors.postalCode)}
+                  className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                 />
                 {showShippingValidation && shippingErrors.postalCode ? (
                   <p className="mt-2 text-sm text-red-600">
@@ -872,7 +975,7 @@ export function OrderProductionPreviewSection({
                 ) : null}
               </label>
               <label className="block">
-                <input
+                <InputField
                   type="text"
                   list={cityOptions.length > 0 ? cityListId : undefined}
                   value={shippingAddress.city}
@@ -888,11 +991,8 @@ export function OrderProductionPreviewSection({
                   onFocus={resetShippingQuoteState}
                   disabled={!shippingAddress.countryCode}
                   placeholder="City"
-                  className={`w-full rounded-md bg-white px-3 py-2 text-slate-900 outline-none transition focus:ring-2 ${
-                    showShippingValidation && shippingErrors.city
-                      ? "border border-red-300 focus:border-red-400 focus:ring-red-100"
-                      : "border border-slate-300 focus:border-yellow-400 focus:ring-yellow-200"
-                  }`}
+                  hasError={showShippingValidation && Boolean(shippingErrors.city)}
+                  className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                 />
                 {cityOptions.length > 0 ? (
                   <datalist id={cityListId}>
@@ -908,7 +1008,7 @@ export function OrderProductionPreviewSection({
                 ) : null}
               </label>
               <label className="block sm:col-span-2">
-                <input
+                <InputField
                   type="text"
                   value={shippingAddress.street}
                   onChange={(event) =>
@@ -922,11 +1022,8 @@ export function OrderProductionPreviewSection({
                   }
                   onFocus={resetShippingQuoteState}
                   placeholder="Street and house number"
-                  className={`w-full rounded-md bg-white px-3 py-2 text-slate-900 outline-none transition focus:ring-2 ${
-                    showShippingValidation && shippingErrors.street
-                      ? "border border-red-300 focus:border-red-400 focus:ring-red-100"
-                      : "border border-slate-300 focus:border-yellow-400 focus:ring-yellow-200"
-                  }`}
+                  hasError={showShippingValidation && Boolean(shippingErrors.street)}
+                  className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                 />
                 {showShippingValidation && shippingErrors.street ? (
                   <p className="mt-2 text-sm text-red-600">
@@ -941,7 +1038,7 @@ export function OrderProductionPreviewSection({
                 Shipping option
               </legend>
               <div className="grid gap-2">
-                <label className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900">
+                <label className="flex items-center gap-3 rounded-lg border border-stone-200 bg-white px-4 py-3 text-sm text-slate-900">
                   <input
                     type="radio"
                     name="shipping-option"
@@ -953,7 +1050,7 @@ export function OrderProductionPreviewSection({
                   />
                   <span>Courier delivery</span>
                 </label>
-                <label className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900">
+                <label className="flex items-center gap-3 rounded-lg border border-stone-200 bg-white px-4 py-3 text-sm text-slate-900">
                   <input
                     type="radio"
                     name="shipping-option"
@@ -968,7 +1065,7 @@ export function OrderProductionPreviewSection({
               </div>
             </fieldset>
 
-            <div className="mt-5 border-t border-slate-200 pt-5">
+            <div className="mt-5 border-t border-stone-200 pt-5">
               <p className="text-sm font-semibold text-slate-900">
                 Payment options
               </p>
@@ -1007,9 +1104,9 @@ export function OrderProductionPreviewSection({
             </div>
           </div>
 
-          <aside className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <aside className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
             <h3 className="text-sm font-semibold text-slate-900">Summary</h3>
-            <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm">
+            <div className="mt-4 rounded-lg border border-stone-200 bg-stone-50 p-4 text-sm">
               <div className="flex items-center justify-between gap-4">
                 <span className="text-slate-700">Total amount</span>
                 <span className="font-semibold text-slate-900">
@@ -1066,7 +1163,7 @@ export function OrderProductionPreviewSection({
                       : "Stripe"}
                   </span>
                 </div>
-              <div className="mt-3 border-t border-slate-200 pt-3">
+              <div className="mt-3 border-t border-stone-200 pt-3">
                 <div className="mb-2 flex items-center justify-between gap-4">
                   <span className="text-slate-700">VAT total (23% included)</span>
                   <span className="font-semibold text-slate-900">
@@ -1112,7 +1209,7 @@ export function OrderProductionPreviewSection({
                   });
                 }
               }
-              className="mt-4 inline-flex w-full items-center justify-center rounded-md bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+              className="mt-4 inline-flex w-full items-center justify-center rounded-md bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:bg-stone-300"
             >
               {isSubmittingFinalPayment
                 ? "Submitting payment..."
@@ -1122,13 +1219,13 @@ export function OrderProductionPreviewSection({
             </button>
           </aside>
         </div>
-      </section>
+      </AnimatedOrderSection>
     );
   }
 
   if (effectiveProductionStage === "final_payment_in_review") {
     return (
-      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <AnimatedOrderSection className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm">
         <SectionPill>Production</SectionPill>
         <h2 className="mt-2 text-xl font-semibold text-slate-900">In review</h2>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
@@ -1141,7 +1238,7 @@ export function OrderProductionPreviewSection({
             orderNumber={orderNumber}
           />
         ) : null}
-      </section>
+      </AnimatedOrderSection>
     );
   }
 
@@ -1151,13 +1248,13 @@ export function OrderProductionPreviewSection({
     effectiveProductionStage === "delivered"
   ) {
     return (
-      <section
+      <AnimatedOrderSection
         className={`rounded-xl p-6 shadow-sm ${
           (effectiveProductionStage === "in_production" ||
             effectiveProductionStage === "delivered") &&
           hasProductionHighlight
             ? "border border-emerald-200 bg-emerald-50"
-            : "border border-slate-200 bg-white"
+            : "border border-stone-200 bg-white"
         }`}
       >
         <SectionPill
@@ -1211,7 +1308,7 @@ export function OrderProductionPreviewSection({
             initialShippingState?.option === "courier" ? "md:grid-cols-2" : ""
           }`}
         >
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+          <div className="rounded-lg border border-stone-200 bg-stone-50 p-4">
             <span className="mb-2 block text-sm font-semibold text-slate-700">
               {effectiveProductionStage === "delivered"
                 ? "Delivered on"
@@ -1224,7 +1321,7 @@ export function OrderProductionPreviewSection({
             </p>
           </div>
           {initialShippingState?.option === "courier" ? (
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <div className="rounded-lg border border-stone-200 bg-stone-50 p-4">
               <span className="mb-2 block text-sm font-semibold text-slate-700">
                 Shipping address
               </span>
@@ -1244,7 +1341,7 @@ export function OrderProductionPreviewSection({
             </div>
           ) : null}
         </div>
-        <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+        <div className="mt-4 rounded-lg border border-stone-200 bg-stone-50 p-4">
           <div className={`grid gap-4 ${formattedPaymentDate ? "sm:grid-cols-2" : ""}`}>
             {formattedPaymentDate ? (
               <div>
@@ -1264,7 +1361,7 @@ export function OrderProductionPreviewSection({
             </div>
           </div>
         </div>
-      </section>
+      </AnimatedOrderSection>
     );
   }
 

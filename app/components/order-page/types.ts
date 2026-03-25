@@ -40,6 +40,7 @@ export type BikeDesignSectionProps = {
   onModeChange: (
     mode: "guided_by_designer" | "self_specified" | "frame_only",
   ) => void;
+  onAttachmentChange: (file: File | null) => void;
   onSubmit: () => void;
   onValueChange: (key: string, value: string) => void;
 };

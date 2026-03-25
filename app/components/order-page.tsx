@@ -1,4 +1,7 @@
 import { useEffect, useState } from "react";
+import { AnimatePresence, LayoutGroup, motion } from "motion/react";
+import { InputField } from "~/components/form-field";
+import { SectionPill } from "~/components/section-pill";
 import {
   OrderBikeDesignSection,
   OrderBikeDesignPreviewSection,
@@ -9,6 +12,10 @@ import {
   OrderStatusBadge,
   SectionStack,
 } from "~/components/order-page/index";
+import {
+  AnimatedOrderSection,
+  ORDER_LAYOUT_TRANSITION,
+} from "~/components/order-page/order-motion";
 import {
   approveDesign,
   claimOrderPortal,
@@ -180,6 +187,8 @@ export function OrderPage({
   const [bikeSpecification, setBikeSpecification] = useState<
     Record<string, string>
   >({});
+  const [specificationAttachmentFile, setSpecificationAttachmentFile] =
+    useState<File | null>(null);
   const [specificationMode, setSpecificationMode] = useState<
     "guided_by_designer" | "self_specified" | "frame_only" | null
   >(null);
@@ -242,8 +251,7 @@ export function OrderPage({
     portalBuild?.displayStatus ?? getWooDisplayStatus(orderStage);
   const showHeaderStatus = portalBuild?.accessState === "authenticated";
   const requiresPasswordReset =
-    portalBuild?.accessState === "claim_required" &&
-    portalBuild.portalClaimed;
+    portalBuild?.accessState === "claim_required" && portalBuild.portalClaimed;
   const claimPasswordErrors = validatePortalPasswordSetup(
     claimPassword,
     claimRepeatPassword,
@@ -293,6 +301,7 @@ export function OrderPage({
     setBodyWeight(portalBuild.measurementState.bodyWeight);
     setValues(normalizeMeasurementValues(portalBuild.measurementState.values));
     setBikeSpecification(portalBuild.specificationState.values);
+    setSpecificationAttachmentFile(null);
     setSpecificationMode(portalBuild.specificationState.specificationMode);
   }, [portalBuild]);
 
@@ -533,12 +542,14 @@ export function OrderPage({
 
     try {
       const build = await submitSpecification({
+        attachment: specificationAttachmentFile ?? undefined,
         publicOrderNumber: orderNumber,
         sessionToken,
         specificationMode,
         values: bikeSpecification,
       });
       setPortalBuild(build);
+      setSpecificationAttachmentFile(null);
     } catch (error) {
       setOrderError(
         error instanceof Error
@@ -725,37 +736,59 @@ export function OrderPage({
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-6 md:px-8 md:py-10">
-      <SectionStack>
-        <header className="rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-sm md:px-7 md:py-5">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <h1 className="text-xl font-semibold tracking-tight text-slate-900 md:text-2xl">
-              {`Order nb. ${orderNumber}`}
-            </h1>
+    <main className="min-h-screen bg-stone-100 px-4 py-8 md:px-8 md:py-12">
+      <LayoutGroup id={`order-page-${orderNumber}`}>
+        <SectionStack>
+        <motion.header
+          layout
+          transition={{ layout: ORDER_LAYOUT_TRANSITION }}
+          className="rounded-[28px] border border-stone-200 bg-white px-5 py-5 shadow-sm md:px-7 md:py-6"
+        >
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div>
+              <SectionPill>Order</SectionPill>
+              <h1 className="page-heading mt-4 text-[2.35rem] leading-[0.88] text-[var(--kanna-ink)] md:text-[3.8rem]">
+                {`Order nb. ${orderNumber}`}
+              </h1>
+            </div>
             {showHeaderStatus ? (
-              <div className="flex items-center md:justify-end">
+              <div className="flex items-center md:justify-end md:pt-1">
                 <OrderStatusBadge displayStatus={headerDisplayStatus} />
               </div>
             ) : null}
           </div>
-        </header>
+        </motion.header>
 
-        {orderError ? (
-          <section className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 shadow-sm">
-            {orderError}
-          </section>
-        ) : null}
+        <AnimatePresence initial={false} mode="popLayout">
+          {orderError ? (
+            <AnimatedOrderSection
+              key="order-error"
+              className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 shadow-sm"
+            >
+              {orderError}
+            </AnimatedOrderSection>
+          ) : null}
+        </AnimatePresence>
 
-        {isLoadingBuild && !portalBuild ? (
-          <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-sm text-slate-600">
-              Loading your bike configurator...
-            </p>
-          </section>
-        ) : null}
+        <AnimatePresence initial={false} mode="popLayout">
+          {isLoadingBuild && !portalBuild ? (
+            <AnimatedOrderSection
+              key="order-loading"
+              className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm"
+            >
+              <p className="text-sm text-slate-600">
+                Loading your bike configurator...
+              </p>
+            </AnimatedOrderSection>
+          ) : null}
+        </AnimatePresence>
 
+        <AnimatePresence initial={false} mode="popLayout">
         {!isLoadingBuild && requiresLogin ? (
-          <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <AnimatedOrderSection
+            key="order-login"
+            className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm"
+          >
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
               Protected order
             </p>
@@ -771,12 +804,13 @@ export function OrderPage({
                 <span className="mb-2 block text-sm font-semibold text-slate-700">
                   Password
                 </span>
-                <input
+                <InputField
                   type="password"
                   value={loginPassword}
                   onChange={(event) => setLoginPassword(event.target.value)}
                   placeholder="Enter your order password"
-                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
+                  hasError={Boolean(loginError)}
+                  className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                 />
               </label>
               {loginError ? (
@@ -791,7 +825,7 @@ export function OrderPage({
                 type="button"
                 onClick={handlePortalLogin}
                 disabled={isLoggingIn}
-                className="mt-4 inline-flex items-center justify-center rounded-md bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+                className="mt-4 inline-flex items-center justify-center rounded-md bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:bg-stone-300"
               >
                 {isLoggingIn ? "Unlocking..." : "Access"}
               </button>
@@ -806,11 +840,16 @@ export function OrderPage({
                   : "Forgot password?"}
               </button>
             </div>
-          </section>
+          </AnimatedOrderSection>
         ) : null}
+        </AnimatePresence>
 
+        <AnimatePresence initial={false} mode="popLayout">
         {!isLoadingBuild && requiresPasswordReset ? (
-          <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <AnimatedOrderSection
+            key="order-password-reset"
+            className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm"
+          >
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
               Reset password
             </p>
@@ -826,17 +865,14 @@ export function OrderPage({
                 <span className="mb-2 block text-sm font-semibold text-slate-700">
                   New password
                 </span>
-                <input
+                <InputField
                   type="password"
                   value={claimPassword}
                   onBlur={() => setClaimPasswordTouched(true)}
                   onChange={(event) => setClaimPassword(event.target.value)}
                   placeholder="Enter a new password"
-                  className={`w-full rounded-md bg-white px-3 py-2 text-slate-900 outline-none transition focus:ring-2 ${
-                    claimPasswordFieldError
-                      ? "border border-red-300 focus:border-red-400 focus:ring-red-100"
-                      : "border border-slate-300 focus:border-yellow-400 focus:ring-yellow-200"
-                  }`}
+                  hasError={Boolean(claimPasswordFieldError)}
+                  className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                 />
                 {claimPasswordFieldError ? (
                   <p className="mt-2 text-sm text-red-600">
@@ -848,7 +884,7 @@ export function OrderPage({
                 <span className="mb-2 block text-sm font-semibold text-slate-700">
                   Repeat new password
                 </span>
-                <input
+                <InputField
                   type="password"
                   value={claimRepeatPassword}
                   onBlur={() => setClaimRepeatPasswordTouched(true)}
@@ -856,11 +892,8 @@ export function OrderPage({
                     setClaimRepeatPassword(event.target.value)
                   }
                   placeholder="Repeat your new password"
-                  className={`w-full rounded-md bg-white px-3 py-2 text-slate-900 outline-none transition focus:ring-2 ${
-                    claimRepeatPasswordFieldError
-                      ? "border border-red-300 focus:border-red-400 focus:ring-red-100"
-                      : "border border-slate-300 focus:border-yellow-400 focus:ring-yellow-200"
-                  }`}
+                  hasError={Boolean(claimRepeatPasswordFieldError)}
+                  className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                 />
                 {claimRepeatPasswordFieldError ? (
                   <p className="mt-2 text-sm text-red-600">
@@ -872,13 +905,14 @@ export function OrderPage({
                 type="button"
                 onClick={handleClaimAccess}
                 disabled={isClaimingAccess}
-                className="inline-flex items-center justify-center rounded-md bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+                className="inline-flex items-center justify-center rounded-md bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:bg-stone-300"
               >
                 {isClaimingAccess ? "Saving..." : "Save password and access"}
               </button>
             </div>
-          </section>
+          </AnimatedOrderSection>
         ) : null}
+        </AnimatePresence>
 
         {portalBuild && !requiresPasswordReset ? (
           <>
@@ -902,39 +936,45 @@ export function OrderPage({
               requiresClaim={portalBuild.accessState === "claim_required"}
             />
 
-            {measurementsUnlocked ? (
-              <OrderMeasurementsSection
-                activeMeasurement={activeMeasurement}
-                bodyType={bodyType}
-                bodyWeight={bodyWeight}
-                expandedGuidelineKey={expandedGuidelineKey}
-                isSubmitting={isSubmittingMeasurements}
-                isSubmitted={measurementsSubmitted}
-                measurementArrowsSvgMarkup={measurementArrowsSvgMarkup}
-                measurementKeys={MEASUREMENT_KEYS}
-                selectedBodySrc={selectedBodySrc}
-                values={values}
-                onActivateMeasurement={(key) =>
-                  activateMeasurement(key as MeasurementKey)
-                }
-                onDeactivateMeasurement={deactivateMeasurement}
-                onBodyTypeChange={setBodyType}
-                onBodyWeightChange={setBodyWeight}
-                onMeasurementChange={handleMeasurementChange}
-                onSubmit={handleSubmitMeasurements}
-                onToggleGuidelines={handleToggleGuidelines}
-              />
-            ) : (
-              <OrderPendingSection
-                title="Next: measurements"
-                titleStyle="eyebrow"
-                description="We will ask you to provide the necessary measurements to start the design process."
-              />
-            )}
+            <AnimatePresence initial={false} mode="popLayout">
+              {measurementsUnlocked ? (
+                <OrderMeasurementsSection
+                  key="order-measurements-active"
+                  activeMeasurement={activeMeasurement}
+                  bodyType={bodyType}
+                  bodyWeight={bodyWeight}
+                  expandedGuidelineKey={expandedGuidelineKey}
+                  isSubmitting={isSubmittingMeasurements}
+                  isSubmitted={measurementsSubmitted}
+                  measurementArrowsSvgMarkup={measurementArrowsSvgMarkup}
+                  measurementKeys={MEASUREMENT_KEYS}
+                  selectedBodySrc={selectedBodySrc}
+                  values={values}
+                  onActivateMeasurement={(key) =>
+                    activateMeasurement(key as MeasurementKey)
+                  }
+                  onDeactivateMeasurement={deactivateMeasurement}
+                  onBodyTypeChange={setBodyType}
+                  onBodyWeightChange={setBodyWeight}
+                  onMeasurementChange={handleMeasurementChange}
+                  onSubmit={handleSubmitMeasurements}
+                  onToggleGuidelines={handleToggleGuidelines}
+                />
+              ) : (
+                <OrderPendingSection
+                  key="order-measurements-pending"
+                  title="Next: measurements"
+                  titleStyle="eyebrow"
+                  description="We will ask you to provide the necessary measurements to start the design process."
+                />
+              )}
+            </AnimatePresence>
 
-            {measurementsUnlocked && !bikeDesignUnlocked ? (
-              <OrderBikeDesignPreviewSection />
-            ) : null}
+            <AnimatePresence initial={false} mode="popLayout">
+              {measurementsUnlocked && !bikeDesignUnlocked ? (
+                <OrderBikeDesignPreviewSection key="order-bike-preview" />
+              ) : null}
+            </AnimatePresence>
 
             {bikeDesignUnlocked ? (
               <>
@@ -951,6 +991,7 @@ export function OrderPage({
                   isSubmitting={isSubmittingSpecification}
                   isSubmitted={bikeDesignSubmitted}
                   specificationMode={specificationMode}
+                  onAttachmentChange={setSpecificationAttachmentFile}
                   onApprove={handleApproveDesign}
                   values={bikeSpecification}
                   onModeChange={handleSpecificationModeChange}
@@ -984,6 +1025,7 @@ export function OrderPage({
           </>
         ) : null}
       </SectionStack>
+      </LayoutGroup>
     </main>
   );
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { SectionPill } from "~/components/section-pill";
+import { AnimatedOrderSection } from "./order-motion";
 
 const SUBMITTED_SUCCESS_HIGHLIGHT_DELAY_MS = 4000;
 
@@ -35,11 +36,11 @@ export function OrderSubmittedSummarySection({
   }, []);
 
   return (
-    <section
+    <AnimatedOrderSection
       className={`rounded-xl p-4 shadow-sm md:flex md:max-h-[60vh] md:flex-col md:overflow-hidden md:p-6 ${
         hasSuccessHighlight
           ? "border border-emerald-200 bg-emerald-50"
-          : "border border-slate-200 bg-white"
+          : "border border-stone-200 bg-white"
       }`}
     >
       {collapsible ? (
@@ -107,7 +108,7 @@ export function OrderSubmittedSummarySection({
             className={`min-h-0 overflow-hidden rounded-lg p-4 ${
               hasSuccessHighlight
                 ? "border border-emerald-200 bg-emerald-100/60"
-                : "border border-slate-200 bg-slate-100"
+                : "border border-stone-200 bg-stone-100"
             }`}
           >
             <div className="measurement-svg-wrap h-full min-h-0">
@@ -121,13 +122,13 @@ export function OrderSubmittedSummarySection({
             className={`min-h-0 rounded-lg p-3 md:h-full md:overflow-y-auto md:p-4 ${
               hasSuccessHighlight
                 ? "border border-emerald-200 bg-emerald-50/70"
-                : "border border-slate-200 bg-slate-50"
+                : "border border-stone-200 bg-stone-50"
             }`}
           >
             {children}
           </aside>
         </div>
       ) : null}
-    </section>
+    </AnimatedOrderSection>
   );
 }

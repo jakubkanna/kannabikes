@@ -1,5 +1,11 @@
 import { ORDER_STAGE_DEFINITIONS } from "~/lib/mock-order";
+import {
+  InputField,
+  SelectField,
+  TextareaField,
+} from "~/components/form-field";
 import { SectionPill } from "~/components/section-pill";
+import { AnimatedOrderSection } from "./order-motion";
 import { OrderSubmittedSummarySection } from "./order-submitted-summary-section";
 import type { BikeDesignSectionProps } from "./types";
 
@@ -86,6 +92,7 @@ const PAINTJOB_CUSTOM_COLOR_KEY = "Paintjob:CustomColor";
 const PAINTJOB_STYLE_KEY = "Paintjob:Style";
 const PAINTJOB_NOTES_KEY = "Paintjob:AdditionalNotes";
 const PAINTJOB_IMAGE_KEY = "Paintjob:Attachment";
+const PAINTJOB_IMAGE_URL_KEY = "Paintjob:AttachmentUrl";
 const PAINTJOB_ROUTE_OPTIONS = [
   "I want to rely fully on the artist",
   "I have a design in mind",
@@ -102,7 +109,7 @@ const PAINTJOB_COLOR_OPTIONS = [
   {
     label: "White",
     value: "white",
-    swatchClassName: "bg-white border border-slate-300",
+    swatchClassName: "bg-white border border-stone-300",
   },
   { label: "Red", value: "red", swatchClassName: "bg-red-500" },
   { label: "Blue", value: "blue", swatchClassName: "bg-blue-500" },
@@ -152,6 +159,7 @@ export function OrderBikeDesignSection({
   isSubmitting,
   isSubmitted,
   specificationMode,
+  onAttachmentChange,
   onApprove,
   values,
   onModeChange,
@@ -185,6 +193,8 @@ export function OrderBikeDesignSection({
   const hasCustomPaintDirection = paintjobRoute === "I have a design in mind";
   const selectedPaintColors = getSelectedValues(values[PAINTJOB_COLORS_KEY]);
   const hasOtherPaintColor = selectedPaintColors.includes("other");
+  const uploadedPaintImageName = values[PAINTJOB_IMAGE_KEY] ?? "";
+  const uploadedPaintImageUrl = values[PAINTJOB_IMAGE_URL_KEY] ?? "";
   const customPaintColor = values[PAINTJOB_CUSTOM_COLOR_KEY] ?? "";
   const selectedPaintStyles = getSelectedValues(values[PAINTJOB_STYLE_KEY]);
   const paintjobComplete =
@@ -215,7 +225,7 @@ export function OrderBikeDesignSection({
   const resolveSpecificationFieldValue = (fieldKey: string) =>
     designValues[fieldKey] || values[fieldKey] || "";
   const renderRidingSection = () => (
-    <div className="rounded-lg border border-slate-200 bg-white p-4">
+    <div className="rounded-lg border border-stone-200 bg-white p-4">
       <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
         Riding
       </h3>
@@ -236,8 +246,8 @@ export function OrderBikeDesignSection({
                     onClick={() => onValueChange(field.key, option)}
                     className={`rounded-full border px-3 py-2 text-sm capitalize transition ${
                       isSelected
-                        ? "border-slate-900 bg-slate-900 text-white"
-                        : "border-slate-300 bg-white text-slate-700 hover:border-slate-400"
+                        ? "border-[var(--kanna-ink)] bg-[var(--kanna-ink)] text-white"
+                        : "border-stone-300 bg-white text-slate-700 hover:border-stone-400"
                     }`}
                   >
                     {option}
@@ -252,21 +262,21 @@ export function OrderBikeDesignSection({
           <span className="mb-2 block text-sm font-semibold text-slate-700">
             Additional notes
           </span>
-          <textarea
+          <TextareaField
             value={values[RIDING_NOTES_KEY] ?? ""}
             onChange={(event) =>
               onValueChange(RIDING_NOTES_KEY, event.target.value)
             }
             placeholder="Add any additional riding notes"
             rows={4}
-            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
+            className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
           />
         </label>
       </div>
     </div>
   );
   const renderRidingSummary = () => (
-    <div className="rounded-lg border border-slate-200 bg-white p-4">
+    <div className="rounded-lg border border-stone-200 bg-white p-4">
       <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
         Riding
       </h3>
@@ -293,7 +303,7 @@ export function OrderBikeDesignSection({
     </div>
   );
   const renderPaintjobSection = () => (
-    <div className="rounded-lg border border-slate-200 bg-white p-4">
+    <div className="rounded-lg border border-stone-200 bg-white p-4">
       <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
         Paintjob
       </h3>
@@ -313,8 +323,8 @@ export function OrderBikeDesignSection({
                   onClick={() => onValueChange(PAINTJOB_ROUTE_KEY, option)}
                   className={`rounded-lg border px-4 py-3 text-left transition ${
                     isSelected
-                      ? "border-slate-900 bg-slate-900 text-white"
-                      : "border-slate-200 bg-white text-slate-900 hover:border-slate-300"
+                      ? "border-[var(--kanna-ink)] bg-[var(--kanna-ink)] text-white"
+                      : "border-stone-200 bg-white text-slate-900 hover:border-stone-300"
                   }`}
                 >
                   <span className="text-sm font-semibold">{option}</span>
@@ -360,8 +370,8 @@ export function OrderBikeDesignSection({
                       }}
                       className={`flex items-center gap-2 rounded-full border px-3 py-2 text-sm transition ${
                         isSelected
-                          ? "border-slate-900 bg-slate-900 text-white"
-                          : "border-slate-300 bg-white text-slate-700 hover:border-slate-400"
+                          ? "border-[var(--kanna-ink)] bg-[var(--kanna-ink)] text-white"
+                          : "border-stone-300 bg-white text-slate-700 hover:border-stone-400"
                       }`}
                     >
                       <span
@@ -379,13 +389,13 @@ export function OrderBikeDesignSection({
                 <span className="mb-2 block text-sm font-semibold text-slate-700">
                   Other color
                 </span>
-                <input
+                <InputField
                   type="color"
                   value={customPaintColor || "#000000"}
                   onChange={(event) =>
                     onValueChange(PAINTJOB_CUSTOM_COLOR_KEY, event.target.value)
                   }
-                  className="h-11 w-full rounded-md border border-slate-300 bg-white p-1"
+                  className="h-11 p-1"
                 />
               </label>
             ) : null}
@@ -413,8 +423,8 @@ export function OrderBikeDesignSection({
                       }
                       className={`rounded-full border px-3 py-2 text-sm capitalize transition ${
                         isSelected
-                          ? "border-slate-900 bg-slate-900 text-white"
-                          : "border-slate-300 bg-white text-slate-700 hover:border-slate-400"
+                          ? "border-[var(--kanna-ink)] bg-[var(--kanna-ink)] text-white"
+                          : "border-stone-300 bg-white text-slate-700 hover:border-stone-400"
                       }`}
                     >
                       {option}
@@ -428,14 +438,14 @@ export function OrderBikeDesignSection({
               <span className="mb-2 block text-sm font-semibold text-slate-700">
                 Additional notes
               </span>
-              <textarea
+              <TextareaField
                 value={values[PAINTJOB_NOTES_KEY] ?? ""}
                 onChange={(event) =>
                   onValueChange(PAINTJOB_NOTES_KEY, event.target.value)
                 }
                 placeholder="Give some tips to the artist"
                 rows={4}
-                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
+                className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
               />
             </label>
 
@@ -443,21 +453,33 @@ export function OrderBikeDesignSection({
               <span className="mb-2 block text-sm font-semibold text-slate-700">
                 Attach image
               </span>
-              <input
+              <InputField
                 type="file"
                 accept="image/*"
-                onChange={(event) =>
-                  onValueChange(
-                    PAINTJOB_IMAGE_KEY,
-                    event.target.files?.[0]?.name ?? "",
-                  )
-                }
-                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 file:mr-3 file:rounded-md file:border-0 file:bg-slate-900 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
+                onChange={(event) => {
+                  const nextFile = event.target.files?.[0] ?? null;
+
+                  onAttachmentChange(nextFile);
+                  onValueChange(PAINTJOB_IMAGE_KEY, nextFile?.name ?? "");
+                }}
+                className="px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-[var(--kanna-ink)] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
               />
-              {values[PAINTJOB_IMAGE_KEY] ? (
-                <p className="mt-2 text-sm text-slate-600">
-                  {values[PAINTJOB_IMAGE_KEY]}
-                </p>
+              {uploadedPaintImageName ? (
+                <div className="mt-2 space-y-2">
+                  <p className="text-sm text-slate-600">
+                    {uploadedPaintImageName}
+                  </p>
+                  {uploadedPaintImageUrl ? (
+                    <a
+                      href={uploadedPaintImageUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex text-sm font-semibold text-slate-900 underline decoration-stone-300 underline-offset-4 transition hover:decoration-slate-900"
+                    >
+                      Open uploaded image
+                    </a>
+                  ) : null}
+                </div>
               ) : null}
             </label>
           </>
@@ -466,7 +488,7 @@ export function OrderBikeDesignSection({
     </div>
   );
   const renderPaintjobSummary = () => (
-    <div className="rounded-lg border border-slate-200 bg-white p-4">
+    <div className="rounded-lg border border-stone-200 bg-white p-4">
       <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
         Paintjob
       </h3>
@@ -509,9 +531,32 @@ export function OrderBikeDesignSection({
               <span className="mb-2 block text-sm font-semibold text-slate-700">
                 Attach image
               </span>
-              <p className="text-sm text-slate-900">
-                {values[PAINTJOB_IMAGE_KEY] || "-"}
-              </p>
+              {uploadedPaintImageName ? (
+                <div className="space-y-2">
+                  <p className="text-sm text-slate-900">
+                    {uploadedPaintImageName}
+                  </p>
+                  {uploadedPaintImageUrl ? (
+                    <a
+                      href={uploadedPaintImageUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex text-sm font-semibold text-slate-900 underline decoration-stone-300 underline-offset-4 transition hover:decoration-slate-900"
+                    >
+                      Open uploaded image
+                    </a>
+                  ) : null}
+                  {uploadedPaintImageUrl ? (
+                    <img
+                      src={uploadedPaintImageUrl}
+                      alt={uploadedPaintImageName}
+                      className="max-h-40 rounded-lg border border-stone-200 object-cover"
+                    />
+                  ) : null}
+                </div>
+              ) : (
+                <p className="text-sm text-slate-900">-</p>
+              )}
             </div>
             <div className="sm:col-span-2">
               <span className="mb-2 block text-sm font-semibold text-slate-700">
@@ -528,7 +573,7 @@ export function OrderBikeDesignSection({
   );
   const renderBuildDataSummary = () => (
     <>
-      <div className="rounded-lg border border-slate-200 bg-white p-4">
+      <div className="rounded-lg border border-stone-200 bg-white p-4">
         <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
           Build type
         </h3>
@@ -546,7 +591,7 @@ export function OrderBikeDesignSection({
 
       {specificationMode === "guided_by_designer" ? (
         <>
-          <div className="mt-5 rounded-lg border border-slate-200 bg-white p-4">
+          <div className="mt-5 rounded-lg border border-stone-200 bg-white p-4">
             <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
               Budget
             </h3>
@@ -556,7 +601,7 @@ export function OrderBikeDesignSection({
           </div>
         </>
       ) : specificationMode === "frame_only" ? (
-        <div className="mt-5 rounded-lg border border-slate-200 bg-white p-4">
+        <div className="mt-5 rounded-lg border border-stone-200 bg-white p-4">
           <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
             Notes
           </h3>
@@ -571,7 +616,7 @@ export function OrderBikeDesignSection({
           {BIKE_COMPONENT_SECTIONS.map((section) => (
             <div
               key={section.title}
-              className="mt-5 rounded-lg border border-slate-200 bg-white p-4"
+              className="mt-5 rounded-lg border border-stone-200 bg-white p-4"
             >
               <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
                 {section.title}
@@ -603,7 +648,7 @@ export function OrderBikeDesignSection({
       {BIKE_COMPONENT_SECTIONS.map((section) => (
         <div
           key={section.title}
-          className="mt-5 rounded-lg border border-slate-200 bg-white p-4"
+          className="mt-5 rounded-lg border border-stone-200 bg-white p-4"
         >
           <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
             {section.title}
@@ -629,7 +674,7 @@ export function OrderBikeDesignSection({
     </>
   );
   const renderGeometrySummary = () => (
-    <div className="rounded-lg border border-slate-200 bg-white p-4">
+    <div className="rounded-lg border border-stone-200 bg-white p-4">
       <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
         Geometry
       </h3>
@@ -648,7 +693,7 @@ export function OrderBikeDesignSection({
     </div>
   );
   const renderArtistMessage = () => (
-    <div className="rounded-lg border border-slate-200 bg-white p-4">
+    <div className="rounded-lg border border-stone-200 bg-white p-4">
       <h3 className="text-sm font-semibold text-slate-900">From the artist</h3>
       <p className="mt-2 text-sm leading-6 text-slate-600">
         {artistNote ||
@@ -658,7 +703,7 @@ export function OrderBikeDesignSection({
     </div>
   );
   const renderFinalPriceSummary = (title = "Amount left to pay") => (
-    <div className="rounded-lg border border-slate-200 bg-white p-4">
+    <div className="rounded-lg border border-stone-200 bg-white p-4">
       <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
         {title}
       </h3>
@@ -671,7 +716,7 @@ export function OrderBikeDesignSection({
 
   if (isWaitingForApproval) {
     return (
-      <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:p-6">
+      <AnimatedOrderSection className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm md:p-6">
         <div className="mb-5 shrink-0">
           <SectionPill>Specification</SectionPill>
           <h2 className="mt-2 text-xl font-semibold text-slate-900">
@@ -684,7 +729,7 @@ export function OrderBikeDesignSection({
         </div>
 
         <div className="space-y-6">
-          <div className="relative flex min-h-[36vh] items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-100 p-4">
+          <div className="relative flex min-h-[36vh] items-center justify-center overflow-hidden rounded-lg border border-stone-200 bg-stone-100 p-4">
             <img
               src={designPreviewSrc}
               alt="Bike design preview"
@@ -693,7 +738,7 @@ export function OrderBikeDesignSection({
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 md:items-stretch">
-            <aside className="rounded-lg border border-slate-200 bg-slate-50 p-3 md:h-full md:p-4">
+            <aside className="rounded-lg border border-stone-200 bg-stone-50 p-3 md:h-full md:p-4">
               <div className="space-y-4 pb-2">
                 <div>
                   <h3 className="text-sm font-semibold text-slate-900">
@@ -712,7 +757,7 @@ export function OrderBikeDesignSection({
               </div>
             </aside>
 
-            <aside className="rounded-lg border border-slate-200 bg-slate-50 p-3 md:flex md:h-full md:flex-col md:self-stretch md:p-4">
+            <aside className="rounded-lg border border-stone-200 bg-stone-50 p-3 md:flex md:h-full md:flex-col md:self-stretch md:p-4">
               <div className="space-y-4 md:flex-1 md:overflow-y-auto md:pr-1">
                 <div>
                   <h3 className="text-sm font-semibold text-slate-900">
@@ -729,12 +774,12 @@ export function OrderBikeDesignSection({
                 {renderArtistMessage()}
               </div>
 
-              <div className=" shrink-0 border-t border-slate-200 bg-slate-50 py-4 md:sticky md:bottom-0">
+              <div className=" shrink-0 border-t border-stone-200 bg-stone-50 py-4 md:sticky md:bottom-0">
                 <button
                   type="button"
                   onClick={onApprove}
                   disabled={isApproving}
-                  className="inline-flex w-full items-center justify-center rounded-md bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+                  className="inline-flex w-full items-center justify-center rounded-md bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-black disabled:cursor-not-allowed disabled:bg-stone-300"
                 >
                   {isApproving ? "Approving design..." : "Approve design"}
                 </button>
@@ -748,14 +793,14 @@ export function OrderBikeDesignSection({
                 type="button"
                 onClick={onApprove}
                 disabled={isApproving}
-                className="inline-flex w-full items-center justify-center rounded-md bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+                className="inline-flex w-full items-center justify-center rounded-md bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-black disabled:cursor-not-allowed disabled:bg-stone-300"
               >
                 {isApproving ? "Approving design..." : "Approve design"}
               </button>
             </div>
           </div>
         </div>
-      </section>
+      </AnimatedOrderSection>
     );
   }
 
@@ -780,7 +825,7 @@ export function OrderBikeDesignSection({
             </div>
             {isWaitingForDesign ? (
               <div className="absolute inset-0 flex items-center justify-center bg-white/35 p-6">
-                <div className="max-w-sm rounded-xl border border-slate-200 bg-white/95 px-5 py-4 text-center shadow-sm backdrop-blur-sm">
+                <div className="max-w-sm rounded-xl border border-stone-200 bg-white/95 px-5 py-4 text-center shadow-sm backdrop-blur-sm">
                   <p className="mt-2 text-lg font-semibold text-slate-900">
                     {isPaymentVerificationPending
                       ? "We are verifying your payment"
@@ -816,7 +861,7 @@ export function OrderBikeDesignSection({
   }
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:flex md:h-[80vh] md:flex-col md:overflow-hidden md:p-6">
+    <AnimatedOrderSection className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm md:flex md:h-[80vh] md:flex-col md:overflow-hidden md:p-6">
       <div className="mb-5 shrink-0">
         <SectionPill>Specification</SectionPill>
         <h2 className="mt-2 text-xl font-semibold text-slate-900">
@@ -829,10 +874,10 @@ export function OrderBikeDesignSection({
       </div>
 
       <div className="md:min-h-0 md:flex-1">
-        <aside className="min-h-0 rounded-lg border border-slate-200 bg-slate-50 px-3 pb-3 pt-0 md:flex md:h-full md:flex-col md:px-4 md:pb-4 md:pt-0">
+        <aside className="min-h-0 rounded-lg border border-stone-200 bg-stone-50 px-3 pb-3 pt-0 md:flex md:h-full md:flex-col md:px-4 md:pb-4 md:pt-0">
           <div className="min-h-0 md:flex-1 md:overflow-y-auto">
             <div className="space-y-4 pt-4 pb-4">
-              <div className="rounded-lg border border-slate-200 bg-white p-3">
+              <div className="rounded-lg border border-stone-200 bg-white p-3">
                 <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">
                   Build type
                 </h3>
@@ -842,8 +887,8 @@ export function OrderBikeDesignSection({
                     onClick={() => onModeChange("guided_by_designer")}
                     className={`rounded-lg border px-4 py-3 text-left transition ${
                       specificationMode === "guided_by_designer"
-                        ? "border-slate-900 bg-slate-900 text-white"
-                        : "border-slate-200 bg-white text-slate-900 hover:border-slate-300"
+                        ? "border-[var(--kanna-ink)] bg-[var(--kanna-ink)] text-white"
+                        : "border-stone-200 bg-white text-slate-900 hover:border-stone-300"
                     }`}
                   >
                     <p className="text-sm font-semibold">
@@ -865,18 +910,18 @@ export function OrderBikeDesignSection({
                           Budget
                         </span>
                         <div className="mt-3 flex items-center gap-2">
-                          <input
+                          <InputField
                             type="text"
                             value={values[DESIGNER_LED_BUDGET_KEY] ?? ""}
                             onClick={(event) => event.stopPropagation()}
                             onChange={(event) =>
-                              onValueChange(
+                            onValueChange(
                                 DESIGNER_LED_BUDGET_KEY,
                                 event.target.value,
                               )
                             }
                             placeholder="Budget"
-                            className="w-[9ch] rounded-md border border-slate-500 bg-slate-800 px-3 py-2 text-white outline-none transition placeholder:text-slate-300 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
+                            className="w-[6ch] border-white/70 bg-white px-3 py-2 text-[var(--kanna-ink)] placeholder:text-stone-400 focus:border-[var(--kanna-color)] focus:ring-2 focus:ring-white/35"
                           />
                           <button
                             type="button"
@@ -889,8 +934,8 @@ export function OrderBikeDesignSection({
                             }}
                             className={`rounded-full border px-3 py-2 text-sm transition ${
                               values[DESIGNER_LED_BUDGET_KEY] === "No limit"
-                                ? "border-slate-100 bg-slate-100 text-slate-900"
-                                : "border-slate-500 bg-slate-800 text-slate-100 hover:border-slate-300"
+                                ? "border-[var(--kanna-color)] bg-[var(--kanna-color)] text-[var(--kanna-ink)]"
+                                : "border-white/70 bg-white text-[var(--kanna-ink)] hover:border-white"
                             }`}
                           >
                             No limit
@@ -905,8 +950,8 @@ export function OrderBikeDesignSection({
                     onClick={() => onModeChange("self_specified")}
                     className={`rounded-lg border px-4 py-3 text-left transition ${
                       specificationMode === "self_specified"
-                        ? "border-slate-900 bg-slate-900 text-white"
-                        : "border-slate-200 bg-white text-slate-900 hover:border-slate-300"
+                        ? "border-[var(--kanna-ink)] bg-[var(--kanna-ink)] text-white"
+                        : "border-stone-200 bg-white text-slate-900 hover:border-stone-300"
                     }`}
                   >
                     <p className="text-sm font-semibold">
@@ -929,8 +974,8 @@ export function OrderBikeDesignSection({
                     onClick={() => onModeChange("frame_only")}
                     className={`rounded-lg border px-4 py-3 text-left transition ${
                       specificationMode === "frame_only"
-                        ? "border-slate-900 bg-slate-900 text-white"
-                        : "border-slate-200 bg-white text-slate-900 hover:border-slate-300"
+                        ? "border-[var(--kanna-ink)] bg-[var(--kanna-ink)] text-white"
+                        : "border-stone-200 bg-white text-slate-900 hover:border-stone-300"
                     }`}
                   >
                     <p className="text-sm font-semibold">Frame only</p>
@@ -949,7 +994,7 @@ export function OrderBikeDesignSection({
               </div>
 
               {showSpecificationForm ? (
-                <div className="rounded-lg border border-slate-200 bg-white p-4">
+                <div className="rounded-lg border border-stone-200 bg-white p-4">
                   <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
                     Specification
                   </h3>
@@ -968,7 +1013,7 @@ export function OrderBikeDesignSection({
                       return (
                         <div
                           key={section.title}
-                          className="rounded-lg border border-slate-200 bg-slate-50 p-3"
+                          className="rounded-lg border border-stone-200 bg-stone-50 p-3"
                         >
                           <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">
                             {section.title}
@@ -983,7 +1028,7 @@ export function OrderBikeDesignSection({
                                     {field}
                                   </span>
                                   {field === "Size" ? (
-                                    <select
+                                    <SelectField
                                       value={values[fieldKey] ?? ""}
                                       onChange={(event) =>
                                         onValueChange(
@@ -991,7 +1036,7 @@ export function OrderBikeDesignSection({
                                           event.target.value,
                                         )
                                       }
-                                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
+                                      className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                                     >
                                       <option value="">
                                         Select wheel size
@@ -1001,9 +1046,9 @@ export function OrderBikeDesignSection({
                                           {option}
                                         </option>
                                       ))}
-                                    </select>
+                                    </SelectField>
                                   ) : (
-                                    <input
+                                    <InputField
                                       type="text"
                                       value={values[fieldKey] ?? ""}
                                       onChange={(event) =>
@@ -1013,7 +1058,7 @@ export function OrderBikeDesignSection({
                                         )
                                       }
                                       placeholder={`Specify ${field.toLowerCase()}`}
-                                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
+                                      className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                                     />
                                   )}
                                 </label>
@@ -1037,21 +1082,21 @@ export function OrderBikeDesignSection({
           {showSpecificationForm ||
           showGuidedMessage ||
           showFrameOnlyMessage ? (
-            <div className="shrink-0 border-t border-slate-200 bg-slate-50 pt-4">
+            <div className="shrink-0 border-t border-stone-200 bg-stone-50 pt-4">
               {showGuidedMessage ? (
                 hasDesignerBudget && ridingComplete && paintjobComplete ? (
                   <button
                     type="button"
                     onClick={onSubmit}
                     disabled={isSubmitting}
-                    className="inline-flex w-full items-center justify-center rounded-md bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+                    className="inline-flex w-full items-center justify-center rounded-md bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:bg-stone-300"
                   >
                     {isSubmitting ? "Submitting direction..." : "Submit"}
                   </button>
                 ) : (
-                  <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+                  <div className="h-2 overflow-hidden rounded-full bg-stone-200">
                     <div
-                      className="h-full rounded-full bg-slate-500 transition-all duration-300"
+                      className="h-full rounded-full bg-[var(--kanna-color)] transition-all duration-300"
                       style={{
                         width: `${Math.round(
                           ((Number(hasDesignerBudget) +
@@ -1078,16 +1123,16 @@ export function OrderBikeDesignSection({
                     type="button"
                     onClick={onSubmit}
                     disabled={isSubmitting}
-                    className="inline-flex w-full items-center justify-center rounded-md bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+                    className="inline-flex w-full items-center justify-center rounded-md bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:bg-stone-300"
                   >
                     {isSubmitting
                       ? "Submitting direction..."
                       : "Confirm frame-only project"}
                   </button>
                 ) : (
-                  <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+                  <div className="h-2 overflow-hidden rounded-full bg-stone-200">
                     <div
-                      className="h-full rounded-full bg-slate-500 transition-all duration-300"
+                      className="h-full rounded-full bg-[var(--kanna-color)] transition-all duration-300"
                       style={{
                         width: `${Math.round(
                           ((RIDING_FIELDS.filter(
@@ -1113,16 +1158,16 @@ export function OrderBikeDesignSection({
                       type="button"
                       onClick={onSubmit}
                       disabled={isSubmitting}
-                      className="inline-flex w-full items-center justify-center rounded-md bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+                      className="inline-flex w-full items-center justify-center rounded-md bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:bg-stone-300"
                     >
                       {isSubmitting
                         ? "Submitting specification..."
                         : "Submit specification"}
                     </button>
                   ) : (
-                    <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+                    <div className="h-2 overflow-hidden rounded-full bg-stone-200">
                       <div
-                        className="h-full rounded-full bg-slate-500 transition-all duration-300"
+                        className="h-full rounded-full bg-[var(--kanna-color)] transition-all duration-300"
                         style={{
                           width: `${Math.round(
                             ((completedFields +
@@ -1149,6 +1194,6 @@ export function OrderBikeDesignSection({
           ) : null}
         </aside>
       </div>
-    </section>
+    </AnimatedOrderSection>
   );
 }

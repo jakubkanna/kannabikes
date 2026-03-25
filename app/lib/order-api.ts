@@ -288,21 +288,27 @@ async function authenticatedPortalRequest<T>({
   publicOrderNumber,
   sessionToken,
 }: {
-  body?: Record<string, unknown>;
+  body?: FormData | Record<string, unknown>;
   method?: "GET" | "POST";
   path: string;
   publicOrderNumber: string;
   sessionToken: string;
 }) {
+  const isFormDataBody = body instanceof FormData;
+
   const response = await fetch(
     `${getApiBase()}/portal/builds/${encodeURIComponent(publicOrderNumber)}/${path}`,
     {
       method,
       headers: {
         Authorization: `Bearer ${sessionToken}`,
-        "Content-Type": "application/json",
+        ...(isFormDataBody ? {} : { "Content-Type": "application/json" }),
       },
-      body: body ? JSON.stringify(body) : undefined,
+      body: body
+        ? isFormDataBody
+          ? body
+          : JSON.stringify(body)
+        : undefined,
     },
   );
 
@@ -335,16 +341,37 @@ export async function submitMeasurements({
 }
 
 export async function submitSpecification({
+  attachment,
   publicOrderNumber,
   sessionToken,
   specificationMode,
   values,
 }: {
+  attachment?: File;
   publicOrderNumber: string;
   sessionToken: string;
   specificationMode: "guided_by_designer" | "self_specified" | "frame_only";
   values: Record<string, string>;
 }) {
+  if (attachment) {
+    const formData = new FormData();
+
+    formData.append("specificationMode", specificationMode);
+
+    Object.entries(values).forEach(([key, value]) => {
+      formData.append(`values[${key}]`, value);
+    });
+
+    formData.append("attachment", attachment);
+
+    return authenticatedPortalRequest<OrderPortalPayload>({
+      body: formData,
+      path: "specification",
+      publicOrderNumber,
+      sessionToken,
+    });
+  }
+
   return authenticatedPortalRequest<OrderPortalPayload>({
     body: {
       specificationMode,

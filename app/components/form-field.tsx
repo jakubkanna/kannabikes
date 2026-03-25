@@ -16,6 +16,14 @@ export function getFieldClassName(hasError = false, className?: string) {
   );
 }
 
+export function getLockedFieldClassName(className?: string) {
+  return joinClassNames(
+    "w-full rounded-md border border-stone-200 bg-white px-4 py-3 text-slate-900 outline-none",
+    "cursor-default select-text focus:border-stone-200 focus:ring-0",
+    className,
+  );
+}
+
 type InputFieldProps = ComponentPropsWithoutRef<"input"> & {
   hasError?: boolean;
 };
@@ -27,6 +35,19 @@ export function InputField({
 }: InputFieldProps) {
   return (
     <input {...props} className={getFieldClassName(hasError, className)} />
+  );
+}
+
+type LockedFieldProps = Omit<ComponentPropsWithoutRef<"input">, "readOnly">;
+
+export function LockedField({ className, ...props }: LockedFieldProps) {
+  return (
+    <input
+      {...props}
+      readOnly
+      aria-readonly="true"
+      className={getLockedFieldClassName(className)}
+    />
   );
 }
 

@@ -1,6 +1,8 @@
 import type { MeasurementsSectionProps } from "./types";
+import { InputField } from "~/components/form-field";
 import { OrderSubmittedSummarySection } from "./order-submitted-summary-section";
 import { SectionPill } from "~/components/section-pill";
+import { AnimatedOrderSection } from "./order-motion";
 
 export function OrderMeasurementsSection({
   activeMeasurement,
@@ -108,8 +110,8 @@ export function OrderMeasurementsSection({
   }
 
   return (
-    <section
-      className={`rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:flex md:flex-col md:overflow-hidden md:p-6 ${
+    <AnimatedOrderSection
+      className={`rounded-xl border border-stone-200 bg-white p-4 shadow-sm md:flex md:flex-col md:overflow-hidden md:p-6 ${
         "md:h-[80vh]"
       }`}
     >
@@ -131,7 +133,7 @@ export function OrderMeasurementsSection({
         }`}
       >
         <div
-          className={`min-h-0 overflow-hidden flex flex-col rounded-lg border border-slate-200 bg-slate-100 p-4 ${
+          className={`min-h-0 overflow-hidden flex flex-col rounded-lg border border-stone-200 bg-stone-100 p-4 ${
             isSubmitted ? "min-h-[28vh] md:h-full" : "min-h-[44vh] md:h-full"
           }`}
         >
@@ -156,7 +158,7 @@ export function OrderMeasurementsSection({
           </div>
         </div>
 
-        <aside className="min-h-0 rounded-lg border border-slate-200 bg-slate-50 px-3 pb-3 pt-0 md:flex md:h-full md:flex-col md:px-4 md:pb-4 md:pt-0">
+        <aside className="min-h-0 rounded-lg border border-stone-200 bg-stone-50 px-3 pb-3 pt-0 md:flex md:h-full md:flex-col md:px-4 md:pb-4 md:pt-0">
           <div className="min-h-0 md:flex-1 md:overflow-y-auto">
             <div className={isSubmitted ? "pt-3" : "pt-4"}>
               <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -188,13 +190,13 @@ export function OrderMeasurementsSection({
                     <span className="mb-2 block text-sm font-semibold text-slate-700">
                       Body weight (kg)
                     </span>
-                    <input
+                    <InputField
                       type="text"
                       inputMode="decimal"
                       placeholder="Enter body weight in kg"
                       value={bodyWeight}
                       onChange={(event) => onBodyWeightChange(event.target.value)}
-                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
+                      className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                     />
                   </label>
 
@@ -204,7 +206,7 @@ export function OrderMeasurementsSection({
                         Body type
                       </legend>
                       <div className="grid grid-cols-2 gap-2">
-                        <label className="flex cursor-pointer items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800">
+                        <label className="flex cursor-pointer items-center gap-2 rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-slate-800">
                           <input
                             type="radio"
                             name="bodyType"
@@ -214,7 +216,7 @@ export function OrderMeasurementsSection({
                           />
                           <span>Male</span>
                         </label>
-                        <label className="flex cursor-pointer items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800">
+                        <label className="flex cursor-pointer items-center gap-2 rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-slate-800">
                           <input
                             type="radio"
                             name="bodyType"
@@ -244,12 +246,12 @@ export function OrderMeasurementsSection({
                 return (
                   <label
                     key={key}
-                    className="block rounded-lg border border-slate-200 bg-slate-50 p-3"
+                    className="block rounded-lg border border-stone-200 bg-stone-50 p-3"
                   >
                     <span className="mb-2 block text-sm font-semibold text-slate-700">
                       {key} (cm)
                     </span>
-                    <input
+                    <InputField
                       type="text"
                       inputMode="decimal"
                       placeholder={`Enter measurement ${key} in cm`}
@@ -257,14 +259,14 @@ export function OrderMeasurementsSection({
                       onFocus={() => onActivateMeasurement(key)}
                       onClick={() => onActivateMeasurement(key)}
                       onChange={(event) => onMeasurementChange(key, event.target.value)}
-                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
+                      className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                     />
                     {isActive ? (
                       <div className="mt-3">
                         <button
                           type="button"
                           onClick={() => onToggleGuidelines(key)}
-                          className="flex w-full items-center justify-between rounded-md border border-slate-200 bg-white px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-600"
+                          className="flex w-full items-center justify-between rounded-md border border-stone-200 bg-white px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-600"
                           aria-expanded={isGuidelineExpanded}
                           aria-controls={`guidelines-${key}`}
                         >
@@ -289,7 +291,7 @@ export function OrderMeasurementsSection({
                         {isGuidelineExpanded ? (
                           <div
                             id={`guidelines-${key}`}
-                            className="mt-2 flex aspect-video items-center justify-center overflow-hidden rounded-md border border-slate-200 bg-black/90 px-4 text-center text-sm text-slate-300"
+                            className="mt-2 flex aspect-video items-center justify-center overflow-hidden rounded-md border border-stone-200 bg-black/90 px-4 text-center text-sm text-slate-300"
                           >
                             Add a guideline video or image for {key}.
                           </div>
@@ -303,20 +305,20 @@ export function OrderMeasurementsSection({
           </div>
 
           {!isSubmitted ? (
-            <div className="shrink-0 border-t border-slate-200 bg-slate-50 pt-4">
+            <div className="shrink-0 border-t border-stone-200 bg-stone-50 pt-4">
               {hasBodyData && allMeasurementsComplete ? (
                 <button
                   type="button"
                   onClick={onSubmit}
                   disabled={isSubmitting}
-                  className="inline-flex w-full items-center justify-center rounded-md bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+                  className="inline-flex w-full items-center justify-center rounded-md bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:bg-stone-300"
                 >
                   {isSubmitting ? "Submitting measurements..." : "Submit body data"}
                 </button>
               ) : (
-                <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+                <div className="h-2 overflow-hidden rounded-full bg-stone-200">
                   <div
-                    className="h-full rounded-full bg-slate-500 transition-all duration-300"
+                    className="h-full rounded-full bg-[var(--kanna-color)] transition-all duration-300"
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
@@ -325,6 +327,6 @@ export function OrderMeasurementsSection({
           ) : null}
         </aside>
       </div>
-    </section>
+    </AnimatedOrderSection>
   );
 }

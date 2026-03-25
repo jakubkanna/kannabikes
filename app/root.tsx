@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import {
   isRouteErrorResponse,
   Links,
@@ -8,7 +7,6 @@ import {
   ScrollRestoration,
   useLocation,
 } from "react-router";
-import { defineCustomElements } from "ionicons/loader";
 
 import type { Route } from "./+types/root";
 import "./app.css";
@@ -26,7 +24,11 @@ const OG_IMAGE_URL = `${SITE_URL}${OG_IMAGE}`;
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
-  { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+  {
+    rel: "preconnect",
+    href: "https://fonts.gstatic.com",
+    crossOrigin: "anonymous",
+  },
   {
     rel: "stylesheet",
     href: "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap",
@@ -42,7 +44,11 @@ export const links: Route.LinksFunction = () => [
     type: "font/ttf",
     crossOrigin: "anonymous",
   },
-  { rel: "icon", href: `${BASE_URL}kannabikes_logo.svg`, type: "image/svg+xml" },
+  {
+    rel: "icon",
+    href: `${BASE_URL}kannabikes_logo.svg`,
+    type: "image/svg+xml",
+  },
   { rel: "apple-touch-icon", href: `${BASE_URL}kannabikes_logo.svg` },
 ];
 
@@ -74,10 +80,6 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  useEffect(() => {
-    defineCustomElements(window);
-  }, []);
-
   return (
     <html lang="en">
       <head>
@@ -106,7 +108,7 @@ export default function App() {
   return (
     <>
       <SiteHeader />
-      <div className={shouldOffsetContent ? "pt-[var(--site-header-height)]" : ""}>
+      <div className={shouldOffsetContent ? "pt-(--site-header-height)" : ""}>
         <Outlet />
       </div>
       <SiteFooter />

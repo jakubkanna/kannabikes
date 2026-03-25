@@ -1,6 +1,5 @@
 import { Link } from "react-router";
 import { useState } from "react";
-import { chevronDownOutline } from "ionicons/icons";
 import type { Route } from "./+types/contact";
 import { ArchivoInkBleed } from "~/components/archivo-ink-bleed";
 import {
@@ -258,11 +257,18 @@ export default function ContactPage() {
                       <option value="Quote request">Quote request</option>
                       <option value="General question">General question</option>
                     </SelectField>
-                    <ion-icon
-                      icon={chevronDownOutline}
-                      className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[20px] text-slate-500"
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="pointer-events-none absolute right-4 top-1/2 size-5 -translate-y-1/2 text-slate-500"
                       aria-hidden="true"
-                    />
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
                   </div>
                 </label>
 

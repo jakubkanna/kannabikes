@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router";
+import { InputField, LockedField } from "~/components/form-field";
 import type {
   DepositPaymentMethod,
   OrderStage,
@@ -7,6 +8,7 @@ import type {
 } from "~/lib/mock-order";
 import { formatOrderMoney, getInclusiveTaxBreakdown } from "~/lib/order-tax";
 import { SectionPill } from "~/components/section-pill";
+import { AnimatedOrderSection } from "./order-motion";
 
 const DEPOSIT_SUCCESS_HIGHLIGHT_DELAY_MS = 4000;
 function validatePasswords(password: string, repeatPassword: string) {
@@ -142,11 +144,11 @@ export function OrderDepositSection({
     const useSuccessColors = !isDepositStillUnderReview && hasSuccessHighlight;
 
     return (
-      <section
+      <AnimatedOrderSection
         className={`rounded-xl p-4 shadow-sm md:max-h-[80vh] md:overflow-y-auto md:p-6 ${
           useSuccessColors
             ? "border border-emerald-200 bg-emerald-50"
-            : "border border-slate-200 bg-white"
+            : "border border-stone-200 bg-white"
         }`}
       >
         {isDepositStillUnderReview ? (
@@ -171,7 +173,7 @@ export function OrderDepositSection({
               </p>
 
               {depositPayment?.paymentMethod === "classic_transfer" ? (
-                <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+                <div className="mt-4 rounded-lg border border-stone-200 bg-stone-50 p-4">
                   <p className="text-sm font-semibold text-slate-900">
                     Bank transfer details
                   </p>
@@ -268,7 +270,7 @@ export function OrderDepositSection({
             </button>
 
             {isReceivedExpanded && depositPayment ? (
-              <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <div className="mt-4 rounded-lg border border-stone-200 bg-stone-50 p-4">
                 <div
                   className={`grid grid-cols-1 gap-x-6 gap-y-4 ${
                     depositPayment.paidAt ? "sm:grid-cols-2" : ""
@@ -301,14 +303,14 @@ export function OrderDepositSection({
             ) : null}
           </>
         )}
-      </section>
+      </AnimatedOrderSection>
     );
   }
 
   return (
-    <section className="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-white p-4 shadow-sm md:max-h-[80vh] md:overflow-y-auto md:p-6">
+    <AnimatedOrderSection className="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-white p-4 shadow-sm md:max-h-[80vh] md:overflow-y-auto md:p-6">
       <div className="grid gap-6 md:grid-cols-[minmax(0,1.8fr)_minmax(320px,0.95fr)] md:items-start">
-        <div className="rounded-xl border border-slate-200 bg-white p-5">
+        <div className="rounded-xl border border-stone-200 bg-white p-5">
           <SectionPill>Deposit</SectionPill>
           <h2 className="mt-2 text-2xl font-semibold text-slate-900">
             Waiting for deposit
@@ -318,7 +320,7 @@ export function OrderDepositSection({
             deposit, we will begin designing your dream bike.
           </p>
 
-          <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div className="mt-6 rounded-xl border border-stone-200 bg-stone-50 p-4">
             <div>
               <p className="text-sm font-semibold text-slate-900">
                 Order details
@@ -333,36 +335,40 @@ export function OrderDepositSection({
                 <span className="mb-2 block text-sm font-semibold text-slate-700">
                   Order title
                 </span>
-                <p className="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900">
-                  {customerDetails.orderTitle}
-                </p>
+                <LockedField
+                  value={customerDetails.orderTitle}
+                  className="px-3 py-2"
+                />
               </div>
 
               <div className="sm:col-span-2">
                 <span className="mb-2 block text-sm font-semibold text-slate-700">
                   Full name
                 </span>
-                <p className="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900">
-                  {customerDetails.fullName}
-                </p>
+                <LockedField
+                  value={customerDetails.fullName}
+                  className="px-3 py-2"
+                />
               </div>
 
               <div>
                 <span className="mb-2 block text-sm font-semibold text-slate-700">
                   Email
                 </span>
-                <p className="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900">
-                  {customerDetails.email}
-                </p>
+                <LockedField
+                  value={customerDetails.email}
+                  className="px-3 py-2"
+                />
               </div>
 
               <div>
                 <span className="mb-2 block text-sm font-semibold text-slate-700">
                   Phone number
                 </span>
-                <p className="rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-900">
-                  {customerDetails.phoneNumber}
-                </p>
+                <LockedField
+                  value={customerDetails.phoneNumber}
+                  className="px-3 py-2"
+                />
               </div>
 
               {requiresClaim ? (
@@ -371,7 +377,7 @@ export function OrderDepositSection({
                     <span className="mb-2 block text-sm font-semibold text-slate-700">
                       Create password
                     </span>
-                    <input
+                    <InputField
                       type="password"
                       value={password}
                       onChange={(event) => {
@@ -379,11 +385,8 @@ export function OrderDepositSection({
                         onClaimErrorChange(null);
                       }}
                       onBlur={() => setPasswordTouched(true)}
-                      className={`w-full rounded-md bg-white px-3 py-2 text-slate-900 outline-none transition focus:ring-2 ${
-                        passwordFieldError
-                          ? "border border-red-300 focus:border-red-400 focus:ring-red-100"
-                          : "border border-slate-300 focus:border-yellow-400 focus:ring-yellow-200"
-                      }`}
+                      hasError={Boolean(passwordFieldError)}
+                      className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                     />
                     {passwordFieldError ? (
                       <p className="mt-2 text-sm text-red-600">
@@ -396,7 +399,7 @@ export function OrderDepositSection({
                     <span className="mb-2 block text-sm font-semibold text-slate-700">
                       Repeat password
                     </span>
-                    <input
+                    <InputField
                       type="password"
                       value={repeatPassword}
                       onChange={(event) => {
@@ -404,11 +407,8 @@ export function OrderDepositSection({
                         onClaimErrorChange(null);
                       }}
                       onBlur={() => setRepeatPasswordTouched(true)}
-                      className={`w-full rounded-md bg-white px-3 py-2 text-slate-900 outline-none transition focus:ring-2 ${
-                        repeatPasswordFieldError
-                          ? "border border-red-300 focus:border-red-400 focus:ring-red-100"
-                          : "border border-slate-300 focus:border-yellow-400 focus:ring-yellow-200"
-                      }`}
+                      hasError={Boolean(repeatPasswordFieldError)}
+                      className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                     />
                     {repeatPasswordFieldError ? (
                       <p className="mt-2 text-sm text-red-600">
@@ -418,14 +418,14 @@ export function OrderDepositSection({
                   </label>
 
                   <p className="sm:col-span-2 text-xs leading-6 text-slate-600">
-                    Use at least 8 characters. You will need this password to
-                    track your order status, so save it securely.
+                    Save it securely. You will need this password to track your
+                    order status.
                   </p>
                 </>
               ) : null}
             </div>
 
-            <div className="mt-6 border-t border-slate-200 pt-5">
+            <div className="mt-6 border-t border-stone-200 pt-5">
               <p className="text-sm font-semibold text-slate-900">
                 Payment options
               </p>
@@ -456,11 +456,11 @@ export function OrderDepositSection({
         </div>
 
         <div className="md:sticky md:top-4">
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
             <p className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">
               Order summary
             </p>
-            <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div className="mt-4 rounded-xl border border-stone-200 bg-stone-50 p-4">
               <div>
                 <p className="text-sm font-semibold text-slate-900">
                   {customerDetails.orderTitle || "Custom Kanna Bike Build"}
@@ -470,7 +470,7 @@ export function OrderDepositSection({
                 </p>
               </div>
 
-              <div className="mt-4 border-t border-slate-200 pt-4 text-sm text-slate-600">
+              <div className="mt-4 border-t border-stone-200 pt-4 text-sm text-slate-600">
                 <div className="mt-2 flex items-center justify-between gap-4">
                   <span>Net amount</span>
                   <span className="font-medium text-slate-900">
@@ -497,14 +497,14 @@ export function OrderDepositSection({
                       : "Stripe"}
                   </span>
                 </div>
-                <div className="mt-3 flex items-center justify-between gap-4 border-t border-slate-200 pt-3 text-base font-semibold text-slate-900">
+                <div className="mt-3 flex items-center justify-between gap-4 border-t border-stone-200 pt-3 text-base font-semibold text-slate-900">
                   <span>Total</span>
                   <span>{depositAmountLabel}</span>
                 </div>
               </div>
             </div>
 
-            <label className="mt-4 flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+            <label className="mt-4 flex items-start gap-3 rounded-lg border border-stone-200 bg-stone-50 p-3 text-sm text-slate-700">
               <input
                 type="checkbox"
                 checked={agreementAccepted}
@@ -529,14 +529,14 @@ export function OrderDepositSection({
               type="button"
               onClick={handlePayDeposit}
               disabled={!agreementAccepted || isProcessingPayment}
-              className="mt-4 inline-flex w-full items-center justify-center rounded-md bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+              className="mt-4 inline-flex w-full items-center justify-center rounded-md bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:bg-stone-300"
             >
               {isProcessingPayment ? "Preparing payment..." : "Pay Deposit"}
             </button>
           </div>
         </div>
       </div>
-    </section>
+    </AnimatedOrderSection>
   );
 }
 
@@ -560,8 +560,8 @@ function PaymentOption({
       aria-pressed={isSelected}
       className={`rounded-lg border px-3 py-3 text-left transition ${
         isSelected
-          ? "border-slate-900 bg-slate-900 text-white"
-          : "border-slate-200 bg-white text-slate-900 hover:border-slate-300"
+          ? "border-[var(--kanna-ink)] bg-[var(--kanna-ink)] text-white"
+          : "border-stone-200 bg-white text-slate-900 hover:border-stone-300"
       }`}
     >
       <div className="flex items-start justify-between gap-3">
@@ -589,7 +589,7 @@ function PaymentOption({
           className={`mt-0.5 h-4 w-4 rounded-full border ${
             isSelected
               ? "border-white bg-white ring-4 ring-slate-700"
-              : "border-slate-300 bg-white"
+              : "border-stone-300 bg-white"
           }`}
           aria-hidden="true"
         />

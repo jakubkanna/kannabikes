@@ -22,13 +22,24 @@ export default defineConfig(() => ({
           }
 
           if (
-            id.includes("/tailwindcss/") ||
-            id.includes("/@tailwindcss/")
+            id.includes("/react-router/") ||
+            id.includes("/@react-router/")
           ) {
-            return "tailwind";
+            return "router";
           }
 
-          return "vendor";
+          if (
+            id.includes("/motion/")
+          ) {
+            return "order-motion";
+          }
+
+          if (
+            id.includes("/country-state-city/") ||
+            id.includes("/validator/")
+          ) {
+            return "shipping-data";
+          }
         },
       },
     },
