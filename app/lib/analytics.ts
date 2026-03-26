@@ -10,6 +10,7 @@ export type AnalyticsConsentStatus = "accepted" | "rejected";
 declare global {
   interface Window {
     __kannaAnalyticsConfigured?: boolean;
+    __kannaAnalyticsConsentInitialized?: boolean;
     __kannaAnalyticsLoaded?: boolean;
     __kannaAnalyticsInitialized?: boolean;
     dataLayer?: unknown[];
@@ -88,20 +89,37 @@ function insertGoogleAnalyticsScript() {
   document.head.appendChild(script);
 }
 
-export function loadGoogleAnalytics() {
+export function initializeGoogleConsentMode() {
   if (typeof window === "undefined" || !isAnalyticsConfigured()) {
     return false;
   }
 
   ensureGtagStub();
 
+  if (window.__kannaAnalyticsConsentInitialized) {
+    return true;
+  }
+
+  window.gtag?.("consent", "default", {
+    ad_personalization: "denied",
+    ad_storage: "denied",
+    ad_user_data: "denied",
+    analytics_storage: "denied",
+    wait_for_update: 500,
+  });
+  window.__kannaAnalyticsConsentInitialized = true;
+
+  return true;
+}
+
+export function loadGoogleAnalytics() {
+  if (typeof window === "undefined" || !isAnalyticsConfigured()) {
+    return false;
+  }
+
+  initializeGoogleConsentMode();
+
   if (!window.__kannaAnalyticsInitialized) {
-    window.gtag?.("consent", "default", {
-      ad_personalization: "denied",
-      ad_storage: "denied",
-      ad_user_data: "denied",
-      analytics_storage: "denied",
-    });
     window.gtag?.("js", new Date());
     window.gtag?.("config", GA_MEASUREMENT_ID, {
       allow_ad_personalization_signals: false,
@@ -123,6 +141,8 @@ export function applyAnalyticsConsent(status: AnalyticsConsentStatus) {
   if (typeof window === "undefined") {
     return;
   }
+
+  initializeGoogleConsentMode();
 
   if (status === "accepted") {
     loadGoogleAnalytics();

@@ -283,6 +283,13 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
     }
   };
 
+  const reviewCount = reviews.length;
+  const averageRating =
+    reviewCount > 0
+      ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviewCount
+      : 0;
+  const visibleStarCount = Math.round(averageRating);
+
   return (
     <PageShell>
       <PageContainer>
@@ -302,6 +309,30 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
             <h1 className="page-heading text-[2.35rem] leading-[0.88] text-[var(--kanna-ink)] md:text-[3.8rem]">
               {product.name}
             </h1>
+            {reviewCount > 0 ? (
+              <div className="mt-4 flex flex-wrap items-center gap-3 text-[var(--kanna-ink)]">
+                <div
+                  aria-label={`${averageRating.toFixed(1)} out of 5 stars`}
+                  className="flex items-center gap-1 text-sm"
+                >
+                  {Array.from({ length: 5 }, (_, index) => {
+                    const isFilled = index < visibleStarCount;
+
+                    return (
+                      <span
+                        key={index}
+                        className={isFilled ? "text-[var(--kanna-ink)]" : "text-black/20"}
+                      >
+                        ★
+                      </span>
+                    );
+                  })}
+                </div>
+                <p className="text-sm font-semibold uppercase tracking-[0.08em] text-black/60">
+                  {averageRating.toFixed(1)} · {reviewCount}
+                </p>
+              </div>
+            ) : null}
             <p className="mt-4 text-lg font-semibold text-[var(--kanna-ink)]">
               {product.price || product.regularPrice}
             </p>

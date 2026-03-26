@@ -4,6 +4,7 @@ import {
   COOKIE_PREFERENCES_EVENT,
   applyAnalyticsConsent,
   clearGoogleAnalyticsCookies,
+  initializeGoogleConsentMode,
   isAnalyticsConfigured,
   readAnalyticsConsent,
   trackClickEvent,
@@ -86,13 +87,18 @@ export function CookieConsentBanner() {
       return;
     }
 
+    initializeGoogleConsentMode();
+
     const storedConsent = readAnalyticsConsent();
     setConsentStatus(storedConsent);
     setIsBannerOpen(storedConsent === null);
 
     if (storedConsent === "accepted") {
       applyAnalyticsConsent("accepted");
+      return;
     }
+
+    applyAnalyticsConsent("rejected");
   }, [analyticsEnabled]);
 
   useEffect(() => {
@@ -214,7 +220,15 @@ export function CookieConsentBanner() {
       className="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-4xl rounded-[28px] border border-stone-300 bg-white p-5 shadow-[0_20px_70px_rgba(15,23,42,0.16)]"
       aria-live="polite"
     >
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+      <button
+        type="button"
+        onClick={() => closeBanner("rejected")}
+        className="absolute right-5 top-5 text-sm font-medium lowercase text-slate-500 transition hover:text-slate-900"
+      >
+        {messages.cookieConsent.rejectSimple}
+      </button>
+
+      <div className="flex flex-col gap-4 pb-24 pr-16 md:pb-8 md:pr-44">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-900">
             {messages.cookieConsent.eyebrow}
@@ -237,32 +251,16 @@ export function CookieConsentBanner() {
             </LocalizedLink>
             {messages.cookieConsent.detailsAfterLink}
           </p>
-          {consentStatus ? (
-            <p className="mt-2 text-xs font-medium uppercase tracking-[0.16em] text-slate-500">
-              {consentStatus === "accepted"
-                ? messages.cookieConsent.currentStateAccepted
-                : messages.cookieConsent.currentStateRejected}
-            </p>
-          ) : null}
-        </div>
-
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <button
-            type="button"
-            onClick={() => closeBanner("rejected")}
-            className="inline-flex items-center justify-center rounded-xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-900"
-          >
-            {messages.cookieConsent.reject}
-          </button>
-          <button
-            type="button"
-            onClick={() => closeBanner("accepted")}
-            className="inline-flex items-center justify-center rounded-xl bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black"
-          >
-            {messages.cookieConsent.accept}
-          </button>
         </div>
       </div>
+
+      <button
+        type="button"
+        onClick={() => closeBanner("accepted")}
+        className="absolute bottom-5 right-5 inline-flex items-center justify-center rounded-2xl bg-[var(--kanna-ink)] px-6 py-4 text-base font-semibold text-white transition hover:bg-black md:px-8 md:py-5 md:text-lg"
+      >
+        {messages.cookieConsent.accept}
+      </button>
     </aside>
   ) : null;
 }

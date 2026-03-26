@@ -1,9 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router";
-import {
-  COOKIE_PREFERENCES_EVENT,
-  isAnalyticsConfigured,
-} from "~/lib/analytics";
 import { stripLocalePrefix } from "~/lib/i18n";
 import { ArchivoInkBleed } from "./archivo-ink-bleed";
 import { LocalizedLink } from "./localized-link";
@@ -113,7 +109,6 @@ export function SiteFooter() {
   const linkClassName = useHomeKannaState
     ? "transition hover:text-[var(--kanna-ink)]"
     : "transition hover:text-white";
-  const analyticsEnabled = isAnalyticsConfigured();
 
   return (
     <footer className={footerClassName}>
@@ -139,15 +134,15 @@ export function SiteFooter() {
                   {messages.footer.products}
                 </p>
                 <div className="mt-3 flex flex-col items-end gap-0.5">
-                  <a href="#" className={linkClassName}>
-                    {messages.footer.customRoad}
-                  </a>
-                  <a href="#" className={linkClassName}>
-                    {messages.footer.allRoad}
-                  </a>
-                  <a href="#" className={linkClassName}>
-                    {messages.footer.commuter}
-                  </a>
+                  <LocalizedLink to="/pre-order" className={linkClassName}>
+                    {messages.footer.customBikes}
+                  </LocalizedLink>
+                  <LocalizedLink to="/shop" className={linkClassName}>
+                    {messages.footer.components}
+                  </LocalizedLink>
+                  <LocalizedLink to="/about" className={linkClassName}>
+                    {messages.footer.framebuilding}
+                  </LocalizedLink>
                 </div>
               </div>
               <div className="text-right">
@@ -217,16 +212,6 @@ export function SiteFooter() {
             </a>
           </p>
           <div className="flex flex-wrap gap-5">
-            {analyticsEnabled ? (
-              <button
-                type="button"
-                data-analytics-ignore="true"
-                onClick={() => window.dispatchEvent(new Event(COOKIE_PREFERENCES_EVENT))}
-                className={`border-0 bg-transparent p-0 text-left ${linkClassName}`}
-              >
-                {messages.footer.cookieSettings}
-              </button>
-            ) : null}
             <LocalizedLink to="/privacy-terms" className={linkClassName}>
               {messages.footer.privacyTerms}
             </LocalizedLink>
