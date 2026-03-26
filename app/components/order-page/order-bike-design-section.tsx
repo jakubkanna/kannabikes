@@ -196,7 +196,7 @@ const PAINTJOB_COLOR_OPTIONS = [
   { label: "Orange", value: "orange", swatchClassName: "bg-orange-500" },
   { label: "Purple", value: "purple", swatchClassName: "bg-violet-500" },
   { label: "Pink", value: "pink", swatchClassName: "bg-pink-500" },
-  { label: "Silver", value: "silver", swatchClassName: "bg-slate-300" },
+  { label: "Silver", value: "silver", swatchClassName: "bg-gray-300" },
   {
     label: "Other",
     value: "other",
@@ -377,13 +377,13 @@ export function OrderBikeDesignSection({
 
   const renderRidingSection = () => (
     <div className="rounded-lg border border-stone-200 bg-white p-4">
-      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
         Riding
       </h3>
       <div className="mt-4 space-y-5">
         {RIDING_FIELDS.map((field) => (
           <div key={field.key}>
-            <span className="mb-2 block text-sm font-semibold text-slate-700">
+            <span className="mb-2 block text-sm font-semibold text-gray-700">
               {field.title}
             </span>
             <div className="flex flex-wrap gap-2">
@@ -398,7 +398,7 @@ export function OrderBikeDesignSection({
                     className={`rounded-full border px-3 py-2 text-sm capitalize transition ${
                       isSelected
                         ? "border-[var(--kanna-ink)] bg-[var(--kanna-ink)] text-white"
-                        : "border-stone-300 bg-white text-slate-700 hover:border-stone-400"
+                        : "border-stone-300 bg-white text-gray-700 hover:border-stone-400"
                     }`}
                   >
                     {option}
@@ -410,7 +410,7 @@ export function OrderBikeDesignSection({
         ))}
 
         <label className="block">
-          <span className="mb-2 block text-sm font-semibold text-slate-700">
+          <span className="mb-2 block text-sm font-semibold text-gray-700">
             Additional notes
           </span>
           <TextareaField
@@ -428,25 +428,25 @@ export function OrderBikeDesignSection({
   );
   const renderRidingSummary = () => (
     <div className="rounded-lg border border-stone-200 bg-white p-4">
-      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
         Riding
       </h3>
       <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
         {RIDING_FIELDS.map((field) => (
           <div key={field.key}>
-            <span className="mb-2 block text-sm font-semibold text-slate-700">
+            <span className="mb-2 block text-sm font-semibold text-gray-700">
               {field.title}
             </span>
-            <p className="text-sm capitalize text-slate-900">
+            <p className="text-sm capitalize text-gray-900">
               {values[field.key] || "-"}
             </p>
           </div>
         ))}
         <div className="sm:col-span-2">
-          <span className="mb-2 block text-sm font-semibold text-slate-700">
+          <span className="mb-2 block text-sm font-semibold text-gray-700">
             Additional notes
           </span>
-          <p className="text-sm text-slate-900">
+          <p className="text-sm text-gray-900">
             {values[RIDING_NOTES_KEY] || "-"}
           </p>
         </div>
@@ -455,12 +455,12 @@ export function OrderBikeDesignSection({
   );
   const renderPaintjobSection = () => (
     <div className="rounded-lg border border-stone-200 bg-white p-4">
-      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
         Paintjob
       </h3>
       <div className="mt-4 space-y-5">
         <div>
-          <span className="mb-2 block text-sm font-semibold text-slate-700">
+          <span className="mb-2 block text-sm font-semibold text-gray-700">
             Variant
           </span>
           <div className="grid gap-3">
@@ -475,7 +475,7 @@ export function OrderBikeDesignSection({
                   className={`rounded-lg border px-4 py-3 text-left transition ${
                     isSelected
                       ? "border-[var(--kanna-ink)] bg-[var(--kanna-ink)] text-white"
-                      : "border-stone-200 bg-white text-slate-900 hover:border-stone-300"
+                      : "border-stone-200 bg-white text-gray-900 hover:border-stone-300"
                   }`}
                 >
                   <span className="text-sm font-semibold">{option}</span>
@@ -488,7 +488,7 @@ export function OrderBikeDesignSection({
         {hasCustomPaintDirection ? (
           <>
             <div>
-              <span className="mb-2 block text-sm font-semibold text-slate-700">
+              <span className="mb-2 block text-sm font-semibold text-gray-700">
                 Colors
               </span>
               <div className="flex flex-wrap gap-3">
@@ -522,7 +522,7 @@ export function OrderBikeDesignSection({
                       className={`flex items-center gap-2 rounded-full border px-3 py-2 text-sm transition ${
                         isSelected
                           ? "border-[var(--kanna-ink)] bg-[var(--kanna-ink)] text-white"
-                          : "border-stone-300 bg-white text-slate-700 hover:border-stone-400"
+                          : "border-stone-300 bg-white text-gray-700 hover:border-stone-400"
                       }`}
                     >
                       <span
@@ -537,7 +537,7 @@ export function OrderBikeDesignSection({
 
             {hasOtherPaintColor ? (
               <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-700">
+                <span className="mb-2 block text-sm font-semibold text-gray-700">
                   Other color
                 </span>
                 <InputField
@@ -552,7 +552,7 @@ export function OrderBikeDesignSection({
             ) : null}
 
             <div>
-              <span className="mb-2 block text-sm font-semibold text-slate-700">
+              <span className="mb-2 block text-sm font-semibold text-gray-700">
                 Style
               </span>
               <div className="flex flex-wrap gap-2">
@@ -575,7 +575,7 @@ export function OrderBikeDesignSection({
                       className={`rounded-full border px-3 py-2 text-sm capitalize transition ${
                         isSelected
                           ? "border-[var(--kanna-ink)] bg-[var(--kanna-ink)] text-white"
-                          : "border-stone-300 bg-white text-slate-700 hover:border-stone-400"
+                          : "border-stone-300 bg-white text-gray-700 hover:border-stone-400"
                       }`}
                     >
                       {option}
@@ -586,7 +586,7 @@ export function OrderBikeDesignSection({
             </div>
 
             <label className="block">
-              <span className="mb-2 block text-sm font-semibold text-slate-700">
+              <span className="mb-2 block text-sm font-semibold text-gray-700">
                 Additional notes
               </span>
               <TextareaField
@@ -601,7 +601,7 @@ export function OrderBikeDesignSection({
             </label>
 
             <label className="block">
-              <span className="mb-2 block text-sm font-semibold text-slate-700">
+              <span className="mb-2 block text-sm font-semibold text-gray-700">
                 Attach image
               </span>
               <InputField
@@ -634,23 +634,23 @@ export function OrderBikeDesignSection({
   );
   const renderPaintjobSummary = () => (
     <div className="rounded-lg border border-stone-200 bg-white p-4">
-      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
         Paintjob
       </h3>
       <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
-          <span className="mb-2 block text-sm font-semibold text-slate-700">
+          <span className="mb-2 block text-sm font-semibold text-gray-700">
             Variant
           </span>
-          <p className="text-sm text-slate-900">{paintjobRoute || "-"}</p>
+          <p className="text-sm text-gray-900">{paintjobRoute || "-"}</p>
         </div>
         {hasCustomPaintDirection ? (
           <>
             <div className="sm:col-span-2">
-              <span className="mb-2 block text-sm font-semibold text-slate-700">
+              <span className="mb-2 block text-sm font-semibold text-gray-700">
                 Colors
               </span>
-              <p className="text-sm capitalize text-slate-900">
+              <p className="text-sm capitalize text-gray-900">
                 {selectedPaintColors.length > 0
                   ? selectedPaintColors
                       .map((color) =>
@@ -663,17 +663,17 @@ export function OrderBikeDesignSection({
               </p>
             </div>
             <div>
-              <span className="mb-2 block text-sm font-semibold text-slate-700">
+              <span className="mb-2 block text-sm font-semibold text-gray-700">
                 Style
               </span>
-              <p className="text-sm capitalize text-slate-900">
+              <p className="text-sm capitalize text-gray-900">
                 {selectedPaintStyles.length > 0
                   ? selectedPaintStyles.join(", ")
                   : "-"}
               </p>
             </div>
             <div>
-              <span className="mb-2 block text-sm font-semibold text-slate-700">
+              <span className="mb-2 block text-sm font-semibold text-gray-700">
                 Attach image
               </span>
               {displayedPaintImageUrl ? (
@@ -685,14 +685,14 @@ export function OrderBikeDesignSection({
                   />
                 </div>
               ) : (
-                <p className="text-sm text-slate-900">-</p>
+                <p className="text-sm text-gray-900">-</p>
               )}
             </div>
             <div className="sm:col-span-2">
-              <span className="mb-2 block text-sm font-semibold text-slate-700">
+              <span className="mb-2 block text-sm font-semibold text-gray-700">
                 Additional notes
               </span>
-              <p className="text-sm text-slate-900">
+              <p className="text-sm text-gray-900">
                 {values[PAINTJOB_NOTES_KEY] || "-"}
               </p>
             </div>
@@ -703,7 +703,7 @@ export function OrderBikeDesignSection({
   );
   const renderComponentsSummary = () => (
     <div className="rounded-lg border border-stone-200 bg-white p-4">
-      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
         Components
       </h3>
       <div className="mt-4 space-y-5">
@@ -712,7 +712,7 @@ export function OrderBikeDesignSection({
             key={section.title}
             className={sectionIndex > 0 ? "border-t border-stone-200 pt-5" : ""}
           >
-            <h4 className="text-sm font-semibold text-slate-900">
+            <h4 className="text-sm font-semibold text-gray-900">
               {section.title}
             </h4>
             <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
@@ -721,10 +721,10 @@ export function OrderBikeDesignSection({
 
                 return (
                   <div key={field.key}>
-                    <span className="mb-2 block text-sm font-semibold text-slate-700">
+                    <span className="mb-2 block text-sm font-semibold text-gray-700">
                       {field.label}
                     </span>
-                    <p className="text-sm text-slate-900">
+                    <p className="text-sm text-gray-900">
                       {field.key === DRIVETRAIN_TYPE_KEY
                         ? getDrivetrainTypeLabel(fieldValue) || "-"
                         : fieldValue || "-"}
@@ -741,10 +741,10 @@ export function OrderBikeDesignSection({
   const renderBuildDataSummary = () => (
     <>
       <div className="rounded-lg border border-stone-200 bg-white p-4">
-        <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+        <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
           Build type
         </h3>
-        <p className="mt-3 text-sm text-slate-900">
+        <p className="mt-3 text-sm text-gray-900">
           {specificationMode === "guided_by_designer"
             ? "Designer-led specification"
             : specificationMode === "frame_only"
@@ -759,20 +759,20 @@ export function OrderBikeDesignSection({
       {specificationMode === "guided_by_designer" ? (
         <>
           <div className="mt-5 rounded-lg border border-stone-200 bg-white p-4">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
               Budget
             </h3>
-            <p className="mt-3 text-sm text-slate-900">
+            <p className="mt-3 text-sm text-gray-900">
               {values[DESIGNER_LED_BUDGET_KEY] || "-"}
             </p>
           </div>
         </>
       ) : specificationMode === "frame_only" ? (
         <div className="mt-5 rounded-lg border border-stone-200 bg-white p-4">
-          <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+          <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
             Notes
           </h3>
-          <p className="mt-3 text-sm leading-6 text-slate-600">
+          <p className="mt-3 text-sm leading-6 text-gray-600">
             This order will continue as a frame-only project. The designer will
             prepare the frame direction based on your submitted measurements and
             project goals.
@@ -788,16 +788,16 @@ export function OrderBikeDesignSection({
   );
   const renderGeometrySummary = () => (
     <div className="rounded-lg border border-stone-200 bg-white p-4">
-      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
         Geometry
       </h3>
       <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
         {GEOMETRY_FIELDS.map((field) => (
           <div key={field.key}>
-            <span className="mb-2 block text-sm font-semibold text-slate-700">
+            <span className="mb-2 block text-sm font-semibold text-gray-700">
               {field.title}
             </span>
-            <p className="text-sm text-slate-900">
+            <p className="text-sm text-gray-900">
               {designValues[field.key] || values[field.key] || "-"}
             </p>
           </div>
@@ -807,23 +807,23 @@ export function OrderBikeDesignSection({
   );
   const renderArtistMessage = () => (
     <div className="rounded-lg border border-stone-200 bg-white p-4">
-      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
         From the artist
       </h3>
-      <p className="mt-2 text-sm leading-6 text-slate-600">
+      <p className="mt-2 text-sm leading-6 text-gray-600">
         {artistNote ||
           "The geometry and component direction are prepared based on your submitted measurements and project goals. Please review the setup below and approve it if everything looks right."}
       </p>
-      <p className="mt-4 text-sm font-semibold text-slate-900">Jakub Kanna</p>
+      <p className="mt-4 text-sm font-semibold text-gray-900">Jakub Kanna</p>
     </div>
   );
   const renderFinalPriceSummary = (title = "Amount left to pay") => (
     <div className="rounded-lg border border-stone-200 bg-white p-4">
-      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
         {title}
       </h3>
-      <p className="mt-3 text-sm text-slate-900">{finalAmountLabel}</p>
-      <p className="mt-2 text-sm leading-6 text-slate-600">
+      <p className="mt-3 text-sm text-gray-900">{finalAmountLabel}</p>
+      <p className="mt-2 text-sm leading-6 text-gray-600">
         Final amount after deducting the deposit already paid.
       </p>
     </div>
@@ -834,10 +834,10 @@ export function OrderBikeDesignSection({
       <AnimatedOrderSection className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm md:p-6">
         <div className="mb-5 shrink-0">
           <SectionPill>Specification</SectionPill>
-          <h2 className="mt-2 text-xl font-semibold text-slate-900">
+          <h2 className="mt-2 text-xl font-semibold text-gray-900">
             Design waiting for approval
           </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">
             Review the proposed bike setup below. Once approved, the order can
             move into production.
           </p>
@@ -856,10 +856,10 @@ export function OrderBikeDesignSection({
             <aside className="rounded-lg border border-stone-200 bg-stone-50 p-3 md:h-full md:p-4">
               <div className="space-y-4 pb-2">
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-900">
+                  <h3 className="text-sm font-semibold text-gray-900">
                     Build data
                   </h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                  <p className="mt-2 text-sm leading-6 text-gray-600">
                     Review the selected configuration, riding direction, and
                     finish details before approving the project.
                   </p>
@@ -875,10 +875,10 @@ export function OrderBikeDesignSection({
             <aside className="rounded-lg border border-stone-200 bg-stone-50 p-3 md:flex md:h-full md:flex-col md:self-stretch md:p-4">
               <div className="space-y-4 md:flex-1 md:overflow-y-auto md:pr-1">
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-900">
+                  <h3 className="text-sm font-semibold text-gray-900">
                     Geometry
                   </h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                  <p className="mt-2 text-sm leading-6 text-gray-600">
                     This geometry proposal is prepared specifically for this
                     order and should be reviewed together with the design image.
                   </p>
@@ -941,12 +941,12 @@ export function OrderBikeDesignSection({
             {isWaitingForDesign ? (
               <div className="absolute inset-0 flex items-center justify-center bg-white/35 p-6">
                 <div className="max-w-sm rounded-xl border border-stone-200 bg-white/95 px-5 py-4 text-center shadow-sm backdrop-blur-sm">
-                  <p className="mt-2 text-lg font-semibold text-slate-900">
+                  <p className="mt-2 text-lg font-semibold text-gray-900">
                     {isPaymentVerificationPending
                       ? "We are verifying your payment"
                       : "We are designing your bicycle"}
                   </p>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                  <p className="mt-2 text-sm leading-6 text-gray-600">
                     {isPaymentVerificationPending
                       ? "Your specification has been received. Once the deposit is verified, we will move your bike into the design stage."
                       : "Your measurements and specification have been received, and we are now working on the design of your bicycle. Once it is ready, you will be asked for approval."}
@@ -984,10 +984,10 @@ export function OrderBikeDesignSection({
     <AnimatedOrderSection className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm md:flex md:h-[80vh] md:flex-col md:overflow-hidden md:p-6">
       <div className="mb-5 shrink-0">
         <SectionPill>Specification</SectionPill>
-        <h2 className="mt-2 text-xl font-semibold text-slate-900">
+        <h2 className="mt-2 text-xl font-semibold text-gray-900">
           Define the bike specification
         </h2>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">
           During the design stage we collect the preferred parts and build
           direction for the bike based on initial conversation.
         </p>
@@ -998,7 +998,7 @@ export function OrderBikeDesignSection({
           <div className="min-h-0 md:flex-1 md:overflow-y-auto">
             <div className="space-y-4 pt-4 pb-4">
               <div className="rounded-lg border border-stone-200 bg-white p-3">
-                <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">
+                <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-600">
                   Build type
                 </h3>
                 <div className="mt-3 grid gap-3">
@@ -1008,7 +1008,7 @@ export function OrderBikeDesignSection({
                     className={`rounded-lg border px-4 py-3 text-left transition ${
                       specificationMode === "guided_by_designer"
                         ? "border-[var(--kanna-ink)] bg-[var(--kanna-ink)] text-white"
-                        : "border-stone-200 bg-white text-slate-900 hover:border-stone-300"
+                        : "border-stone-200 bg-white text-gray-900 hover:border-stone-300"
                     }`}
                   >
                     <p className="text-sm font-semibold">
@@ -1017,8 +1017,8 @@ export function OrderBikeDesignSection({
                     <p
                       className={`mt-1 text-xs ${
                         specificationMode === "guided_by_designer"
-                          ? "text-slate-200"
-                          : "text-slate-500"
+                          ? "text-gray-200"
+                          : "text-gray-500"
                       }`}
                     >
                       You provide direction and the designer prepares the
@@ -1026,7 +1026,7 @@ export function OrderBikeDesignSection({
                     </p>
                     {showGuidedMessage ? (
                       <label className="mt-4 block">
-                        <span className="mb-2 block text-sm font-semibold text-slate-100">
+                        <span className="mb-2 block text-sm font-semibold text-gray-100">
                           Budget
                         </span>
                         <div className="mt-3 flex items-center gap-2">
@@ -1071,7 +1071,7 @@ export function OrderBikeDesignSection({
                     className={`rounded-lg border px-4 py-3 text-left transition ${
                       specificationMode === "self_specified"
                         ? "border-[var(--kanna-ink)] bg-[var(--kanna-ink)] text-white"
-                        : "border-stone-200 bg-white text-slate-900 hover:border-stone-300"
+                        : "border-stone-200 bg-white text-gray-900 hover:border-stone-300"
                     }`}
                   >
                     <p className="text-sm font-semibold">
@@ -1080,8 +1080,8 @@ export function OrderBikeDesignSection({
                     <p
                       className={`mt-1 text-xs ${
                         specificationMode === "self_specified"
-                          ? "text-slate-200"
-                          : "text-slate-500"
+                          ? "text-gray-200"
+                          : "text-gray-500"
                       }`}
                     >
                       Fill in the preferred parts and component choices
@@ -1095,15 +1095,15 @@ export function OrderBikeDesignSection({
                     className={`rounded-lg border px-4 py-3 text-left transition ${
                       specificationMode === "frame_only"
                         ? "border-[var(--kanna-ink)] bg-[var(--kanna-ink)] text-white"
-                        : "border-stone-200 bg-white text-slate-900 hover:border-stone-300"
+                        : "border-stone-200 bg-white text-gray-900 hover:border-stone-300"
                     }`}
                   >
                     <p className="text-sm font-semibold">Frame only</p>
                     <p
                       className={`mt-1 text-xs ${
                         specificationMode === "frame_only"
-                          ? "text-slate-200"
-                          : "text-slate-500"
+                          ? "text-gray-200"
+                          : "text-gray-500"
                       }`}
                     >
                       Continue this order as a frame-only project without a full
@@ -1115,7 +1115,7 @@ export function OrderBikeDesignSection({
 
               {showSpecificationForm ? (
                 <div className="rounded-lg border border-stone-200 bg-white p-4">
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
                     Specification
                   </h3>
                   <div className="mt-4 space-y-4">
@@ -1133,14 +1133,14 @@ export function OrderBikeDesignSection({
                           key={section.title}
                           className="rounded-lg border border-stone-200 bg-stone-50 p-3"
                         >
-                          <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">
+                          <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-600">
                             {section.title}
                           </h4>
                           <div className="mt-3 space-y-3">
                             {visibleFields.map((field) => {
                               return (
                                 <label key={field.key} className="block">
-                                  <span className="mb-2 block text-sm font-semibold text-slate-700">
+                                  <span className="mb-2 block text-sm font-semibold text-gray-700">
                                     {field.label}
                                   </span>
                                   {field.kind === "select" ? (

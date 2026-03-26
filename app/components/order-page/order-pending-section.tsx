@@ -181,7 +181,8 @@ function validateShippingDetails(
     }
     if (cityOptions.length > 0) {
       const cityMatch = cityOptions.some(
-        (city) => city.toLowerCase() === shippingAddress.city.trim().toLowerCase(),
+        (city) =>
+          city.toLowerCase() === shippingAddress.city.trim().toLowerCase(),
       );
 
       if (!cityMatch) {
@@ -271,41 +272,41 @@ function BankTransferDetails({
 }) {
   return (
     <div className="mt-4 rounded-lg border border-stone-200 bg-stone-50 p-4">
-      <p className="text-sm font-semibold text-slate-900">
+      <p className="text-sm font-semibold text-gray-900">
         Bank transfer details
       </p>
-      <div className="mt-3 grid gap-3 text-sm text-slate-700 sm:grid-cols-2">
+      <div className="mt-3 grid gap-3 text-sm text-gray-700 sm:grid-cols-2">
         <div>
-          <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+          <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
             Account holder
           </span>
           <p className="mt-1">Kanna Bikes Sp. z o.o.</p>
         </div>
         <div>
-          <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+          <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
             Amount
           </span>
           <p className="mt-1">{amountLabel}</p>
         </div>
         <div>
-          <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+          <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
             IBAN
           </span>
-          <p className="mt-1 font-medium text-slate-900">
+          <p className="mt-1 font-medium text-gray-900">
             PL12 3456 7890 1234 5678 9012 3456
           </p>
         </div>
         <div>
-          <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+          <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
             SWIFT / BIC
           </span>
-          <p className="mt-1 font-medium text-slate-900">PKOPPLPW</p>
+          <p className="mt-1 font-medium text-gray-900">PKOPPLPW</p>
         </div>
         <div className="sm:col-span-2">
-          <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+          <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
             Transfer title
           </span>
-          <p className="mt-1 font-medium text-slate-900">
+          <p className="mt-1 font-medium text-gray-900">
             {`Final payment for order ${orderNumber}`}
           </p>
         </div>
@@ -330,20 +331,20 @@ export function OrderPendingSection({
   return (
     <AnimatedOrderSection className="rounded-xl border border-dashed border-stone-300 bg-stone-100/80 p-6 shadow-sm">
       {eyebrow ? (
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-500">
           {eyebrow}
         </p>
       ) : null}
       <h2
         className={
           isEyebrowTitle
-            ? "text-xs font-semibold uppercase tracking-[0.14em] text-slate-500"
-            : "mt-2 text-xl font-semibold text-slate-900"
+            ? "text-xs font-semibold uppercase tracking-[0.14em] text-gray-500"
+            : "mt-2 text-xl font-semibold text-gray-900"
         }
       >
         {title}
       </h2>
-      <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+      <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">
         {description}
       </p>
     </AnimatedOrderSection>
@@ -414,18 +415,20 @@ export function OrderProductionPreviewSection({
       (finalPaymentMethod === "stripe" ||
         finalPaymentMethod === "classic_transfer")
       ? finalPaymentMethod
-      : availablePaymentMethods[0] ?? "stripe",
+      : (availablePaymentMethods[0] ?? "stripe"),
   );
   const [showShippingValidation, setShowShippingValidation] = useState(false);
-  const [shippingQuoteError, setShippingQuoteError] = useState<string | null>(null);
+  const [shippingQuoteError, setShippingQuoteError] = useState<string | null>(
+    null,
+  );
   const [isCalculatingShipping, setIsCalculatingShipping] = useState(false);
   const hasInitialShippingState =
     Boolean(initialShippingState) &&
     Boolean(
       initialShippingState &&
-        (initialShippingState.option === "pickup" ||
-          initialShippingState.shippingCost !== null ||
-          initialShippingState.shippingRateLabel),
+      (initialShippingState.option === "pickup" ||
+        initialShippingState.shippingCost !== null ||
+        initialShippingState.shippingRateLabel),
     );
   const [lastQuotedSignature, setLastQuotedSignature] = useState(() => {
     if (hasInitialShippingState && initialShippingState) {
@@ -446,17 +449,18 @@ export function OrderProductionPreviewSection({
   const [hasProductionHighlight, setHasProductionHighlight] = useState(
     currentStage === "in_production" || currentStage === "delivered",
   );
-  const [quotedShipping, setQuotedShipping] = useState<OrderShippingState | null>(
-    hasInitialShippingState && initialShippingState
-      ? {
-          address: initialShippingState.address,
-          option: initialShippingState.option,
-          shippingCost: initialShippingState.shippingCost,
-          shippingRateLabel: initialShippingState.shippingRateLabel,
-          trackingUrl: initialShippingState.trackingUrl ?? "",
-        }
-      : null,
-  );
+  const [quotedShipping, setQuotedShipping] =
+    useState<OrderShippingState | null>(
+      hasInitialShippingState && initialShippingState
+        ? {
+            address: initialShippingState.address,
+            option: initialShippingState.option,
+            shippingCost: initialShippingState.shippingCost,
+            shippingRateLabel: initialShippingState.shippingRateLabel,
+            trackingUrl: initialShippingState.trackingUrl ?? "",
+          }
+        : null,
+    );
   const [shippingReferenceData, setShippingReferenceData] =
     useState<ShippingReferenceData | null>(null);
   const [shippingAddress, setShippingAddress] = useState({
@@ -498,10 +502,12 @@ export function OrderProductionPreviewSection({
   );
   const hasShippingErrors = Object.keys(shippingErrors).length > 0;
   const effectiveShippingState =
-    quotedShipping ?? (hasInitialShippingState ? initialShippingState ?? null : null);
+    quotedShipping ??
+    (hasInitialShippingState ? (initialShippingState ?? null) : null);
   const shippingCost = effectiveShippingState?.shippingCost ?? 0;
   const hasShippingQuote =
-    effectiveShippingState !== null && effectiveShippingState.shippingCost !== null;
+    effectiveShippingState !== null &&
+    effectiveShippingState.shippingCost !== null;
   const totalAmountBeforeDeposit = finalAmountValue + depositAmountValue;
   const totalWithShipping = finalAmountValue + shippingCost;
   const formattedPaymentDate = formatPaymentDate(finalPaymentPaidAt);
@@ -521,7 +527,7 @@ export function OrderProductionPreviewSection({
       : currentStage === "final_payment_in_review" &&
           finalPaymentOrderStatus === "processing"
         ? "in_production"
-      : currentStage;
+        : currentStage;
   const finalTransferAmountLabel = formatOrderMoney(
     finalAmountValue + shippingCost,
     currency,
@@ -588,14 +594,18 @@ export function OrderProductionPreviewSection({
         previousState &&
         previousState.option === nextShippingState.option &&
         previousState.shippingCost === nextShippingState.shippingCost &&
-        previousState.shippingRateLabel === nextShippingState.shippingRateLabel &&
-        previousState.shippingEstimateNotice === nextShippingState.shippingEstimateNotice &&
+        previousState.shippingRateLabel ===
+          nextShippingState.shippingRateLabel &&
+        previousState.shippingEstimateNotice ===
+          nextShippingState.shippingEstimateNotice &&
         previousState.trackingUrl === nextShippingState.trackingUrl &&
         previousState.address.fullName === nextShippingState.address.fullName &&
         previousState.address.street === nextShippingState.address.street &&
-        previousState.address.postalCode === nextShippingState.address.postalCode &&
+        previousState.address.postalCode ===
+          nextShippingState.address.postalCode &&
         previousState.address.city === nextShippingState.address.city &&
-        previousState.address.countryCode === nextShippingState.address.countryCode
+        previousState.address.countryCode ===
+          nextShippingState.address.countryCode
       ) {
         return previousState;
       }
@@ -603,14 +613,16 @@ export function OrderProductionPreviewSection({
       return nextShippingState;
     });
 
-    setLastQuotedSignature([
-      initialShippingState.option,
-      initialShippingState.address.fullName.trim(),
-      initialShippingState.address.street.trim(),
-      initialShippingState.address.postalCode.trim(),
-      initialShippingState.address.city.trim(),
-      initialShippingState.address.countryCode.trim(),
-    ].join("|"));
+    setLastQuotedSignature(
+      [
+        initialShippingState.option,
+        initialShippingState.address.fullName.trim(),
+        initialShippingState.address.street.trim(),
+        initialShippingState.address.postalCode.trim(),
+        initialShippingState.address.city.trim(),
+        initialShippingState.address.countryCode.trim(),
+      ].join("|"),
+    );
   }, [hasInitialShippingState, initialShippingState]);
 
   useEffect(() => {
@@ -724,10 +736,10 @@ export function OrderProductionPreviewSection({
     return (
       <AnimatedOrderSection className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm">
         <SectionPill>Production</SectionPill>
-        <h2 className="mt-2 text-xl font-semibold text-slate-900">
+        <h2 className="mt-2 text-xl font-semibold text-gray-900">
           Waiting for final payment
         </h2>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">
           Final payment will cover the cost of materials, specified parts, and
           production of your custom bicycle. Once we receive it, your bike will
           move directly into production and we will provide an estimated
@@ -737,50 +749,53 @@ export function OrderProductionPreviewSection({
           <DetailPanel title="Shipping details">
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-700">
+                <span className="mb-2 block text-sm font-semibold text-gray-700">
                   Name
                 </span>
                 <InputField
                   type="text"
                   value={shippingFirstName ?? ""}
-                  onChange={(event) =>
-                    {
-                      setShippingAddress((prev) => ({
-                        ...prev,
-                        fullName: [event.target.value.trim(), shippingLastName]
-                          .filter(Boolean)
-                          .join(" "),
-                      }));
-                      resetShippingQuoteState();
-                    }
-                  }
+                  onChange={(event) => {
+                    setShippingAddress((prev) => ({
+                      ...prev,
+                      fullName: [event.target.value.trim(), shippingLastName]
+                        .filter(Boolean)
+                        .join(" "),
+                    }));
+                    resetShippingQuoteState();
+                  }}
                   onFocus={resetShippingQuoteState}
                   placeholder="Name"
-                  hasError={showShippingValidation && Boolean(shippingErrors.fullName)}
+                  hasError={
+                    showShippingValidation && Boolean(shippingErrors.fullName)
+                  }
                   className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                 />
               </label>
               <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-700">
+                <span className="mb-2 block text-sm font-semibold text-gray-700">
                   Lastname
                 </span>
                 <InputField
                   type="text"
                   value={shippingLastName}
-                  onChange={(event) =>
-                    {
-                      setShippingAddress((prev) => ({
-                        ...prev,
-                        fullName: [shippingFirstName ?? "", event.target.value.trim()]
-                          .filter(Boolean)
-                          .join(" "),
-                      }));
-                      resetShippingQuoteState();
-                    }
-                  }
+                  onChange={(event) => {
+                    setShippingAddress((prev) => ({
+                      ...prev,
+                      fullName: [
+                        shippingFirstName ?? "",
+                        event.target.value.trim(),
+                      ]
+                        .filter(Boolean)
+                        .join(" "),
+                    }));
+                    resetShippingQuoteState();
+                  }}
                   onFocus={resetShippingQuoteState}
                   placeholder="Lastname"
-                  hasError={showShippingValidation && Boolean(shippingErrors.fullName)}
+                  hasError={
+                    showShippingValidation && Boolean(shippingErrors.fullName)
+                  }
                   className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                 />
               </label>
@@ -790,24 +805,24 @@ export function OrderProductionPreviewSection({
                 </p>
               ) : null}
               <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-700">
+                <span className="mb-2 block text-sm font-semibold text-gray-700">
                   Email
                 </span>
                 <InputField
                   type="email"
                   value={shippingAddress.email}
-                  onChange={(event) =>
-                    {
-                      setShippingAddress((prev) => ({
-                        ...prev,
-                        email: event.target.value,
-                      }));
-                      resetShippingQuoteState();
-                    }
-                  }
+                  onChange={(event) => {
+                    setShippingAddress((prev) => ({
+                      ...prev,
+                      email: event.target.value,
+                    }));
+                    resetShippingQuoteState();
+                  }}
                   onFocus={resetShippingQuoteState}
                   placeholder="Email"
-                  hasError={showShippingValidation && Boolean(shippingErrors.email)}
+                  hasError={
+                    showShippingValidation && Boolean(shippingErrors.email)
+                  }
                   className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                 />
                 {showShippingValidation && shippingErrors.email ? (
@@ -817,24 +832,25 @@ export function OrderProductionPreviewSection({
                 ) : null}
               </label>
               <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-700">
+                <span className="mb-2 block text-sm font-semibold text-gray-700">
                   Phone number
                 </span>
                 <InputField
                   type="tel"
                   value={shippingAddress.phoneNumber}
-                  onChange={(event) =>
-                    {
-                      setShippingAddress((prev) => ({
-                        ...prev,
-                        phoneNumber: event.target.value,
-                      }));
-                      resetShippingQuoteState();
-                    }
-                  }
+                  onChange={(event) => {
+                    setShippingAddress((prev) => ({
+                      ...prev,
+                      phoneNumber: event.target.value,
+                    }));
+                    resetShippingQuoteState();
+                  }}
                   onFocus={resetShippingQuoteState}
                   placeholder="Phone number"
-                  hasError={showShippingValidation && Boolean(shippingErrors.phoneNumber)}
+                  hasError={
+                    showShippingValidation &&
+                    Boolean(shippingErrors.phoneNumber)
+                  }
                   className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                 />
                 {showShippingValidation && shippingErrors.phoneNumber ? (
@@ -851,19 +867,27 @@ export function OrderProductionPreviewSection({
                   onChange={(event) => {
                     const nextCountryName = event.target.value;
                     const nextCountryCode = shippingReferenceData
-                      ? shippingReferenceData.getCountryCodeByName(nextCountryName)
+                      ? shippingReferenceData.getCountryCodeByName(
+                          nextCountryName,
+                        )
                       : "";
                     setShippingAddress((prev) => ({
                       ...prev,
                       country: nextCountryName,
                       countryCode: nextCountryCode,
-                      city: nextCountryCode !== prev.countryCode ? "" : prev.city,
-                      postalCode: nextCountryCode !== prev.countryCode ? "" : prev.postalCode,
+                      city:
+                        nextCountryCode !== prev.countryCode ? "" : prev.city,
+                      postalCode:
+                        nextCountryCode !== prev.countryCode
+                          ? ""
+                          : prev.postalCode,
                     }));
                     resetShippingQuoteState();
                   }}
                   placeholder="Country"
-                  hasError={showShippingValidation && Boolean(shippingErrors.country)}
+                  hasError={
+                    showShippingValidation && Boolean(shippingErrors.country)
+                  }
                   className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                 />
                 <datalist id={countryListId}>
@@ -881,18 +905,18 @@ export function OrderProductionPreviewSection({
                 <InputField
                   type="text"
                   value={shippingAddress.postalCode}
-                  onChange={(event) =>
-                    {
-                      setShippingAddress((prev) => ({
-                        ...prev,
-                        postalCode: event.target.value,
-                      }));
-                      resetShippingQuoteState();
-                    }
-                  }
+                  onChange={(event) => {
+                    setShippingAddress((prev) => ({
+                      ...prev,
+                      postalCode: event.target.value,
+                    }));
+                    resetShippingQuoteState();
+                  }}
                   onFocus={resetShippingQuoteState}
                   placeholder="Postal code"
-                  hasError={showShippingValidation && Boolean(shippingErrors.postalCode)}
+                  hasError={
+                    showShippingValidation && Boolean(shippingErrors.postalCode)
+                  }
                   className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                 />
                 {showShippingValidation && shippingErrors.postalCode ? (
@@ -906,19 +930,19 @@ export function OrderProductionPreviewSection({
                   type="text"
                   list={cityOptions.length > 0 ? cityListId : undefined}
                   value={shippingAddress.city}
-                  onChange={(event) =>
-                    {
-                      setShippingAddress((prev) => ({
-                        ...prev,
-                        city: event.target.value,
-                      }));
-                      resetShippingQuoteState();
-                    }
-                  }
+                  onChange={(event) => {
+                    setShippingAddress((prev) => ({
+                      ...prev,
+                      city: event.target.value,
+                    }));
+                    resetShippingQuoteState();
+                  }}
                   onFocus={resetShippingQuoteState}
                   disabled={!shippingAddress.countryCode}
                   placeholder="City"
-                  hasError={showShippingValidation && Boolean(shippingErrors.city)}
+                  hasError={
+                    showShippingValidation && Boolean(shippingErrors.city)
+                  }
                   className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                 />
                 {cityOptions.length > 0 ? (
@@ -938,18 +962,18 @@ export function OrderProductionPreviewSection({
                 <InputField
                   type="text"
                   value={shippingAddress.street}
-                  onChange={(event) =>
-                    {
-                      setShippingAddress((prev) => ({
-                        ...prev,
-                        street: event.target.value,
-                      }));
-                      resetShippingQuoteState();
-                    }
-                  }
+                  onChange={(event) => {
+                    setShippingAddress((prev) => ({
+                      ...prev,
+                      street: event.target.value,
+                    }));
+                    resetShippingQuoteState();
+                  }}
                   onFocus={resetShippingQuoteState}
                   placeholder="Street and house number"
-                  hasError={showShippingValidation && Boolean(shippingErrors.street)}
+                  hasError={
+                    showShippingValidation && Boolean(shippingErrors.street)
+                  }
                   className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                 />
                 {showShippingValidation && shippingErrors.street ? (
@@ -961,11 +985,11 @@ export function OrderProductionPreviewSection({
             </div>
 
             <fieldset className="mt-5">
-              <legend className="mb-2 text-sm font-semibold text-slate-700">
+              <legend className="mb-2 text-sm font-semibold text-gray-700">
                 Shipping option
               </legend>
               <div className="grid gap-2">
-                <label className="flex items-center gap-3 rounded-lg border border-stone-200 bg-white px-4 py-3 text-sm text-slate-900">
+                <label className="flex items-center gap-3 rounded-lg border border-stone-200 bg-white px-4 py-3 text-sm text-gray-900">
                   <input
                     type="radio"
                     name="shipping-option"
@@ -977,7 +1001,7 @@ export function OrderProductionPreviewSection({
                   />
                   <span>Courier delivery</span>
                 </label>
-                <label className="flex items-center gap-3 rounded-lg border border-stone-200 bg-white px-4 py-3 text-sm text-slate-900">
+                <label className="flex items-center gap-3 rounded-lg border border-stone-200 bg-white px-4 py-3 text-sm text-gray-900">
                   <input
                     type="radio"
                     name="shipping-option"
@@ -993,7 +1017,7 @@ export function OrderProductionPreviewSection({
             </fieldset>
 
             <div className="mt-5 border-t border-stone-200 pt-5">
-              <p className="text-sm font-semibold text-slate-900">
+              <p className="text-sm font-semibold text-gray-900">
                 Payment options
               </p>
               <div className="mt-3 grid gap-2">
@@ -1022,7 +1046,11 @@ export function OrderProductionPreviewSection({
                 <BankTransferDetails
                   amountLabel={
                     totalTaxSummary
-                      ? formatOrderMoney(totalTaxSummary.grossAmount, currency, locale)
+                      ? formatOrderMoney(
+                          totalTaxSummary.grossAmount,
+                          currency,
+                          locale,
+                        )
                       : finalTransferAmountLabel
                   }
                   orderNumber={orderNumber}
@@ -1032,34 +1060,38 @@ export function OrderProductionPreviewSection({
           </DetailPanel>
 
           <aside className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
-            <h3 className="text-sm font-semibold text-slate-900">Summary</h3>
+            <h3 className="text-sm font-semibold text-gray-900">Summary</h3>
             <div className="mt-4 rounded-lg border border-stone-200 bg-stone-50 p-4 text-sm">
               <div className="flex items-center justify-between gap-4">
-                <span className="text-slate-700">Total amount</span>
-                <span className="font-semibold text-slate-900">
+                <span className="text-gray-700">Total amount</span>
+                <span className="font-semibold text-gray-900">
                   {formatOrderMoney(totalAmountBeforeDeposit, currency, locale)}
                 </span>
               </div>
               <div className="mt-2 flex items-center justify-between gap-4">
-                <span className="text-slate-700">Deposit</span>
-                <span className="font-semibold text-slate-900">
+                <span className="text-gray-700">Deposit</span>
+                <span className="font-semibold text-gray-900">
                   -{formatOrderMoney(depositAmountValue, currency, locale)}
                 </span>
               </div>
-                <div className="mt-2 flex items-center justify-between gap-4">
-                  <span className="text-slate-700">Shipping</span>
+              <div className="mt-2 flex items-center justify-between gap-4">
+                <span className="text-gray-700">Shipping</span>
                 <div className="text-right">
-                  <span className="font-semibold text-slate-900">
-                    {isCalculatingShipping
-                      ? <PendingValue />
-                      : hasShippingQuote
-                      ? shippingCost === 0
-                        ? formatOrderMoney(0, currency, locale)
-                        : formatOrderMoney(shippingCost, currency, locale)
-                      : "Fill shipping details"}
+                  <span className="font-semibold text-gray-900">
+                    {isCalculatingShipping ? (
+                      <PendingValue />
+                    ) : hasShippingQuote ? (
+                      shippingCost === 0 ? (
+                        formatOrderMoney(0, currency, locale)
+                      ) : (
+                        formatOrderMoney(shippingCost, currency, locale)
+                      )
+                    ) : (
+                      "Fill shipping details"
+                    )}
                   </span>
                   {quotedShipping?.shippingRateLabel ? (
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-gray-500">
                       {quotedShipping.shippingRateLabel}
                     </p>
                   ) : null}
@@ -1081,36 +1113,50 @@ export function OrderProductionPreviewSection({
                     </p>
                   ) : null}
                 </div>
-                </div>
-                <div className="mt-2 flex items-center justify-between gap-4">
-                  <span className="text-slate-700">Payment method</span>
-                  <span className="font-semibold text-slate-900">
-                    {paymentMethod === "classic_transfer"
-                      ? "Classic transfer"
-                      : "Stripe"}
-                  </span>
-                </div>
+              </div>
+              <div className="mt-2 flex items-center justify-between gap-4">
+                <span className="text-gray-700">Payment method</span>
+                <span className="font-semibold text-gray-900">
+                  {paymentMethod === "classic_transfer"
+                    ? "Classic transfer"
+                    : "Stripe"}
+                </span>
+              </div>
               <div className="mt-3 border-t border-stone-200 pt-3">
                 <div className="mb-2 flex items-center justify-between gap-4">
-                  <span className="text-slate-700">VAT total (23% included)</span>
-                  <span className="font-semibold text-slate-900">
-                    {totalTaxSummary
-                      ? formatOrderMoney(totalTaxSummary.taxAmount, currency, locale)
-                      : isCalculatingShipping
-                        ? <PendingValue />
-                        : <PendingValue />}
+                  <span className="text-gray-700">
+                    VAT total (23% included)
+                  </span>
+                  <span className="font-semibold text-gray-900">
+                    {totalTaxSummary ? (
+                      formatOrderMoney(
+                        totalTaxSummary.taxAmount,
+                        currency,
+                        locale,
+                      )
+                    ) : isCalculatingShipping ? (
+                      <PendingValue />
+                    ) : (
+                      <PendingValue />
+                    )}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-4">
-                  <span className="text-base font-semibold text-slate-900">
+                  <span className="text-base font-semibold text-gray-900">
                     Total due
                   </span>
-                  <span className="text-lg font-semibold text-slate-900">
-                    {totalTaxSummary
-                      ? formatOrderMoney(totalTaxSummary.grossAmount, currency, locale)
-                      : isCalculatingShipping
-                        ? <PendingValue />
-                        : <PendingValue />}
+                  <span className="text-lg font-semibold text-gray-900">
+                    {totalTaxSummary ? (
+                      formatOrderMoney(
+                        totalTaxSummary.grossAmount,
+                        currency,
+                        locale,
+                      )
+                    ) : isCalculatingShipping ? (
+                      <PendingValue />
+                    ) : (
+                      <PendingValue />
+                    )}
                   </span>
                 </div>
               </div>
@@ -1121,21 +1167,19 @@ export function OrderProductionPreviewSection({
             <button
               type="button"
               disabled={isCalculatingShipping || isSubmittingFinalPayment}
-              onClick={() =>
-                {
-                  setShowShippingValidation(true);
+              onClick={() => {
+                setShowShippingValidation(true);
 
-                  if (hasShippingErrors || !hasShippingQuote) {
-                    return;
-                  }
-
-                  onPayFinalAmount({
-                    address: quotedShipping?.address ?? shippingAddress,
-                    paymentMethod,
-                    option: shippingOption,
-                  });
+                if (hasShippingErrors || !hasShippingQuote) {
+                  return;
                 }
-              }
+
+                onPayFinalAmount({
+                  address: quotedShipping?.address ?? shippingAddress,
+                  paymentMethod,
+                  option: shippingOption,
+                });
+              }}
               className="mt-4 inline-flex w-full items-center justify-center rounded-md bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:bg-stone-300"
             >
               {isSubmittingFinalPayment
@@ -1154,8 +1198,8 @@ export function OrderProductionPreviewSection({
     return (
       <AnimatedOrderSection className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm">
         <SectionPill>Production</SectionPill>
-        <h2 className="mt-2 text-xl font-semibold text-slate-900">In review</h2>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+        <h2 className="mt-2 text-xl font-semibold text-gray-900">In review</h2>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">
           We are reviewing the final payment. Once it is confirmed, the order
           will move into production manually.
         </p>
@@ -1195,7 +1239,7 @@ export function OrderProductionPreviewSection({
         >
           Production
         </SectionPill>
-        <h2 className="mt-2 text-xl font-semibold text-slate-900">
+        <h2 className="mt-2 text-xl font-semibold text-gray-900">
           {effectiveProductionStage === "in_production"
             ? "In production"
             : effectiveProductionStage === "waiting_for_delivery"
@@ -1203,14 +1247,9 @@ export function OrderProductionPreviewSection({
               : "Delivered"}
         </h2>
         {effectiveProductionStage === "waiting_for_delivery" ? (
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">
             Your bicycle is ready for delivery or pickup.
-            {trackingUrl ? (
-              <>
-                {" "}
-                Courier tracking is available below.
-              </>
-            ) : null}
+            {trackingUrl ? <> Courier tracking is available below.</> : null}
           </p>
         ) : null}
         {trackingUrl &&
@@ -1236,12 +1275,12 @@ export function OrderProductionPreviewSection({
           }`}
         >
           <div className="rounded-lg border border-stone-200 bg-stone-50 p-4">
-            <span className="mb-2 block text-sm font-semibold text-slate-700">
+            <span className="mb-2 block text-sm font-semibold text-gray-700">
               {effectiveProductionStage === "delivered"
                 ? "Delivered on"
                 : "Estimated delivery time"}
             </span>
-            <p className="text-sm text-slate-900">
+            <p className="text-sm text-gray-900">
               {effectiveProductionStage === "delivered"
                 ? MOCK_DELIVERED_ON
                 : MOCK_ESTIMATED_DELIVERY_TIME}
@@ -1249,11 +1288,11 @@ export function OrderProductionPreviewSection({
           </div>
           {initialShippingState?.option === "courier" ? (
             <div className="rounded-lg border border-stone-200 bg-stone-50 p-4">
-              <span className="mb-2 block text-sm font-semibold text-slate-700">
+              <span className="mb-2 block text-sm font-semibold text-gray-700">
                 Shipping address
               </span>
-              <div className="space-y-1 text-sm text-slate-700">
-                <p className="font-semibold text-slate-900">
+              <div className="space-y-1 text-sm text-gray-700">
+                <p className="font-semibold text-gray-900">
                   {initialShippingState.address.fullName}
                 </p>
                 <p>{initialShippingState.address.email}</p>
@@ -1269,20 +1308,22 @@ export function OrderProductionPreviewSection({
           ) : null}
         </div>
         <div className="mt-4 rounded-lg border border-stone-200 bg-stone-50 p-4">
-          <div className={`grid gap-4 ${formattedPaymentDate ? "sm:grid-cols-2" : ""}`}>
+          <div
+            className={`grid gap-4 ${formattedPaymentDate ? "sm:grid-cols-2" : ""}`}
+          >
             {formattedPaymentDate ? (
               <div>
-                <span className="mb-2 block text-sm font-semibold text-slate-700">
+                <span className="mb-2 block text-sm font-semibold text-gray-700">
                   Payment date
                 </span>
-                <p className="text-sm text-slate-900">{formattedPaymentDate}</p>
+                <p className="text-sm text-gray-900">{formattedPaymentDate}</p>
               </div>
             ) : null}
             <div>
-              <span className="mb-2 block text-sm font-semibold text-slate-700">
+              <span className="mb-2 block text-sm font-semibold text-gray-700">
                 Amount paid by customer
               </span>
-              <p className="text-sm text-slate-900">
+              <p className="text-sm text-gray-900">
                 {formatOrderMoney(totalWithShipping, currency, locale)}
               </p>
             </div>

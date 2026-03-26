@@ -71,8 +71,7 @@ export function meta({ loaderData, location }: Route.MetaArgs) {
 
   return buildLocalizedMeta({
     alternates: loaderData?.alternatePaths,
-    description:
-      loaderData?.product?.name ?? messages.meta.shop.description,
+    description: loaderData?.product?.name ?? messages.meta.shop.description,
     locale,
     pathname: location.pathname,
     title: formatPageTitle(
@@ -95,16 +94,21 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
   const [reviews, setReviews] = useState<StoreProductReview[]>([]);
   const [reviewsError, setReviewsError] = useState<string | null>(null);
   const [reviewsLoading, setReviewsLoading] = useState(true);
-  const [customerSession, setCustomerSession] = useState<CustomerSession | null>(null);
+  const [customerSession, setCustomerSession] =
+    useState<CustomerSession | null>(null);
   const [customerSessionLoading, setCustomerSessionLoading] = useState(true);
-  const [reviewableProducts, setReviewableProducts] = useState<ReviewableProduct[]>([]);
+  const [reviewableProducts, setReviewableProducts] = useState<
+    ReviewableProduct[]
+  >([]);
   const [reviewRating, setReviewRating] = useState("5");
   const [reviewBody, setReviewBody] = useState("");
-  const [reviewSubmitStatus, setReviewSubmitStatus] = useState<string | null>(null);
-  const [reviewSubmitting, setReviewSubmitting] = useState(false);
-  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>(
-    () => getInitialOptionSelection(loaderData?.product ?? null),
+  const [reviewSubmitStatus, setReviewSubmitStatus] = useState<string | null>(
+    null,
   );
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState<
+    Record<string, string>
+  >(() => getInitialOptionSelection(loaderData?.product ?? null));
 
   if (!loaderData) {
     return (
@@ -112,7 +116,7 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
         <PageContainer>
           <div className="max-w-4xl">
             <SectionPill>{messages.commerce.shopPill}</SectionPill>
-            <p className="mt-6 text-sm text-slate-600">
+            <p className="mt-6 text-sm text-gray-600">
               {messages.commerce.noProducts}
             </p>
           </div>
@@ -127,7 +131,7 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
         <PageContainer>
           <div className="max-w-4xl">
             <SectionPill>{messages.commerce.shopPill}</SectionPill>
-            <p className="mt-6 text-sm text-slate-600">
+            <p className="mt-6 text-sm text-gray-600">
               {messages.commerce.noProducts}
             </p>
           </div>
@@ -230,7 +234,10 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
   }, [locale]);
 
   const canReviewProduct = useMemo(
-    () => reviewableProducts.some((reviewableProduct) => reviewableProduct.id === product.id),
+    () =>
+      reviewableProducts.some(
+        (reviewableProduct) => reviewableProduct.id === product.id,
+      ),
     [product.id, reviewableProducts],
   );
 
@@ -326,7 +333,9 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
                     return (
                       <span
                         key={index}
-                        className={isFilled ? "text-[var(--kanna-ink)]" : "text-black/20"}
+                        className={
+                          isFilled ? "text-[var(--kanna-ink)]" : "text-black/20"
+                        }
                       >
                         ★
                       </span>
@@ -345,7 +354,9 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
             {product.shortDescriptionHtml ? (
               <div
                 className="mt-6 blog-content text-base"
-                dangerouslySetInnerHTML={{ __html: product.shortDescriptionHtml }}
+                dangerouslySetInnerHTML={{
+                  __html: product.shortDescriptionHtml,
+                }}
               />
             ) : null}
 
@@ -381,10 +392,7 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
             ) : null}
 
             <div className="mt-8 flex flex-wrap gap-4">
-              <Button
-                onClick={handleAddToCart}
-                disabled={isAddingToCart}
-              >
+              <Button onClick={handleAddToCart} disabled={isAddingToCart}>
                 {isAddingToCart
                   ? `${messages.commerce.addToCart}...`
                   : messages.commerce.addToCart}
@@ -408,14 +416,19 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
             ) : null}
 
             {reviewsLoading || reviewsError || reviews.length > 0 ? (
-              <section id="reviews" className="mt-12 border-t border-black/15 pt-10">
+              <section
+                id="reviews"
+                className="mt-12 border-t border-black/15 pt-10"
+              >
                 <SectionPill>{messages.commerce.reviews}</SectionPill>
                 <div className="mt-6 border border-black/90 bg-white p-6">
                   {customerSessionLoading ? (
                     <p className="text-sm text-black/70">
                       {messages.commerce.reviewsLoading}
                     </p>
-                  ) : customerSession?.authenticated && customerSession.csrfToken && canReviewProduct ? (
+                  ) : customerSession?.authenticated &&
+                    customerSession.csrfToken &&
+                    canReviewProduct ? (
                     <form
                       className="space-y-4"
                       onSubmit={async (event) => {
@@ -460,7 +473,12 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
                         <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
                           {messages.account.ratingLabel}
                         </span>
-                        <SelectField value={reviewRating} onChange={(event) => setReviewRating(event.currentTarget.value)}>
+                        <SelectField
+                          value={reviewRating}
+                          onChange={(event) =>
+                            setReviewRating(event.currentTarget.value)
+                          }
+                        >
                           {[5, 4, 3, 2, 1].map((value) => (
                             <option key={value} value={value}>
                               {value}
@@ -475,14 +493,18 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
                         <TextareaField
                           rows={5}
                           value={reviewBody}
-                          onChange={(event) => setReviewBody(event.currentTarget.value)}
+                          onChange={(event) =>
+                            setReviewBody(event.currentTarget.value)
+                          }
                         />
                       </label>
                       <Button type="submit" disabled={reviewSubmitting}>
                         {messages.account.reviewPublish}
                       </Button>
                       {reviewSubmitStatus ? (
-                        <p className="text-sm text-slate-600">{reviewSubmitStatus}</p>
+                        <p className="text-sm text-gray-600">
+                          {reviewSubmitStatus}
+                        </p>
                       ) : null}
                     </form>
                   ) : customerSession?.authenticated ? (
@@ -503,14 +525,19 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
                         description={messages.commerce.reviewsSignInCta}
                         locale={locale}
                         redirectTo={reviewRedirectPath}
-                        secondaryDescription={messages.commerce.reviewsSignUpCta}
+                        secondaryDescription={
+                          messages.commerce.reviewsSignUpCta
+                        }
                         onSuccess={async (session) => {
                           setReviewSubmitStatus(null);
                           setCustomerSession(session);
 
                           try {
-                            const nextReviewData = await fetchCustomerReviews(locale);
-                            setReviewableProducts(nextReviewData.reviewableProducts);
+                            const nextReviewData =
+                              await fetchCustomerReviews(locale);
+                            setReviewableProducts(
+                              nextReviewData.reviewableProducts,
+                            );
                           } catch {
                             setReviewableProducts([]);
                           }
@@ -551,7 +578,9 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
                               {review.author}
                             </p>
                             <p className="text-xs uppercase tracking-[0.08em] text-black/45">
-                              {"★".repeat(Math.max(0, Math.min(review.rating, 5)))}
+                              {"★".repeat(
+                                Math.max(0, Math.min(review.rating, 5)),
+                              )}
                             </p>
                             {review.verified ? (
                               <p className="text-xs uppercase tracking-[0.08em] text-black/55">
@@ -560,11 +589,14 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
                             ) : null}
                             {review.createdAt ? (
                               <p className="ml-auto text-xs uppercase tracking-[0.08em] text-black/45">
-                                {new Intl.DateTimeFormat(getIntlLocale(locale), {
-                                  day: "numeric",
-                                  month: "long",
-                                  year: "numeric",
-                                }).format(new Date(review.createdAt))}
+                                {new Intl.DateTimeFormat(
+                                  getIntlLocale(locale),
+                                  {
+                                    day: "numeric",
+                                    month: "long",
+                                    year: "numeric",
+                                  },
+                                ).format(new Date(review.createdAt))}
                               </p>
                             ) : null}
                           </div>

@@ -66,7 +66,9 @@ export function SiteHeader() {
     void syncCart();
 
     const handleCartUpdated = (event: Event) => {
-      const detail = (event as CustomEvent<{ cart?: StoreCart; openDrawer?: boolean }>).detail;
+      const detail = (
+        event as CustomEvent<{ cart?: StoreCart; openDrawer?: boolean }>
+      ).detail;
       const totalItems = detail?.cart?.totalItems ?? 0;
 
       setCartItemsCount(totalItems);
@@ -122,8 +124,8 @@ export function SiteHeader() {
   return (
     <>
       <header
-        className={`fixed inset-x-0 top-0 z-40 h-[var(--site-header-height)] px-2 md:px-3 ${
-          useBlendMode ? "text-white" : "text-[var(--kanna-color)]"
+        className={`fixed inset-x-0 top-0 z-40 h-(--site-header-height) px-2 md:px-3${
+          useBlendMode ? "text-white" : "text-(--kanna-color)"
         }`}
         style={useBlendMode ? { mixBlendMode: "difference" } : undefined}
       >
@@ -144,7 +146,7 @@ export function SiteHeader() {
 
           <div
             className={`flex items-center gap-3 text-sm font-black uppercase ${
-              useBlendMode ? "text-white" : "text-[var(--kanna-color)]"
+              useBlendMode ? "text-white" : "text-(--kanna-color)"
             }`}
             style={KANNA_MENU_FONT_STYLE}
           >
@@ -225,8 +227,11 @@ export function SiteHeader() {
                           initial={{ opacity: 0, scale: 0.7 }}
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.7 }}
-                          transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-                          className="absolute -right-1.5 -top-1.5 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-[var(--kanna-ink)] px-1 text-[10px] leading-none text-white"
+                          transition={{
+                            duration: 0.18,
+                            ease: [0.22, 1, 0.36, 1],
+                          }}
+                          className="absolute -right-1.5 -top-1.5 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-(--kanna-ink) px-1 text-[10px] leading-none text-white"
                         >
                           {cartItemsCount}
                         </motion.span>

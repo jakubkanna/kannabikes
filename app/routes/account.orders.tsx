@@ -51,17 +51,20 @@ export default function AccountOrdersPage({
   return (
     <AccountShell session={session} title={messages.account.ordersTitle}>
       {orders.length === 0 ? (
-        <p className="text-sm text-slate-600">{messages.account.noOrders}</p>
+        <p className="text-sm text-gray-600">{messages.account.noOrders}</p>
       ) : (
         <div className="space-y-4">
           {orders.map((order) => (
-            <article key={order.id} className="border border-black/15 bg-white p-5">
+            <article
+              key={order.id}
+              className="border border-black/15 bg-white p-5"
+            >
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
                     #{order.number}
                   </p>
-                  <p className="mt-1 text-sm text-slate-600">{order.status}</p>
+                  <p className="mt-1 text-sm text-gray-600">{order.status}</p>
                 </div>
                 <p className="text-sm font-semibold text-[var(--kanna-ink)]">
                   {order.total}

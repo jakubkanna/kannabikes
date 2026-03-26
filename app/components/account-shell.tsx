@@ -6,7 +6,10 @@ import { PageContainer, PageShell } from "~/components/page-container";
 import { SectionPill } from "~/components/section-pill";
 import { useLocale, useMessages } from "./locale-provider";
 import type { CustomerSession, CustomerUser } from "~/lib/customer-account";
-import { logoutCustomerSession, uploadCustomerAvatar } from "~/lib/customer-account";
+import {
+  logoutCustomerSession,
+  uploadCustomerAvatar,
+} from "~/lib/customer-account";
 import { localizePath } from "~/lib/i18n";
 
 export function AccountShell({
@@ -93,7 +96,10 @@ export function AccountShell({
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-sm font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
-                      {(displayUser.displayName || displayUser.email).slice(0, 1)}
+                      {(displayUser.displayName || displayUser.email).slice(
+                        0,
+                        1,
+                      )}
                     </div>
                   )}
 
@@ -104,7 +110,7 @@ export function AccountShell({
                   </span>
                 </button>
 
-                <p className="text-sm leading-6 text-slate-600">
+                <p className="text-sm leading-6 text-gray-600">
                   {displayUser.displayName || displayUser.email}
                 </p>
               </div>

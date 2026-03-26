@@ -8,9 +8,7 @@ import {
   StripeCardIcon,
 } from "~/components/commerce/payment-option";
 import { LocalizedLink } from "~/components/localized-link";
-import {
-  AnimatedOrderSection,
-} from "~/components/order-page/order-motion";
+import { AnimatedOrderSection } from "~/components/order-page/order-motion";
 import { SectionStack } from "~/components/order-page/section-stack";
 import {
   InputField,
@@ -20,11 +18,7 @@ import {
 import { useLocale, useMessages } from "~/components/locale-provider";
 import { PageShell } from "~/components/page-container";
 import { SectionPill } from "~/components/section-pill";
-import {
-  buildLocalizedMeta,
-  getLocaleFromPath,
-  getMessages,
-} from "~/lib/i18n";
+import { buildLocalizedMeta, getLocaleFromPath, getMessages } from "~/lib/i18n";
 import {
   fetchStoreCart,
   submitStoreCheckout,
@@ -116,7 +110,8 @@ export default function CheckoutPage() {
             postcode: formValues.postcode,
           },
           customer_note: formValues.note,
-          payment_method: paymentMethod === "classic_transfer" ? "bacs" : "stripe",
+          payment_method:
+            paymentMethod === "classic_transfer" ? "bacs" : "stripe",
           shipping_address: {
             address_1: formValues.address1,
             city: formValues.city,
@@ -152,11 +147,11 @@ export default function CheckoutPage() {
 
         {isLoadingCart ? (
           <AnimatedOrderSection className="rounded-xl border border-dashed border-stone-300 bg-stone-100/80 p-6 shadow-sm">
-            <p className="text-sm text-slate-600">{messages.checkout.loading}</p>
+            <p className="text-sm text-gray-600">{messages.checkout.loading}</p>
           </AnimatedOrderSection>
         ) : !cart || cart.items.length === 0 ? (
           <AnimatedOrderSection className="rounded-xl border border-dashed border-stone-300 bg-stone-100/80 p-6 shadow-sm">
-            <p className="text-sm text-slate-600">{messages.checkout.empty}</p>
+            <p className="text-sm text-gray-600">{messages.checkout.empty}</p>
             <LocalizedLink
               to="/shop"
               className="mt-6 inline-flex rounded-full bg-[var(--kanna-ink)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-black"
@@ -175,7 +170,7 @@ export default function CheckoutPage() {
                 <DetailPanel title="Shipping details">
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
                     <label className="block">
-                      <span className="mb-2 block text-sm font-semibold text-slate-700">
+                      <span className="mb-2 block text-sm font-semibold text-gray-700">
                         Name
                       </span>
                       <InputField
@@ -192,7 +187,7 @@ export default function CheckoutPage() {
                       />
                     </label>
                     <label className="block">
-                      <span className="mb-2 block text-sm font-semibold text-slate-700">
+                      <span className="mb-2 block text-sm font-semibold text-gray-700">
                         Lastname
                       </span>
                       <InputField
@@ -209,7 +204,7 @@ export default function CheckoutPage() {
                       />
                     </label>
                     <label className="block">
-                      <span className="mb-2 block text-sm font-semibold text-slate-700">
+                      <span className="mb-2 block text-sm font-semibold text-gray-700">
                         Email
                       </span>
                       <InputField
@@ -226,7 +221,7 @@ export default function CheckoutPage() {
                       />
                     </label>
                     <label className="block">
-                      <span className="mb-2 block text-sm font-semibold text-slate-700">
+                      <span className="mb-2 block text-sm font-semibold text-gray-700">
                         Phone number
                       </span>
                       <InputField
@@ -243,7 +238,7 @@ export default function CheckoutPage() {
                       />
                     </label>
                     <label className="block sm:col-span-2">
-                      <span className="mb-2 block text-sm font-semibold text-slate-700">
+                      <span className="mb-2 block text-sm font-semibold text-gray-700">
                         Country
                       </span>
                       <SelectField
@@ -263,7 +258,7 @@ export default function CheckoutPage() {
                       </SelectField>
                     </label>
                     <label className="block">
-                      <span className="mb-2 block text-sm font-semibold text-slate-700">
+                      <span className="mb-2 block text-sm font-semibold text-gray-700">
                         Postal code
                       </span>
                       <InputField
@@ -280,7 +275,7 @@ export default function CheckoutPage() {
                       />
                     </label>
                     <label className="block">
-                      <span className="mb-2 block text-sm font-semibold text-slate-700">
+                      <span className="mb-2 block text-sm font-semibold text-gray-700">
                         City
                       </span>
                       <InputField
@@ -297,7 +292,7 @@ export default function CheckoutPage() {
                       />
                     </label>
                     <label className="block sm:col-span-2">
-                      <span className="mb-2 block text-sm font-semibold text-slate-700">
+                      <span className="mb-2 block text-sm font-semibold text-gray-700">
                         Street and house number
                       </span>
                       <InputField
@@ -314,7 +309,7 @@ export default function CheckoutPage() {
                       />
                     </label>
                     <label className="block sm:col-span-2">
-                      <span className="mb-2 block text-sm font-semibold text-slate-700">
+                      <span className="mb-2 block text-sm font-semibold text-gray-700">
                         Order note
                       </span>
                       <TextareaField
@@ -362,7 +357,7 @@ export default function CheckoutPage() {
                 <SectionPill>{messages.cart.title}</SectionPill>
                 <div className="mt-4 space-y-4">
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">
+                    <p className="text-sm font-semibold uppercase tracking-[0.14em] text-gray-500">
                       {messages.cart.items}
                     </p>
                     <div className="mt-3 space-y-3">
@@ -378,7 +373,7 @@ export default function CheckoutPage() {
                             >
                               {item.name}
                             </LocalizedLink>
-                            <p className="mt-1 text-xs uppercase tracking-[0.12em] text-slate-500">
+                            <p className="mt-1 text-xs uppercase tracking-[0.12em] text-gray-500">
                               {messages.cart.quantity}: {item.quantity}
                             </p>
                           </div>
@@ -391,13 +386,13 @@ export default function CheckoutPage() {
                   </div>
 
                   <div className="space-y-3 border-t border-stone-200 pt-4">
-                    <div className="flex items-center justify-between gap-4 text-sm text-slate-700">
+                    <div className="flex items-center justify-between gap-4 text-sm text-gray-700">
                       <span>{messages.cart.subtotal}</span>
                       <span className="font-semibold text-[var(--kanna-ink)]">
                         {cart.subtotal}
                       </span>
                     </div>
-                    <div className="flex items-start justify-between gap-4 text-sm text-slate-700">
+                    <div className="flex items-start justify-between gap-4 text-sm text-gray-700">
                       <span>{messages.cart.shipping}</span>
                       <div className="text-right">
                         <div className="font-semibold text-[var(--kanna-ink)]">
@@ -406,13 +401,13 @@ export default function CheckoutPage() {
                             : messages.cart.shippingPending}
                         </div>
                         {cart.shippingMethod ? (
-                          <div className="mt-1 text-xs text-slate-500">
+                          <div className="mt-1 text-xs text-gray-500">
                             {cart.shippingMethod}
                           </div>
                         ) : null}
                       </div>
                     </div>
-                    <div className="flex items-center justify-between gap-4 text-sm text-slate-700">
+                    <div className="flex items-center justify-between gap-4 text-sm text-gray-700">
                       <span>{messages.checkout.paymentMethod}</span>
                       <span className="font-semibold text-[var(--kanna-ink)]">
                         {paymentMethod === "classic_transfer"
@@ -420,7 +415,7 @@ export default function CheckoutPage() {
                           : messages.checkout.stripe}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between gap-4 text-sm text-slate-700">
+                    <div className="flex items-center justify-between gap-4 text-sm text-gray-700">
                       <span>{messages.cart.vat}</span>
                       <span className="font-semibold text-[var(--kanna-ink)]">
                         {cart.vat}
@@ -429,7 +424,7 @@ export default function CheckoutPage() {
                   </div>
 
                   <div className="flex items-center justify-between gap-4 border-t border-stone-200 pt-4">
-                    <span className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">
+                    <span className="text-sm font-semibold uppercase tracking-[0.14em] text-gray-500">
                       {messages.cart.total}
                     </span>
                     <span className="text-2xl font-semibold text-[var(--kanna-ink)]">
@@ -451,7 +446,7 @@ export default function CheckoutPage() {
               </aside>
             </div>
           </AnimatedOrderSection>
-          )}
+        )}
       </SectionStack>
     </PageShell>
   );

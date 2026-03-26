@@ -54,10 +54,12 @@ export function OrderSubmittedSummarySection({
             <SectionPill tone={hasSuccessHighlight ? "success" : "light"}>
               {title}
             </SectionPill>
-            <h2 className="mt-2 text-xl font-semibold text-slate-900">{heading}</h2>
+            <h2 className="mt-2 text-xl font-semibold text-gray-900">
+              {heading}
+            </h2>
             <p
               className={`mt-2 max-w-2xl text-sm leading-6 ${
-                hasSuccessHighlight ? "text-slate-700" : "text-slate-600"
+                hasSuccessHighlight ? "text-gray-700" : "text-gray-600"
               }`}
             >
               {description}
@@ -91,10 +93,12 @@ export function OrderSubmittedSummarySection({
           <SectionPill tone={hasSuccessHighlight ? "success" : "light"}>
             {title}
           </SectionPill>
-          <h2 className="mt-2 text-xl font-semibold text-slate-900">{heading}</h2>
+          <h2 className="mt-2 text-xl font-semibold text-gray-900">
+            {heading}
+          </h2>
           <p
             className={`mt-2 max-w-2xl text-sm leading-6 ${
-              hasSuccessHighlight ? "text-slate-700" : "text-slate-600"
+              hasSuccessHighlight ? "text-gray-700" : "text-gray-600"
             }`}
           >
             {description}
@@ -102,8 +106,10 @@ export function OrderSubmittedSummarySection({
         </div>
       )}
 
-      {(!collapsible || isExpanded) ? (
-        <div className={`${collapsible ? "mt-5" : ""} grid gap-6 md:min-h-0 md:flex-1 md:grid-cols-2 md:items-stretch`}>
+      {!collapsible || isExpanded ? (
+        <div
+          className={`${collapsible ? "mt-5" : ""} grid gap-6 md:min-h-0 md:flex-1 md:grid-cols-2 md:items-stretch`}
+        >
           <div
             className={`min-h-0 overflow-hidden rounded-lg p-4 ${
               hasSuccessHighlight

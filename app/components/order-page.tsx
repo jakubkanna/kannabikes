@@ -806,7 +806,7 @@ export function OrderPage({
                 key="order-loading"
                 className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm"
               >
-                <p className="text-sm text-slate-600">
+                <p className="text-sm text-gray-600">
                   Loading your bike configurator...
                 </p>
               </AnimatedOrderSection>
@@ -819,19 +819,19 @@ export function OrderPage({
                 key="order-login"
                 className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm"
               >
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-500">
                   Protected order
                 </p>
-                <h2 className="mt-2 text-xl font-semibold text-slate-900">
+                <h2 className="mt-2 text-xl font-semibold text-gray-900">
                   Enter your order password
                 </h2>
-                <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">
                   This order page is protected with the password created during
                   the deposit step.
                 </p>
                 <div className="mt-5 max-w-md">
                   <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-slate-700">
+                    <span className="mb-2 block text-sm font-semibold text-gray-700">
                       Password
                     </span>
                     <InputField
@@ -863,7 +863,7 @@ export function OrderPage({
                     type="button"
                     onClick={handleForgotPassword}
                     disabled={isSendingPasswordReset}
-                    className="mt-4 ml-4 inline-flex items-center justify-center text-sm font-medium text-slate-700 underline decoration-slate-300 underline-offset-4 transition hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-400"
+                    className="mt-4 ml-4 inline-flex items-center justify-center text-sm font-medium text-gray-700 underline decoration-gray-300 underline-offset-4 transition hover:text-gray-900 disabled:cursor-not-allowed disabled:text-gray-400"
                   >
                     {isSendingPasswordReset
                       ? "Sending reset link..."
@@ -880,19 +880,19 @@ export function OrderPage({
                 key="order-password-reset"
                 className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm"
               >
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-500">
                   Reset password
                 </p>
-                <h2 className="mt-2 text-xl font-semibold text-slate-900">
+                <h2 className="mt-2 text-xl font-semibold text-gray-900">
                   Create a new order password
                 </h2>
-                <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">
                   Use this secure link to set a new password and access your
                   order page again.
                 </p>
                 <div className="mt-5 max-w-md space-y-4">
                   <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-slate-700">
+                    <span className="mb-2 block text-sm font-semibold text-gray-700">
                       New password
                     </span>
                     <InputField
@@ -911,7 +911,7 @@ export function OrderPage({
                     ) : null}
                   </label>
                   <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-slate-700">
+                    <span className="mb-2 block text-sm font-semibold text-gray-700">
                       Repeat new password
                     </span>
                     <InputField
@@ -1048,7 +1048,9 @@ export function OrderPage({
                       depositAmountValue={portalBuild.deposit.amountValue}
                       finalAmountValue={portalBuild.finalPayment.amountValue}
                       currency={portalBuild.finalPayment.currency}
-                      finalPaymentMethod={portalBuild.finalPayment.paymentMethod}
+                      finalPaymentMethod={
+                        portalBuild.finalPayment.paymentMethod
+                      }
                       finalPaymentOrderStatus={
                         portalBuild.finalPayment.orderStatus
                       }

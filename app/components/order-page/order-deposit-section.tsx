@@ -166,13 +166,13 @@ export function OrderDepositSection({
                 Deposit
               </SectionPill>
               <div className="mt-1">
-                <h2 className="text-xl font-semibold text-slate-900">
+                <h2 className="text-xl font-semibold text-gray-900">
                   In review
                 </h2>
               </div>
               <p
                 className={`mt-2 max-w-3xl text-sm leading-6 ${
-                  useSuccessColors ? "text-slate-700" : "text-slate-600"
+                  useSuccessColors ? "text-gray-700" : "text-gray-600"
                 }`}
               >
                 We are reviewing your deposit and confirming that the payment
@@ -182,43 +182,41 @@ export function OrderDepositSection({
 
               {depositPayment?.paymentMethod === "classic_transfer" ? (
                 <div className="mt-4 rounded-lg border border-stone-200 bg-stone-50 p-4">
-                  <p className="text-sm font-semibold text-slate-900">
+                  <p className="text-sm font-semibold text-gray-900">
                     Bank transfer details
                   </p>
-                  <div className="mt-3 grid gap-3 text-sm text-slate-700 sm:grid-cols-2">
+                  <div className="mt-3 grid gap-3 text-sm text-gray-700 sm:grid-cols-2">
                     <div>
-                      <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                      <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
                         Account holder
                       </span>
                       <p className="mt-1">Kanna Bikes Sp. z o.o.</p>
                     </div>
                     <div>
-                      <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                      <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
                         Amount
                       </span>
                       <p className="mt-1">{depositPayment.amount}</p>
                     </div>
                     <div>
-                      <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                      <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
                         IBAN
                       </span>
-                      <p className="mt-1 font-medium text-slate-900">
+                      <p className="mt-1 font-medium text-gray-900">
                         PL12 3456 7890 1234 5678 9012 3456
                       </p>
                     </div>
                     <div>
-                      <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                      <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
                         SWIFT / BIC
                       </span>
-                      <p className="mt-1 font-medium text-slate-900">
-                        PKOPPLPW
-                      </p>
+                      <p className="mt-1 font-medium text-gray-900">PKOPPLPW</p>
                     </div>
                     <div className="sm:col-span-2">
-                      <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                      <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
                         Transfer title
                       </span>
-                      <p className="mt-1 font-medium text-slate-900">
+                      <p className="mt-1 font-medium text-gray-900">
                         {`Deposit payment for order ${orderNumber}`}
                       </p>
                     </div>
@@ -240,13 +238,13 @@ export function OrderDepositSection({
                   Deposit
                 </SectionPill>
                 <div className="mt-1">
-                  <h2 className="text-xl font-semibold text-slate-900">
+                  <h2 className="text-xl font-semibold text-gray-900">
                     Received
                   </h2>
                 </div>
                 <p
                   className={`mt-2 max-w-3xl text-sm leading-6 ${
-                    useSuccessColors ? "text-slate-700" : "text-slate-600"
+                    useSuccessColors ? "text-gray-700" : "text-gray-600"
                   }`}
                 >
                   Deposit has been confirmed. The order is secured and will
@@ -286,10 +284,10 @@ export function OrderDepositSection({
                 >
                   {depositPayment.paidAt ? (
                     <div>
-                      <span className="mb-2 block text-sm font-semibold text-slate-700">
+                      <span className="mb-2 block text-sm font-semibold text-gray-700">
                         Payment date
                       </span>
-                      <p className="text-sm text-slate-900">
+                      <p className="text-sm text-gray-900">
                         {new Intl.DateTimeFormat("en-GB", {
                           day: "2-digit",
                           month: "short",
@@ -299,10 +297,10 @@ export function OrderDepositSection({
                     </div>
                   ) : null}
                   <div>
-                    <span className="mb-2 block text-sm font-semibold text-slate-700">
+                    <span className="mb-2 block text-sm font-semibold text-gray-700">
                       Amount
                     </span>
-                    <p className="text-sm text-slate-900">
+                    <p className="text-sm text-gray-900">
                       {depositPayment.amount}
                     </p>
                   </div>
@@ -320,10 +318,10 @@ export function OrderDepositSection({
       <div className="grid gap-6 md:grid-cols-[minmax(0,1.8fr)_minmax(320px,0.95fr)] md:items-start">
         <div className="rounded-xl border border-stone-200 bg-white p-5">
           <SectionPill>Deposit</SectionPill>
-          <h2 className="mt-2 text-2xl font-semibold text-slate-900">
+          <h2 className="mt-2 text-2xl font-semibold text-gray-900">
             Waiting for deposit
           </h2>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700">
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-700">
             Book your place in the custom build queue. Once we receive the
             deposit, we will begin designing your dream bike.
           </p>
@@ -335,7 +333,7 @@ export function OrderDepositSection({
           >
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
-                <span className="mb-2 block text-sm font-semibold text-slate-700">
+                <span className="mb-2 block text-sm font-semibold text-gray-700">
                   Order title
                 </span>
                 <LockedField
@@ -345,7 +343,7 @@ export function OrderDepositSection({
               </div>
 
               <div className="sm:col-span-2">
-                <span className="mb-2 block text-sm font-semibold text-slate-700">
+                <span className="mb-2 block text-sm font-semibold text-gray-700">
                   Full name
                 </span>
                 <LockedField
@@ -355,7 +353,7 @@ export function OrderDepositSection({
               </div>
 
               <div>
-                <span className="mb-2 block text-sm font-semibold text-slate-700">
+                <span className="mb-2 block text-sm font-semibold text-gray-700">
                   Email
                 </span>
                 <LockedField
@@ -365,7 +363,7 @@ export function OrderDepositSection({
               </div>
 
               <div>
-                <span className="mb-2 block text-sm font-semibold text-slate-700">
+                <span className="mb-2 block text-sm font-semibold text-gray-700">
                   Phone number
                 </span>
                 <LockedField
@@ -377,7 +375,7 @@ export function OrderDepositSection({
               {requiresClaim ? (
                 <>
                   <label className="sm:col-span-2">
-                    <span className="mb-2 block text-sm font-semibold text-slate-700">
+                    <span className="mb-2 block text-sm font-semibold text-gray-700">
                       Create password
                     </span>
                     <InputField
@@ -399,7 +397,7 @@ export function OrderDepositSection({
                   </label>
 
                   <label className="sm:col-span-2">
-                    <span className="mb-2 block text-sm font-semibold text-slate-700">
+                    <span className="mb-2 block text-sm font-semibold text-gray-700">
                       Repeat password
                     </span>
                     <InputField
@@ -420,7 +418,7 @@ export function OrderDepositSection({
                     ) : null}
                   </label>
 
-                  <p className="sm:col-span-2 text-xs leading-6 text-slate-600">
+                  <p className="sm:col-span-2 text-xs leading-6 text-gray-600">
                     Save it securely. You will need this password to track your
                     order status.
                   </p>
@@ -428,55 +426,55 @@ export function OrderDepositSection({
               ) : null}
             </div>
 
-              <div className="mt-6 border-t border-stone-200 pt-5">
-                <p className="text-sm font-semibold text-slate-900">
-                  Payment options
-                </p>
-                <div className="mt-3 grid gap-2">
-                  {availablePaymentMethods.map((method) => (
-                    <PaymentOption
-                      key={method}
-                      icon={
-                        method === "classic_transfer" ? (
-                          <BankTransferIcon />
-                        ) : (
-                          <StripeCardIcon />
-                        )
-                      }
-                      isSelected={paymentMethod === method}
-                      onSelect={() => setPaymentMethod(method)}
-                      title={
-                        method === "classic_transfer"
-                          ? "Classic bank transfer"
-                          : "Stripe"
-                      }
-                      helper=""
-                    />
-                  ))}
-                </div>
+            <div className="mt-6 border-t border-stone-200 pt-5">
+              <p className="text-sm font-semibold text-gray-900">
+                Payment options
+              </p>
+              <div className="mt-3 grid gap-2">
+                {availablePaymentMethods.map((method) => (
+                  <PaymentOption
+                    key={method}
+                    icon={
+                      method === "classic_transfer" ? (
+                        <BankTransferIcon />
+                      ) : (
+                        <StripeCardIcon />
+                      )
+                    }
+                    isSelected={paymentMethod === method}
+                    onSelect={() => setPaymentMethod(method)}
+                    title={
+                      method === "classic_transfer"
+                        ? "Classic bank transfer"
+                        : "Stripe"
+                    }
+                    helper=""
+                  />
+                ))}
               </div>
-            </DetailPanel>
+            </div>
+          </DetailPanel>
         </div>
 
         <div className="md:sticky md:top-4">
           <div className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
-            <p className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">
+            <p className="text-sm font-semibold uppercase tracking-[0.12em] text-gray-500">
               Order summary
             </p>
             <div className="mt-4 rounded-xl border border-stone-200 bg-stone-50 p-4">
               <div>
-                <p className="text-sm font-semibold text-slate-900">
+                <p className="text-sm font-semibold text-gray-900">
                   {customerDetails.orderTitle || "Custom Kanna Bike Build"}
                 </p>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-gray-500">
                   Deposit amount due now
                 </p>
               </div>
 
-              <div className="mt-4 border-t border-stone-200 pt-4 text-sm text-slate-600">
+              <div className="mt-4 border-t border-stone-200 pt-4 text-sm text-gray-600">
                 <div className="mt-2 flex items-center justify-between gap-4">
                   <span>Net amount</span>
-                  <span className="font-medium text-slate-900">
+                  <span className="font-medium text-gray-900">
                     {formatOrderMoney(
                       depositTaxSummary.netAmount,
                       depositCurrency,
@@ -486,7 +484,7 @@ export function OrderDepositSection({
                 </div>
                 <div className="mt-2 flex items-center justify-between gap-4">
                   <span>{depositTaxSummary.taxLabel}</span>
-                  <span className="font-medium text-slate-900">
+                  <span className="font-medium text-gray-900">
                     {formatOrderMoney(
                       depositTaxSummary.taxAmount,
                       depositCurrency,
@@ -496,20 +494,20 @@ export function OrderDepositSection({
                 </div>
                 <div className="mt-2 flex items-center justify-between gap-4">
                   <span>Payment method</span>
-                  <span className="font-medium text-slate-900">
+                  <span className="font-medium text-gray-900">
                     {paymentMethod === "classic_transfer"
                       ? "Classic transfer"
                       : "Stripe"}
                   </span>
                 </div>
-                <div className="mt-3 flex items-center justify-between gap-4 border-t border-stone-200 pt-3 text-base font-semibold text-slate-900">
+                <div className="mt-3 flex items-center justify-between gap-4 border-t border-stone-200 pt-3 text-base font-semibold text-gray-900">
                   <span>Total</span>
                   <span>{depositAmountLabel}</span>
                 </div>
               </div>
             </div>
 
-            <label className="mt-4 flex items-start gap-3 rounded-lg border border-stone-200 bg-stone-50 p-3 text-sm text-slate-700">
+            <label className="mt-4 flex items-start gap-3 rounded-lg border border-stone-200 bg-stone-50 p-3 text-sm text-gray-700">
               <input
                 type="checkbox"
                 checked={agreementAccepted}
@@ -520,7 +518,7 @@ export function OrderDepositSection({
                 I accept the{" "}
                 <LocalizedLink
                   to="/privacy-terms"
-                  className="font-medium text-slate-900 underline underline-offset-2"
+                  className="font-medium text-gray-900 underline underline-offset-2"
                 >
                   order agreement
                 </LocalizedLink>

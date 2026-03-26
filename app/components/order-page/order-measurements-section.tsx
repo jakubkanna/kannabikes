@@ -29,7 +29,9 @@ export function OrderMeasurementsSection({
     (key) => values[key]?.trim().length === 0,
   );
   const visibleMeasurementCount =
-    completedMeasurementCount === -1 ? measurementKeys.length : completedMeasurementCount + 1;
+    completedMeasurementCount === -1
+      ? measurementKeys.length
+      : completedMeasurementCount + 1;
   const visibleMeasurementKeys = hasBodyData
     ? measurementKeys.slice(0, visibleMeasurementCount)
     : [];
@@ -65,31 +67,31 @@ export function OrderMeasurementsSection({
         }
       >
         <div className="pt-3">
-          <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+          <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
             Body Data
           </h3>
           <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-4">
             <div>
-              <span className="mb-2 block text-sm font-semibold text-slate-700">
+              <span className="mb-2 block text-sm font-semibold text-gray-700">
                 Body weight (kg)
               </span>
-              <p className="text-sm text-slate-900">
+              <p className="text-sm text-gray-900">
                 {bodyWeight ? `${bodyWeight} kg` : "-"}
               </p>
             </div>
             <div>
-              <span className="mb-2 block text-sm font-semibold text-slate-700">
+              <span className="mb-2 block text-sm font-semibold text-gray-700">
                 Body type
               </span>
-              <p className="text-sm text-slate-900">
+              <p className="text-sm text-gray-900">
                 {bodyType === "female" ? "Female" : "Male"}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="mt-5">
-          <SectionPill>Measurements</SectionPill>
+        <div className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
+          Measurements
         </div>
         <div className="mt-4 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2 xl:grid-cols-3">
           {measurementKeys.map((key) => (
@@ -98,8 +100,10 @@ export function OrderMeasurementsSection({
               onMouseEnter={() => onActivateMeasurement(key)}
               onMouseLeave={onDeactivateMeasurement}
             >
-              <span className="mb-2 block text-sm font-semibold text-slate-700">{key}</span>
-              <p className="text-sm text-slate-900">
+              <span className="mb-2 block text-sm font-semibold text-gray-700">
+                {key}
+              </span>
+              <p className="text-sm text-gray-900">
                 {values[key] ? `${values[key]} cm` : "-"}
               </p>
             </div>
@@ -111,16 +115,14 @@ export function OrderMeasurementsSection({
 
   return (
     <AnimatedOrderSection
-      className={`rounded-xl border border-stone-200 bg-white p-4 shadow-sm md:flex md:flex-col md:overflow-hidden md:p-6 ${
-        "md:h-[80vh]"
-      }`}
+      className={`rounded-xl border border-stone-200 bg-white p-4 shadow-sm md:flex md:flex-col md:overflow-hidden md:p-6 ${"md:h-[80vh]"}`}
     >
       <div className="mb-5 shrink-0">
         <SectionPill>Measurements</SectionPill>
-        <h2 className="mt-2 text-xl font-semibold text-slate-900">
+        <h2 className="mt-2 text-xl font-semibold text-gray-900">
           {isSubmitted ? "Received" : "Submit your body data"}
         </h2>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">
           {isSubmitted
             ? "Your body measurements have been submitted and recorded for the design process."
             : "During this stage we collect the body measurements required to review the order and prepare the next design step."}
@@ -129,7 +131,9 @@ export function OrderMeasurementsSection({
 
       <div
         className={`grid gap-6 md:min-h-0 md:flex-1 md:items-stretch ${
-          isSubmitted ? "md:grid-cols-2" : "md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]"
+          isSubmitted
+            ? "md:grid-cols-2"
+            : "md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]"
         }`}
       >
         <div
@@ -161,25 +165,25 @@ export function OrderMeasurementsSection({
         <aside className="min-h-0 rounded-lg border border-stone-200 bg-stone-50 px-3 pb-3 pt-0 md:flex md:h-full md:flex-col md:px-4 md:pb-4 md:pt-0">
           <div className="min-h-0 md:flex-1 md:overflow-y-auto">
             <div className={isSubmitted ? "pt-3" : "pt-4"}>
-              <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
                 Body Data
               </h3>
 
               {isSubmitted ? (
                 <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-4">
                   <div>
-                    <span className="mb-2 block text-sm font-semibold text-slate-700">
+                    <span className="mb-2 block text-sm font-semibold text-gray-700">
                       Body weight (kg)
                     </span>
-                    <p className="text-sm text-slate-900">
+                    <p className="text-sm text-gray-900">
                       {bodyWeight ? `${bodyWeight} kg` : "-"}
                     </p>
                   </div>
                   <div>
-                    <span className="mb-2 block text-sm font-semibold text-slate-700">
+                    <span className="mb-2 block text-sm font-semibold text-gray-700">
                       Body type
                     </span>
-                    <p className="text-sm text-slate-900">
+                    <p className="text-sm text-gray-900">
                       {bodyType === "female" ? "Female" : "Male"}
                     </p>
                   </div>
@@ -187,7 +191,7 @@ export function OrderMeasurementsSection({
               ) : (
                 <>
                   <label className="mt-3 block">
-                    <span className="mb-2 block text-sm font-semibold text-slate-700">
+                    <span className="mb-2 block text-sm font-semibold text-gray-700">
                       Body weight (kg)
                     </span>
                     <InputField
@@ -195,18 +199,20 @@ export function OrderMeasurementsSection({
                       inputMode="decimal"
                       placeholder="Enter body weight in kg"
                       value={bodyWeight}
-                      onChange={(event) => onBodyWeightChange(event.target.value)}
+                      onChange={(event) =>
+                        onBodyWeightChange(event.target.value)
+                      }
                       className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                     />
                   </label>
 
                   {hasBodyWeight ? (
                     <fieldset className="mt-4">
-                      <legend className="mb-2 text-sm font-semibold text-slate-700">
+                      <legend className="mb-2 text-sm font-semibold text-gray-700">
                         Body type
                       </legend>
                       <div className="grid grid-cols-2 gap-2">
-                        <label className="flex cursor-pointer items-center gap-2 rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-slate-800">
+                        <label className="flex cursor-pointer items-center gap-2 rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-gray-800">
                           <input
                             type="radio"
                             name="bodyType"
@@ -216,7 +222,7 @@ export function OrderMeasurementsSection({
                           />
                           <span>Male</span>
                         </label>
-                        <label className="flex cursor-pointer items-center gap-2 rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-slate-800">
+                        <label className="flex cursor-pointer items-center gap-2 rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-gray-800">
                           <input
                             type="radio"
                             name="bodyType"
@@ -234,7 +240,7 @@ export function OrderMeasurementsSection({
             </div>
 
             {hasBodyData ? (
-              <h3 className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+              <h3 className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
                 Measurements
               </h3>
             ) : null}
@@ -248,7 +254,7 @@ export function OrderMeasurementsSection({
                     key={key}
                     className="block rounded-lg border border-stone-200 bg-stone-50 p-3"
                   >
-                    <span className="mb-2 block text-sm font-semibold text-slate-700">
+                    <span className="mb-2 block text-sm font-semibold text-gray-700">
                       {key} (cm)
                     </span>
                     <InputField
@@ -258,7 +264,9 @@ export function OrderMeasurementsSection({
                       value={values[key] ?? ""}
                       onFocus={() => onActivateMeasurement(key)}
                       onClick={() => onActivateMeasurement(key)}
-                      onChange={(event) => onMeasurementChange(key, event.target.value)}
+                      onChange={(event) =>
+                        onMeasurementChange(key, event.target.value)
+                      }
                       className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                     />
                     {isActive ? (
@@ -266,7 +274,7 @@ export function OrderMeasurementsSection({
                         <button
                           type="button"
                           onClick={() => onToggleGuidelines(key)}
-                          className="flex w-full items-center justify-between rounded-md border border-stone-200 bg-white px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-600"
+                          className="flex w-full items-center justify-between rounded-md border border-stone-200 bg-white px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.14em] text-gray-600"
                           aria-expanded={isGuidelineExpanded}
                           aria-controls={`guidelines-${key}`}
                         >
@@ -291,7 +299,7 @@ export function OrderMeasurementsSection({
                         {isGuidelineExpanded ? (
                           <div
                             id={`guidelines-${key}`}
-                            className="mt-2 flex aspect-video items-center justify-center overflow-hidden rounded-md border border-stone-200 bg-black/90 px-4 text-center text-sm text-slate-300"
+                            className="mt-2 flex aspect-video items-center justify-center overflow-hidden rounded-md border border-stone-200 bg-black/90 px-4 text-center text-sm text-gray-300"
                           >
                             Add a guideline video or image for {key}.
                           </div>
@@ -313,7 +321,9 @@ export function OrderMeasurementsSection({
                   disabled={isSubmitting}
                   className="inline-flex w-full items-center justify-center rounded-md bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:bg-stone-300"
                 >
-                  {isSubmitting ? "Submitting measurements..." : "Submit body data"}
+                  {isSubmitting
+                    ? "Submitting measurements..."
+                    : "Submit body data"}
                 </button>
               ) : (
                 <div className="h-2 overflow-hidden rounded-full bg-stone-200">

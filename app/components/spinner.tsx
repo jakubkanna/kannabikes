@@ -1,11 +1,7 @@
-export function Spinner({
-  className = "",
-}: {
-  className?: string;
-}) {
+export function Spinner({ className = "" }: { className?: string }) {
   return (
     <svg
-      className={`animate-spin text-slate-300 ${className}`.trim()}
+      className={`animate-spin text-gray-300 ${className}`.trim()}
       viewBox="0 0 64 64"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -26,7 +22,7 @@ export function Spinner({
         strokeWidth="5"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="text-slate-900"
+        className="text-gray-900"
       />
     </svg>
   );

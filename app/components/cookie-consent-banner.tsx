@@ -124,8 +124,7 @@ export function CookieConsentBanner() {
 
     trackPageView({
       locale,
-      pagePath:
-        location.pathname + location.search + location.hash,
+      pagePath: location.pathname + location.search + location.hash,
       pageTitle: document.title,
     });
   }, [
@@ -183,9 +182,9 @@ export function CookieConsentBanner() {
         clickType: targetDetails.clickType,
         isOutbound: targetDetails.isOutbound,
         section:
-          interactiveElement.closest("[data-analytics-section]")?.getAttribute(
-            "data-analytics-section",
-          ) ?? "global",
+          interactiveElement
+            .closest("[data-analytics-section]")
+            ?.getAttribute("data-analytics-section") ?? "global",
       });
     };
 
@@ -223,29 +222,29 @@ export function CookieConsentBanner() {
       <button
         type="button"
         onClick={() => closeBanner("rejected")}
-        className="absolute right-5 top-5 text-xs font-medium lowercase text-slate-500 transition hover:text-slate-900"
+        className="absolute right-5 top-5 text-xs font-medium lowercase text-gray-500 transition hover:text-gray-900"
       >
         {messages.cookieConsent.rejectSimple}
       </button>
 
       <div className="flex flex-col gap-4 pb-24 pr-16 md:pb-8 md:pr-44">
         <div className="max-w-2xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-900">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-gray-900">
             {messages.cookieConsent.eyebrow}
           </p>
-          <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-900">
+          <h2 className="mt-2 text-xl font-semibold tracking-tight text-gray-900">
             {consentStatus === null
               ? messages.cookieConsent.title
               : messages.cookieConsent.manageTitle}
           </h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
+          <p className="mt-2 text-sm leading-6 text-gray-600">
             {messages.cookieConsent.description}
           </p>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
+          <p className="mt-2 text-sm leading-6 text-gray-600">
             {messages.cookieConsent.detailsBeforeLink}{" "}
             <LocalizedLink
               to="/privacy-terms"
-              className="font-medium text-slate-900 underline underline-offset-4"
+              className="font-medium text-gray-900 underline underline-offset-4"
             >
               {messages.cookieConsent.privacyLink}
             </LocalizedLink>

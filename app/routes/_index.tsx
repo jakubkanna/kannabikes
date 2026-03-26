@@ -9,11 +9,7 @@ import {
   attachBackgroundParallax,
   attachPointerParallax,
 } from "~/lib/parallax";
-import {
-  buildLocalizedMeta,
-  getLocaleFromPath,
-  getMessages,
-} from "~/lib/i18n";
+import { buildLocalizedMeta, getLocaleFromPath, getMessages } from "~/lib/i18n";
 
 export function meta({ location }: Route.MetaArgs) {
   const locale = getLocaleFromPath(location.pathname);
@@ -174,7 +170,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="overflow-x-clip bg-stone-100 text-slate-900">
+    <div className="overflow-x-clip bg-stone-100 text-gray-900">
       <main className="relative isolate mb-3 h-[calc(100svh-0.75rem)] overflow-hidden">
         <div
           ref={backgroundRef}
@@ -230,7 +226,7 @@ export default function Home() {
                     lines={[...messages.home.customOrder.titleLines]}
                   />
                 </h2>
-                <p className="mt-5 max-w-2xl text-sm leading-7 text-slate-600 md:text-base">
+                <p className="mt-5 max-w-2xl text-sm leading-7 text-gray-600 md:text-base">
                   {messages.home.customOrder.description}
                 </p>
               </div>
@@ -312,7 +308,7 @@ export default function Home() {
                   lines={[...messages.home.chainring.titleLines]}
                 />
               </h2>
-              <p className="mt-5 max-w-2xl text-sm leading-7 text-slate-600 md:text-base">
+              <p className="mt-5 max-w-2xl text-sm leading-7 text-gray-600 md:text-base">
                 {messages.home.chainring.description}
               </p>
             </div>
@@ -327,7 +323,7 @@ export default function Home() {
               className="w-full max-w-xl object-contain"
             />
           </div>
-          <p className="absolute bottom-6 left-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-900 md:left-8">
+          <p className="absolute bottom-6 left-4 text-xs font-semibold uppercase tracking-[0.18em] text-gray-900 md:left-8">
             {messages.common.comingSoon}
           </p>
         </div>

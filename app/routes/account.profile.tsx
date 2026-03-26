@@ -51,7 +51,9 @@ export default function AccountProfilePage({
 }: Route.ComponentProps) {
   const messages = useMessages();
   const [user, setUser] = useState<CustomerUser>(loaderData.account.user);
-  const [displayName, setDisplayName] = useState(loaderData.account.user.displayName);
+  const [displayName, setDisplayName] = useState(
+    loaderData.account.user.displayName,
+  );
   const [firstName, setFirstName] = useState(loaderData.account.user.firstName);
   const [lastName, setLastName] = useState(loaderData.account.user.lastName);
   const [phone, setPhone] = useState(loaderData.account.user.phone);
@@ -90,26 +92,35 @@ export default function AccountProfilePage({
           <span className="mb-2 block text-sm font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
             {messages.account.displayNameLabel}
           </span>
-          <InputField value={displayName} onChange={(event) => setDisplayName(event.currentTarget.value)} />
+          <InputField
+            value={displayName}
+            onChange={(event) => setDisplayName(event.currentTarget.value)}
+          />
         </label>
         <label className="block">
           <span className="mb-2 block text-sm font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
             {messages.account.firstNameLabel}
           </span>
-          <InputField value={firstName} onChange={(event) => setFirstName(event.currentTarget.value)} />
+          <InputField
+            value={firstName}
+            onChange={(event) => setFirstName(event.currentTarget.value)}
+          />
         </label>
         <label className="block">
           <span className="mb-2 block text-sm font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
             {messages.account.lastNameLabel}
           </span>
-          <InputField value={lastName} onChange={(event) => setLastName(event.currentTarget.value)} />
+          <InputField
+            value={lastName}
+            onChange={(event) => setLastName(event.currentTarget.value)}
+          />
         </label>
         <label className="block">
           <span className="mb-2 block text-sm font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
             {messages.account.emailLabel}
           </span>
           <LockedField value={loaderData.account.user.email} />
-          <span className="mt-2 block text-xs text-slate-500">
+          <span className="mt-2 block text-xs text-gray-500">
             {messages.account.emailReadOnly}
           </span>
         </label>
@@ -117,7 +128,10 @@ export default function AccountProfilePage({
           <span className="mb-2 block text-sm font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
             {messages.account.phoneLabel}
           </span>
-          <InputField value={phone} onChange={(event) => setPhone(event.currentTarget.value)} />
+          <InputField
+            value={phone}
+            onChange={(event) => setPhone(event.currentTarget.value)}
+          />
         </label>
         <button
           type="submit"
@@ -126,7 +140,7 @@ export default function AccountProfilePage({
         >
           {messages.account.profileSave}
         </button>
-        {status ? <p className="text-sm text-slate-600">{status}</p> : null}
+        {status ? <p className="text-sm text-gray-600">{status}</p> : null}
       </form>
     </AccountShell>
   );

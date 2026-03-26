@@ -40,7 +40,11 @@ export const MOCK_ESTIMATED_DELIVERY_TIME = "6-8 weeks";
 export const MOCK_DELIVERED_ON = "21 Mar 2026";
 
 export type StoredBikeSpecificationDraft = {
-  specificationMode: "guided_by_designer" | "self_specified" | "frame_only" | null;
+  specificationMode:
+    | "guided_by_designer"
+    | "self_specified"
+    | "frame_only"
+    | null;
   values: Record<string, string>;
 };
 
@@ -67,71 +71,78 @@ export const ORDER_STAGES: OrderStage[] = [
   "delivered",
 ];
 
-export const ORDER_STAGE_DEFINITIONS: Record<OrderStage, OrderStageDefinition> = {
-  waiting_for_deposit: {
-    label: "Waiting for deposit",
-    description: "We are waiting for the initial deposit before we can open the order for review.",
-    badgeClassName: "border-amber-200 bg-amber-50 text-amber-700",
-  },
-  in_review: {
-    label: "In review",
-    description:
-      "The payment is being verified manually before the order moves to the measurement step.",
-    badgeClassName: "border-sky-200 bg-sky-50 text-sky-700",
-  },
-  confirmed: {
-    label: "Confirmed",
-    description:
-      "Your deposit has been received. Complete your measurements and specification to move the project into design.",
-    badgeClassName: "border-cyan-200 bg-cyan-50 text-cyan-700",
-  },
-  waiting_for_measurements: {
-    label: "Waiting for measurements",
-    description:
-      "The deposit is confirmed. We are waiting for your body measurements before moving the project into specification.",
-    badgeClassName: "border-cyan-200 bg-cyan-50 text-cyan-700",
-  },
-  waiting_for_specification: {
-    label: "Waiting for specification",
-    description: "Measurements are received and the project is waiting for the bike specification to move into design.",
-    badgeClassName: "border-cyan-200 bg-cyan-50 text-cyan-700",
-  },
-  waiting_for_design: {
-    label: "Design in progress",
-    description: "Review is complete and the order is queued for the design phase.",
-    badgeClassName: "border-violet-200 bg-violet-50 text-violet-700",
-  },
-  waiting_for_design_approval: {
-    label: "Design waiting for approval",
-    description: "The design is prepared and waiting for your approval before production starts.",
-    badgeClassName: "border-indigo-200 bg-indigo-50 text-indigo-700",
-  },
-  waiting_for_final_payment: {
-    label: "Waiting for final payment",
-    description: "The design is approved and we are waiting for the remaining payment before production starts.",
-    badgeClassName: "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700",
-  },
-  final_payment_in_review: {
-    label: "In review",
-    description: "The final payment is being reviewed and production will begin after confirmation.",
-    badgeClassName: "border-sky-200 bg-sky-50 text-sky-700",
-  },
-  in_production: {
-    label: "In production",
-    description: "Your frame and configuration are now in production.",
-    badgeClassName: "border-orange-200 bg-orange-50 text-orange-700",
-  },
-  waiting_for_delivery: {
-    label: "Ready",
-    description: "Your bicycle is ready for delivery or pickup.",
-    badgeClassName: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  },
-  delivered: {
-    label: "Delivered",
-    description: "The order has been delivered.",
-    badgeClassName: "border-slate-300 bg-slate-100 text-slate-700",
-  },
-};
+export const ORDER_STAGE_DEFINITIONS: Record<OrderStage, OrderStageDefinition> =
+  {
+    waiting_for_deposit: {
+      label: "Waiting for deposit",
+      description:
+        "We are waiting for the initial deposit before we can open the order for review.",
+      badgeClassName: "border-amber-200 bg-amber-50 text-amber-700",
+    },
+    in_review: {
+      label: "In review",
+      description:
+        "The payment is being verified manually before the order moves to the measurement step.",
+      badgeClassName: "border-sky-200 bg-sky-50 text-sky-700",
+    },
+    confirmed: {
+      label: "Confirmed",
+      description:
+        "Your deposit has been received. Complete your measurements and specification to move the project into design.",
+      badgeClassName: "border-cyan-200 bg-cyan-50 text-cyan-700",
+    },
+    waiting_for_measurements: {
+      label: "Waiting for measurements",
+      description:
+        "The deposit is confirmed. We are waiting for your body measurements before moving the project into specification.",
+      badgeClassName: "border-cyan-200 bg-cyan-50 text-cyan-700",
+    },
+    waiting_for_specification: {
+      label: "Waiting for specification",
+      description:
+        "Measurements are received and the project is waiting for the bike specification to move into design.",
+      badgeClassName: "border-cyan-200 bg-cyan-50 text-cyan-700",
+    },
+    waiting_for_design: {
+      label: "Design in progress",
+      description:
+        "Review is complete and the order is queued for the design phase.",
+      badgeClassName: "border-violet-200 bg-violet-50 text-violet-700",
+    },
+    waiting_for_design_approval: {
+      label: "Design waiting for approval",
+      description:
+        "The design is prepared and waiting for your approval before production starts.",
+      badgeClassName: "border-indigo-200 bg-indigo-50 text-indigo-700",
+    },
+    waiting_for_final_payment: {
+      label: "Waiting for final payment",
+      description:
+        "The design is approved and we are waiting for the remaining payment before production starts.",
+      badgeClassName: "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700",
+    },
+    final_payment_in_review: {
+      label: "In review",
+      description:
+        "The final payment is being reviewed and production will begin after confirmation.",
+      badgeClassName: "border-sky-200 bg-sky-50 text-sky-700",
+    },
+    in_production: {
+      label: "In production",
+      description: "Your frame and configuration are now in production.",
+      badgeClassName: "border-orange-200 bg-orange-50 text-orange-700",
+    },
+    waiting_for_delivery: {
+      label: "Ready",
+      description: "Your bicycle is ready for delivery or pickup.",
+      badgeClassName: "border-emerald-200 bg-emerald-50 text-emerald-700",
+    },
+    delivered: {
+      label: "Delivered",
+      description: "The order has been delivered.",
+      badgeClassName: "border-gray-300 bg-gray-100 text-gray-700",
+    },
+  };
 
 export const WOO_DISPLAY_STATUS_DEFINITIONS: Record<
   WooDisplayStatus,
@@ -218,23 +229,36 @@ export function getStoredDepositConfirmed(orderNumber: string) {
     return false;
   }
 
-  return window.localStorage.getItem(getDepositConfirmedStorageKey(orderNumber)) === "true";
+  return (
+    window.localStorage.getItem(getDepositConfirmedStorageKey(orderNumber)) ===
+    "true"
+  );
 }
 
-export function setStoredDepositConfirmed(orderNumber: string, confirmed: boolean) {
+export function setStoredDepositConfirmed(
+  orderNumber: string,
+  confirmed: boolean,
+) {
   if (typeof window === "undefined") {
     return;
   }
 
-  window.localStorage.setItem(getDepositConfirmedStorageKey(orderNumber), String(confirmed));
+  window.localStorage.setItem(
+    getDepositConfirmedStorageKey(orderNumber),
+    String(confirmed),
+  );
 }
 
-export function getStoredDepositPayment(orderNumber: string): StoredDepositPayment | null {
+export function getStoredDepositPayment(
+  orderNumber: string,
+): StoredDepositPayment | null {
   if (typeof window === "undefined") {
     return null;
   }
 
-  const stored = window.localStorage.getItem(getDepositPaymentStorageKey(orderNumber));
+  const stored = window.localStorage.getItem(
+    getDepositPaymentStorageKey(orderNumber),
+  );
 
   if (!stored) {
     return null;
@@ -267,12 +291,18 @@ export function getStoredDepositPayment(orderNumber: string): StoredDepositPayme
   }
 }
 
-export function setStoredDepositPayment(orderNumber: string, payment: StoredDepositPayment) {
+export function setStoredDepositPayment(
+  orderNumber: string,
+  payment: StoredDepositPayment,
+) {
   if (typeof window === "undefined") {
     return;
   }
 
-  window.localStorage.setItem(getDepositPaymentStorageKey(orderNumber), JSON.stringify(payment));
+  window.localStorage.setItem(
+    getDepositPaymentStorageKey(orderNumber),
+    JSON.stringify(payment),
+  );
 }
 
 export function getStoredBikeSpecificationDraft(
@@ -282,7 +312,9 @@ export function getStoredBikeSpecificationDraft(
     return { specificationMode: null, values: {} };
   }
 
-  const stored = window.localStorage.getItem(getBikeSpecificationStorageKey(orderNumber));
+  const stored = window.localStorage.getItem(
+    getBikeSpecificationStorageKey(orderNumber),
+  );
 
   if (!stored) {
     return { specificationMode: null, values: {} };
@@ -298,10 +330,13 @@ export function getStoredBikeSpecificationDraft(
         : null;
 
     const values =
-      parsed.values && typeof parsed.values === "object" && !Array.isArray(parsed.values)
+      parsed.values &&
+      typeof parsed.values === "object" &&
+      !Array.isArray(parsed.values)
         ? Object.fromEntries(
             Object.entries(parsed.values).filter(
-              (entry): entry is [string, string] => typeof entry[1] === "string",
+              (entry): entry is [string, string] =>
+                typeof entry[1] === "string",
             ),
           )
         : {};
@@ -320,7 +355,10 @@ export function setStoredBikeSpecificationDraft(
     return;
   }
 
-  window.localStorage.setItem(getBikeSpecificationStorageKey(orderNumber), JSON.stringify(draft));
+  window.localStorage.setItem(
+    getBikeSpecificationStorageKey(orderNumber),
+    JSON.stringify(draft),
+  );
 }
 
 export function resetStoredOrderStage(orderNumber: string) {

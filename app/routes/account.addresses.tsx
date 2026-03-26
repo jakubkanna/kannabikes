@@ -64,7 +64,10 @@ function AddressSection({
     postcode: string;
     state: string;
   };
-  onChange: (field: keyof CustomerAddressBook["billing"], value: string) => void;
+  onChange: (
+    field: keyof CustomerAddressBook["billing"],
+    value: string,
+  ) => void;
   title: string;
 }) {
   const items: Array<[keyof CustomerAddressBook["billing"], string]> = [
@@ -110,7 +113,10 @@ export default function AccountAddressesPage({
   const [isSaving, setIsSaving] = useState(false);
 
   return (
-    <AccountShell session={loaderData.session} title={messages.account.addressesTitle}>
+    <AccountShell
+      session={loaderData.session}
+      title={messages.account.addressesTitle}
+    >
       <form
         className="space-y-6"
         onSubmit={async (event) => {
@@ -181,7 +187,7 @@ export default function AccountAddressesPage({
         >
           {messages.account.addressesSave}
         </button>
-        {status ? <p className="text-sm text-slate-600">{status}</p> : null}
+        {status ? <p className="text-sm text-gray-600">{status}</p> : null}
       </form>
     </AccountShell>
   );

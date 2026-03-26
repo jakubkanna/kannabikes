@@ -7,7 +7,12 @@ import {
   fetchCustomerComments,
   fetchCustomerSession,
 } from "~/lib/customer-account";
-import { buildLocalizedMeta, getIntlLocale, getLocaleFromPath, getMessages } from "~/lib/i18n";
+import {
+  buildLocalizedMeta,
+  getIntlLocale,
+  getLocaleFromPath,
+  getMessages,
+} from "~/lib/i18n";
 import { formatPageTitle } from "~/root";
 import type { Route } from "./+types/account.comments";
 
@@ -49,13 +54,19 @@ export default function AccountCommentsPage({
   const messages = useMessages();
 
   return (
-    <AccountShell session={loaderData.session} title={messages.account.commentsTitle}>
+    <AccountShell
+      session={loaderData.session}
+      title={messages.account.commentsTitle}
+    >
       {loaderData.comments.length === 0 ? (
-        <p className="text-sm text-slate-600">{messages.account.noComments}</p>
+        <p className="text-sm text-gray-600">{messages.account.noComments}</p>
       ) : (
         <div className="space-y-4">
           {loaderData.comments.map((comment) => (
-            <article key={comment.id} className="border border-black/15 bg-white p-5">
+            <article
+              key={comment.id}
+              className="border border-black/15 bg-white p-5"
+            >
               <div className="flex flex-wrap items-center gap-3">
                 <LocalizedLink
                   to={comment.postPath || "/blog"}

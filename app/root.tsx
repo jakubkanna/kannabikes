@@ -103,7 +103,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body
-        className="bg-white text-slate-900 antialiased"
+        className="bg-white text-gray-900 antialiased"
         style={{ fontFamily: '"Lato", sans-serif' }}
       >
         <LocaleProvider locale={locale}>{children}</LocaleProvider>
@@ -169,14 +169,14 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   return (
     <main className="mx-auto min-h-screen max-w-3xl px-4 pb-20 pt-24">
       <h1 className="text-3xl font-semibold">{message}</h1>
-      <p className="mt-3 text-slate-700">{details}</p>
+      <p className="mt-3 text-gray-700">{details}</p>
       <p className="mt-4">
         <a className="text-sm underline" href={locale === "pl" ? "/pl" : "/"}>
           {messages.contact.backHome}
         </a>
       </p>
       {stack && (
-        <pre className="mt-6 w-full overflow-x-auto rounded-lg bg-slate-900 p-4 text-sm text-slate-100">
+        <pre className="mt-6 w-full overflow-x-auto rounded-lg bg-gray-900 p-4 text-sm text-gray-100">
           <code>{stack}</code>
         </pre>
       )}

@@ -21,14 +21,14 @@ export function PaymentOption({
       className={`rounded-lg border px-3 py-3 text-left transition ${
         isSelected
           ? "border-[var(--kanna-ink)] bg-[var(--kanna-ink)] text-white"
-          : "border-stone-200 bg-white text-slate-900 hover:border-stone-300"
+          : "border-stone-200 bg-white text-gray-900 hover:border-stone-300"
       }`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
           <span
             className={`shrink-0 ${
-              isSelected ? "text-white" : "text-slate-500"
+              isSelected ? "text-white" : "text-gray-500"
             }`}
             aria-hidden="true"
           >
@@ -38,7 +38,7 @@ export function PaymentOption({
             <p className="text-sm font-semibold">{title}</p>
             <p
               className={`mt-1 text-xs ${
-                isSelected ? "text-slate-300" : "text-slate-500"
+                isSelected ? "text-gray-300" : "text-gray-500"
               }`}
             >
               {helper}
@@ -48,7 +48,7 @@ export function PaymentOption({
         <span
           className={`mt-0.5 h-4 w-4 rounded-full border ${
             isSelected
-              ? "border-white bg-white ring-4 ring-slate-700"
+              ? "border-white bg-white ring-4 ring-gray-700"
               : "border-stone-300 bg-white"
           }`}
           aria-hidden="true"

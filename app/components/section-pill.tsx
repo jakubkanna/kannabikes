@@ -8,10 +8,10 @@ type SectionPillProps = {
 export function SectionPill({ children, tone = "light" }: SectionPillProps) {
   const toneClassName =
     tone === "dark"
-      ? "border-white/28 text-slate-100"
+      ? "border-white/28 text-gray-100"
       : tone === "success"
-        ? "border-emerald-300 text-emerald-700"
-        : "border-slate-400 text-slate-700";
+        ? "border-emerald-500 text-emerald-500"
+        : "border-gray-500 text-gray-500";
 
   return (
     <span

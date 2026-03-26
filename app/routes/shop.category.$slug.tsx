@@ -4,11 +4,7 @@ import { LocalizedLink } from "~/components/localized-link";
 import { useMessages } from "~/components/locale-provider";
 import { PageContainer, PageShell } from "~/components/page-container";
 import { SectionPill } from "~/components/section-pill";
-import {
-  buildLocalizedMeta,
-  getLocaleFromPath,
-  getMessages,
-} from "~/lib/i18n";
+import { buildLocalizedMeta, getLocaleFromPath, getMessages } from "~/lib/i18n";
 import {
   fetchStoreCategories,
   fetchStoreCategoryBySlug,
@@ -28,9 +24,11 @@ export async function clientLoader({
   const [categories, products] = await Promise.all([
     fetchStoreCategories(locale).catch(() => []),
     category
-      ? fetchStoreProducts({ categoryId: category.id, locale, perPage: 24 }).catch(
-          () => [],
-        )
+      ? fetchStoreProducts({
+          categoryId: category.id,
+          locale,
+          perPage: 24,
+        }).catch(() => [])
       : Promise.resolve([]),
   ]);
 
@@ -51,8 +49,7 @@ export function meta({ loaderData, location }: Route.MetaArgs) {
   const messages = getMessages(locale);
   return buildLocalizedMeta({
     alternates: loaderData?.alternatePaths,
-    description:
-      loaderData?.category?.name ?? messages.meta.shop.description,
+    description: loaderData?.category?.name ?? messages.meta.shop.description,
     locale,
     pathname: location.pathname,
     title: formatPageTitle(
@@ -79,7 +76,7 @@ export default function ShopCategoryPage({ loaderData }: Route.ComponentProps) {
           <h1 className="mt-6 text-4xl font-semibold tracking-tight text-[var(--kanna-ink)]">
             {messages.commerce.categories}
           </h1>
-          <p className="mt-8 text-sm text-slate-600">
+          <p className="mt-8 text-sm text-gray-600">
             {messages.commerce.noProducts}
           </p>
         </PageContainer>
@@ -130,13 +127,13 @@ export default function ShopCategoryPage({ loaderData }: Route.ComponentProps) {
                   <h2 className="text-xl font-semibold text-[var(--kanna-ink)]">
                     {product.name}
                   </h2>
-                  <p className="mt-2 text-sm text-slate-600">{product.price}</p>
+                  <p className="mt-2 text-sm text-gray-600">{product.price}</p>
                 </div>
               </LocalizedLink>
             ))}
           </div>
         ) : (
-          <p className="mt-8 text-sm text-slate-600">
+          <p className="mt-8 text-sm text-gray-600">
             {messages.commerce.noProducts}
           </p>
         )}

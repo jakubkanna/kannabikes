@@ -150,12 +150,12 @@ export function CartDrawer({
 
         <div className="flex-1 overflow-y-auto px-5 py-5">
           {isLoading ? (
-            <p className="text-sm text-slate-600">{messages.cart.loading}</p>
+            <p className="text-sm text-gray-600">{messages.cart.loading}</p>
           ) : error ? (
             <p className="text-sm text-red-700">{error}</p>
           ) : !cart || cart.items.length === 0 ? (
             <div className="space-y-4">
-              <p className="text-sm text-slate-600">{messages.cart.empty}</p>
+              <p className="text-sm text-gray-600">{messages.cart.empty}</p>
               <LocalizedLink
                 to="/shop"
                 onClick={onClose}
@@ -180,9 +180,7 @@ export function CartDrawer({
                       >
                         {item.name}
                       </LocalizedLink>
-                      <p className="mt-1 text-sm text-slate-600">
-                        {item.price}
-                      </p>
+                      <p className="mt-1 text-sm text-gray-600">{item.price}</p>
                     </div>
                     <button
                       type="button"
@@ -194,7 +192,7 @@ export function CartDrawer({
                   </div>
 
                   <div className="mt-4 flex items-center justify-between gap-4">
-                    <label className="flex items-center gap-3 text-xs text-slate-700">
+                    <label className="flex items-center gap-3 text-xs text-gray-700">
                       <span>{messages.cart.quantity}</span>
                       <input
                         type="number"
@@ -221,7 +219,7 @@ export function CartDrawer({
 
         <div className="border-t border-stone-300 px-5 py-4">
           <div className="flex items-center justify-between gap-4">
-            <span className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">
+            <span className="text-sm font-semibold uppercase tracking-[0.14em] text-gray-500">
               {messages.cart.subtotal}
             </span>
             <span className="text-lg font-semibold text-[var(--kanna-ink)]">

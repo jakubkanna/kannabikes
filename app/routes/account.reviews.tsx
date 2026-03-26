@@ -54,7 +54,9 @@ export default function AccountReviewsPage({
   );
   const [reviews, setReviews] = useState(loaderData.reviewsPayload.reviews);
   const [productId, setProductId] = useState(
-    loaderData.reviewsPayload.reviewableProducts[0]?.id ? String(loaderData.reviewsPayload.reviewableProducts[0].id) : "",
+    loaderData.reviewsPayload.reviewableProducts[0]?.id
+      ? String(loaderData.reviewsPayload.reviewableProducts[0].id)
+      : "",
   );
   const [rating, setRating] = useState("5");
   const [review, setReview] = useState("");
@@ -62,7 +64,10 @@ export default function AccountReviewsPage({
   const [isSaving, setIsSaving] = useState(false);
 
   return (
-    <AccountShell session={loaderData.session} title={messages.account.reviewsTitle}>
+    <AccountShell
+      session={loaderData.session}
+      title={messages.account.reviewsTitle}
+    >
       <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
         <form
           className="space-y-4 border border-black/15 bg-white p-6"
@@ -109,14 +114,19 @@ export default function AccountReviewsPage({
             {messages.account.reviewableProducts}
           </h2>
           {reviewableProducts.length === 0 ? (
-            <p className="text-sm text-slate-600">{messages.account.noReviewableProducts}</p>
+            <p className="text-sm text-gray-600">
+              {messages.account.noReviewableProducts}
+            </p>
           ) : (
             <>
               <label className="block">
                 <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
                   {messages.account.selectProductLabel}
                 </span>
-                <SelectField value={productId} onChange={(event) => setProductId(event.currentTarget.value)}>
+                <SelectField
+                  value={productId}
+                  onChange={(event) => setProductId(event.currentTarget.value)}
+                >
                   {reviewableProducts.map((product) => (
                     <option key={product.id} value={product.id}>
                       {product.name}
@@ -128,7 +138,10 @@ export default function AccountReviewsPage({
                 <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
                   {messages.account.ratingLabel}
                 </span>
-                <SelectField value={rating} onChange={(event) => setRating(event.currentTarget.value)}>
+                <SelectField
+                  value={rating}
+                  onChange={(event) => setRating(event.currentTarget.value)}
+                >
                   {[5, 4, 3, 2, 1].map((value) => (
                     <option key={value} value={value}>
                       {value}
@@ -155,15 +168,20 @@ export default function AccountReviewsPage({
               </button>
             </>
           )}
-          {status ? <p className="text-sm text-slate-600">{status}</p> : null}
+          {status ? <p className="text-sm text-gray-600">{status}</p> : null}
         </form>
 
         <div className="space-y-4">
           {reviews.length === 0 ? (
-            <p className="text-sm text-slate-600">{messages.account.noReviews}</p>
+            <p className="text-sm text-gray-600">
+              {messages.account.noReviews}
+            </p>
           ) : (
             reviews.map((item) => (
-              <article key={item.id} className="border border-black/15 bg-white p-5">
+              <article
+                key={item.id}
+                className="border border-black/15 bg-white p-5"
+              >
                 <div className="flex flex-wrap items-center gap-3">
                   <p className="text-sm font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
                     {item.productName}
