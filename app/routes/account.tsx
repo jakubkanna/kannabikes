@@ -1,4 +1,5 @@
 import { redirect } from "react-router";
+import { AccountHydrateFallback } from "~/components/hydrate-fallbacks";
 import {
   buildLocalizedMeta,
   getLocaleFromPath,
@@ -18,6 +19,10 @@ export function meta({ location }: Route.MetaArgs) {
     pathname: location.pathname,
     title: formatPageTitle(messages.account.overviewTitle),
   });
+}
+
+export function HydrateFallback() {
+  return <AccountHydrateFallback variant="list" />;
 }
 
 export async function clientLoader({ request }: Route.ClientLoaderArgs) {

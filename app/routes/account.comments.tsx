@@ -1,5 +1,6 @@
 import { redirect } from "react-router";
 import { AccountShell } from "~/components/account-shell";
+import { AccountHydrateFallback } from "~/components/hydrate-fallbacks";
 import { LocalizedLink } from "~/components/localized-link";
 import { useMessages } from "~/components/locale-provider";
 import {
@@ -36,6 +37,10 @@ export function meta({ location }: Route.MetaArgs) {
     pathname: location.pathname,
     title: formatPageTitle(messages.account.commentsTitle),
   });
+}
+
+export function HydrateFallback() {
+  return <AccountHydrateFallback variant="list" />;
 }
 
 export default function AccountCommentsPage({

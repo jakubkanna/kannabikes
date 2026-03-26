@@ -2,6 +2,7 @@ import { Link } from "react-router";
 
 import type { Route } from "./+types/blog._index";
 import { ArchivoInkBleed } from "~/components/archivo-ink-bleed";
+import { BlogIndexHydrateFallback } from "~/components/hydrate-fallbacks";
 import { useMessages } from "~/components/locale-provider";
 import { PageContainer, PageShell } from "~/components/page-container";
 import { SectionPill } from "~/components/section-pill";
@@ -71,6 +72,10 @@ export function meta({ location }: Route.MetaArgs) {
     pathname: location.pathname,
     title: formatPageTitle(messages.meta.blog.title),
   });
+}
+
+export function HydrateFallback() {
+  return <BlogIndexHydrateFallback />;
 }
 
 function BlogPostCard({

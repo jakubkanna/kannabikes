@@ -6,6 +6,7 @@ import type { Route } from "./+types/blog.$slug";
 import { Button } from "~/components/button";
 import { CustomerSignInForm } from "~/components/customer-sign-in-form";
 import { TextareaField } from "~/components/form-field";
+import { BlogPostHydrateFallback } from "~/components/hydrate-fallbacks";
 import { PageContainer } from "~/components/page-container";
 import { useLocale, useMessages } from "~/components/locale-provider";
 import {
@@ -93,6 +94,10 @@ export function meta({ loaderData, location }: Route.MetaArgs) {
     pathname: location.pathname,
     title: formatPageTitle(title),
   });
+}
+
+export function HydrateFallback() {
+  return <BlogPostHydrateFallback />;
 }
 
 export default function BlogPostPage({ loaderData }: Route.ComponentProps) {

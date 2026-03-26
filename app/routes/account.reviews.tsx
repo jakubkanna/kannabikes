@@ -2,6 +2,7 @@ import { useState } from "react";
 import { redirect } from "react-router";
 import { AccountShell } from "~/components/account-shell";
 import { SelectField, TextareaField } from "~/components/form-field";
+import { AccountHydrateFallback } from "~/components/hydrate-fallbacks";
 import { useMessages } from "~/components/locale-provider";
 import {
   createCustomerReview,
@@ -38,6 +39,10 @@ export function meta({ location }: Route.MetaArgs) {
     pathname: location.pathname,
     title: formatPageTitle(messages.account.reviewsTitle),
   });
+}
+
+export function HydrateFallback() {
+  return <AccountHydrateFallback variant="split" />;
 }
 
 export default function AccountReviewsPage({

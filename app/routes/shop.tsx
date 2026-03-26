@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import { ArchivoInkBleed } from "~/components/archivo-ink-bleed";
 import { InputField, SelectField } from "~/components/form-field";
+import { StoreGridHydrateFallback } from "~/components/hydrate-fallbacks";
 import { LocalizedLink } from "~/components/localized-link";
 import { useMessages } from "~/components/locale-provider";
 import { PageContainer, PageShell } from "~/components/page-container";
@@ -30,6 +31,10 @@ export function meta({ location }: Route.MetaArgs) {
     pathname: location.pathname,
     title: formatPageTitle(messages.meta.shop.title),
   });
+}
+
+export function HydrateFallback() {
+  return <StoreGridHydrateFallback />;
 }
 
 export default function ShopPage({ loaderData }: Route.ComponentProps) {

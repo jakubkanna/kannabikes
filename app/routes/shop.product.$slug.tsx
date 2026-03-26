@@ -4,6 +4,7 @@ import { useLocation } from "react-router";
 import { Button } from "~/components/button";
 import { CustomerSignInForm } from "~/components/customer-sign-in-form";
 import { SelectField, TextareaField } from "~/components/form-field";
+import { ProductHydrateFallback } from "~/components/hydrate-fallbacks";
 import type { Route } from "./+types/shop.product.$slug";
 import { useLocale, useMessages } from "~/components/locale-provider";
 import { PageContainer, PageShell } from "~/components/page-container";
@@ -78,6 +79,10 @@ export function meta({ loaderData, location }: Route.MetaArgs) {
       loaderData?.product?.name ?? messages.meta.shop.title,
     ),
   });
+}
+
+export function HydrateFallback() {
+  return <ProductHydrateFallback />;
 }
 
 export default function ShopProductPage({ loaderData }: Route.ComponentProps) {

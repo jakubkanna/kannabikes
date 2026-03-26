@@ -2,6 +2,7 @@ import { useState } from "react";
 import { redirect } from "react-router";
 import { AccountShell } from "~/components/account-shell";
 import { InputField, LockedField } from "~/components/form-field";
+import { AccountHydrateFallback } from "~/components/hydrate-fallbacks";
 import { useMessages } from "~/components/locale-provider";
 import {
   fetchCustomerAccount,
@@ -39,6 +40,10 @@ export function meta({ location }: Route.MetaArgs) {
     pathname: location.pathname,
     title: formatPageTitle(messages.account.profileTitle),
   });
+}
+
+export function HydrateFallback() {
+  return <AccountHydrateFallback variant="form" />;
 }
 
 export default function AccountProfilePage({

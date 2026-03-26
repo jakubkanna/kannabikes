@@ -139,9 +139,7 @@ export default function App() {
     <>
       <CookieConsentBanner />
       <SiteHeader />
-      <div
-        className={shouldOffsetContent ? "pt-[var(--site-header-height)]" : ""}
-      >
+      <div className={shouldOffsetContent ? "pt-(--site-header-height)" : ""}>
         <Outlet />
       </div>
       <SiteFooter />
@@ -173,10 +171,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
       <h1 className="text-3xl font-semibold">{message}</h1>
       <p className="mt-3 text-slate-700">{details}</p>
       <p className="mt-4">
-        <a
-          className="text-sm underline"
-          href={locale === "pl" ? "/pl" : "/"}
-        >
+        <a className="text-sm underline" href={locale === "pl" ? "/pl" : "/"}>
           {messages.contact.backHome}
         </a>
       </p>

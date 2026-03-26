@@ -1,4 +1,5 @@
 import type { Route } from "./+types/shop.category.$slug";
+import { StoreGridHydrateFallback } from "~/components/hydrate-fallbacks";
 import { LocalizedLink } from "~/components/localized-link";
 import { useMessages } from "~/components/locale-provider";
 import { PageContainer, PageShell } from "~/components/page-container";
@@ -58,6 +59,10 @@ export function meta({ loaderData, location }: Route.MetaArgs) {
       loaderData?.category?.name ?? messages.meta.shop.title,
     ),
   });
+}
+
+export function HydrateFallback() {
+  return <StoreGridHydrateFallback />;
 }
 
 export default function ShopCategoryPage({ loaderData }: Route.ComponentProps) {

@@ -223,7 +223,7 @@ export function CookieConsentBanner() {
       <button
         type="button"
         onClick={() => closeBanner("rejected")}
-        className="absolute right-5 top-5 text-sm font-medium lowercase text-slate-500 transition hover:text-slate-900"
+        className="absolute right-5 top-5 text-xs font-medium lowercase text-slate-500 transition hover:text-slate-900"
       >
         {messages.cookieConsent.rejectSimple}
       </button>

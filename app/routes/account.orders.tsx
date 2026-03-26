@@ -1,4 +1,5 @@
 import { AccountShell } from "~/components/account-shell";
+import { AccountHydrateFallback } from "~/components/hydrate-fallbacks";
 import { buildLocalizedMeta, getLocaleFromPath, getMessages } from "~/lib/i18n";
 import { formatPageTitle } from "~/root";
 import {
@@ -35,6 +36,10 @@ export function meta({ location }: Route.MetaArgs) {
     pathname: location.pathname,
     title: formatPageTitle(messages.account.ordersTitle),
   });
+}
+
+export function HydrateFallback() {
+  return <AccountHydrateFallback variant="list" />;
 }
 
 export default function AccountOrdersPage({
