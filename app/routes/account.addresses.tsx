@@ -39,6 +39,7 @@ export function meta({ location }: Route.MetaArgs) {
     description: messages.account.addressesTitle,
     locale,
     pathname: location.pathname,
+    robots: "noindex,follow",
     title: formatPageTitle(messages.account.addressesTitle),
   });
 }

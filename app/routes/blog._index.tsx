@@ -36,7 +36,7 @@ function formatPublishedDate(value: string, locale: "en" | "pl") {
   }).format(date);
 }
 
-export async function clientLoader({ request }: Route.ClientLoaderArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
   const locale = getLocaleFromPath(new URL(request.url).pathname);
 
   try {
@@ -68,8 +68,11 @@ export function meta({ location }: Route.MetaArgs) {
   const messages = getMessages(locale);
   return buildLocalizedMeta({
     description: messages.meta.blog.description,
+    image: "/2013_DSF6372_jakubkanna.png",
     locale,
     pathname: location.pathname,
+    socialDescription: messages.meta.blog.description,
+    socialTitle: messages.meta.blog.title,
     title: formatPageTitle(messages.meta.blog.title),
   });
 }

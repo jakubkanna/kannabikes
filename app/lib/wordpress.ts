@@ -116,7 +116,12 @@ const WORDPRESS_BASE_URL = (() => {
 
   return "http://localhost";
 })();
-const WORDPRESS_REQUEST_BASE = import.meta.env.DEV ? "" : WORDPRESS_BASE_URL;
+const WORDPRESS_REQUEST_BASE =
+  typeof window === "undefined"
+    ? WORDPRESS_BASE_URL
+    : import.meta.env.DEV
+      ? ""
+      : WORDPRESS_BASE_URL;
 const WORDPRESS_BASE_ORIGIN = (() => {
   try {
     return new URL(WORDPRESS_BASE_URL).origin;
@@ -134,7 +139,10 @@ function buildWordpressApiUrl(path: string) {
     return new URL(url);
   }
 
-  return new URL(url, window.location.origin);
+  const fallbackOrigin =
+    typeof window === "undefined" ? WORDPRESS_BASE_URL : window.location.origin;
+
+  return new URL(url, fallbackOrigin);
 }
 
 function sanitizeHtml(input: string | undefined) {

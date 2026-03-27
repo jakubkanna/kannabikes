@@ -1,63 +1,199 @@
+import { fetchStoreCategories, fetchStoreProducts } from "~/lib/store-api";
+import { SITE_URL, type Locale } from "~/lib/i18n";
+import { fetchWordpressPostsByCategory } from "~/lib/wordpress";
 import type { Route } from "./+types/sitemap[.]xml";
 
-const DEFAULT_SITE_URL = "https://kannabikes.com";
+type SitemapEntry = {
+  lastmod?: string;
+  path: string;
+  priority?: string;
+};
+
+const STATIC_PUBLIC_PATHS: SitemapEntry[] = [
+  { path: "/", priority: "1.0" },
+  { path: "/about" },
+  { path: "/blog" },
+  { path: "/contact" },
+  { path: "/delivery" },
+  { path: "/pre-order" },
+  { path: "/privacy-terms" },
+  { path: "/shop" },
+  { path: "/warranty" },
+  { path: "/pl", priority: "1.0" },
+  { path: "/pl/about" },
+  { path: "/pl/blog" },
+  { path: "/pl/contact" },
+  { path: "/pl/delivery" },
+  { path: "/pl/pre-order" },
+  { path: "/pl/privacy-terms" },
+  { path: "/pl/shop" },
+  { path: "/pl/warranty" },
+];
 
 function normalizeBaseUrl(input: string) {
   return input.endsWith("/") ? input.slice(0, -1) : input;
 }
 
-export async function loader({ request }: Route.LoaderArgs) {
-  const envSiteUrl = import.meta.env.VITE_SITE_URL;
-  const requestUrl = new URL(request.url);
-  const origin = requestUrl.origin.includes("localhost")
-    ? DEFAULT_SITE_URL
-    : requestUrl.origin;
-  const siteUrl = normalizeBaseUrl(envSiteUrl ?? origin);
+function escapeXml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
 
-  const pages = [
-    "/",
-    "/about",
-    "/blog",
-    "/cart",
-    "/checkout",
-    "/contact",
-    "/delivery",
-    "/pre-order",
-    "/privacy-terms",
-    "/shop",
-    "/warranty",
-    "/pl",
-    "/pl/about",
-    "/pl/blog",
-    "/pl/cart",
-    "/pl/checkout",
-    "/pl/contact",
-    "/pl/delivery",
-    "/pl/pre-order",
-    "/pl/privacy-terms",
-    "/pl/shop",
-    "/pl/warranty",
-  ];
-  const now = new Date().toISOString();
+function addEntry(
+  entries: Map<string, SitemapEntry>,
+  entry: SitemapEntry | null | undefined,
+) {
+  if (!entry?.path?.startsWith("/")) {
+    return;
+  }
+
+  const current = entries.get(entry.path);
+
+  if (!current) {
+    entries.set(entry.path, entry);
+    return;
+  }
+
+  if (!current.lastmod && entry.lastmod) {
+    current.lastmod = entry.lastmod;
+  }
+}
+
+async function fetchAllStoreProducts(locale: Locale) {
+  const products = [];
+  const perPage = 100;
+
+  for (let page = 1; page <= 10; page += 1) {
+    const batch = await fetchStoreProducts({ locale, page, perPage }).catch(
+      () => [],
+    );
+
+    if (batch.length === 0) {
+      break;
+    }
+
+    products.push(...batch);
+
+    if (batch.length < perPage) {
+      break;
+    }
+  }
+
+  return products;
+}
+
+async function fetchAllBlogPosts(locale: Locale) {
+  const posts = [];
+  let page = 1;
+
+  while (page <= 20) {
+    const result = await fetchWordpressPostsByCategory("blog", locale, page, 50)
+      .catch(() => ({
+        hasMore: false,
+        nextPage: null,
+        posts: [],
+      }));
+
+    posts.push(...result.posts);
+
+    if (!result.hasMore || !result.nextPage) {
+      break;
+    }
+
+    page = result.nextPage;
+  }
+
+  return posts;
+}
+
+export async function loader({ request }: Route.LoaderArgs) {
+  const requestUrl = new URL(request.url);
+  const siteUrl = normalizeBaseUrl(
+    import.meta.env.VITE_SITE_URL?.trim() || SITE_URL || requestUrl.origin,
+  );
+  const entries = new Map<string, SitemapEntry>();
+
+  for (const entry of STATIC_PUBLIC_PATHS) {
+    addEntry(entries, entry);
+  }
+
+  const [enCategories, plCategories, enProducts, plProducts, enPosts, plPosts] =
+    await Promise.all([
+      fetchStoreCategories("en").catch(() => []),
+      fetchStoreCategories("pl").catch(() => []),
+      fetchAllStoreProducts("en"),
+      fetchAllStoreProducts("pl"),
+      fetchAllBlogPosts("en"),
+      fetchAllBlogPosts("pl"),
+    ]);
+
+  for (const category of [...enCategories, ...plCategories]) {
+    addEntry(entries, {
+      path: category.path,
+      priority: "0.7",
+    });
+  }
+
+  for (const product of [...enProducts, ...plProducts]) {
+    addEntry(entries, {
+      path: product.path,
+      priority: "0.8",
+    });
+
+    for (const translatedPath of Object.values(product.translationPaths)) {
+      if (!translatedPath) {
+        continue;
+      }
+
+      addEntry(entries, {
+        path: translatedPath,
+        priority: "0.8",
+      });
+    }
+  }
+
+  for (const post of [...enPosts, ...plPosts]) {
+    if (post.url) {
+      addEntry(entries, {
+        lastmod: post.publishedAt || undefined,
+        path: post.url,
+        priority: "0.7",
+      });
+    }
+
+    for (const translatedPath of Object.values(post.translations)) {
+      if (!translatedPath) {
+        continue;
+      }
+
+      addEntry(entries, {
+        lastmod: post.publishedAt || undefined,
+        path: translatedPath,
+        priority: "0.7",
+      });
+    }
+  }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${pages
-  .map(
-    (path) => `  <url>
-    <loc>${siteUrl}${path}</loc>
-    <lastmod>${now}</lastmod>
+${Array.from(entries.values())
+  .sort((a, b) => a.path.localeCompare(b.path))
+  .map((entry) => `  <url>
+    <loc>${escapeXml(`${siteUrl}${entry.path === "/" ? "" : entry.path}`)}</loc>${entry.lastmod ? `
+    <lastmod>${escapeXml(entry.lastmod)}</lastmod>` : ""}
     <changefreq>weekly</changefreq>
-    <priority>${path === "/" ? "1.0" : "0.8"}</priority>
-  </url>`,
-  )
+    <priority>${entry.priority ?? "0.6"}</priority>
+  </url>`)
   .join("\n")}
 </urlset>`;
 
   return new Response(xml, {
     headers: {
-      "Content-Type": "application/xml; charset=utf-8",
       "Cache-Control": "public, max-age=3600",
+      "Content-Type": "application/xml; charset=utf-8",
     },
   });
 }

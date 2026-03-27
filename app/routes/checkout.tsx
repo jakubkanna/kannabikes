@@ -55,6 +55,7 @@ export function meta({ location }: Route.MetaArgs) {
     description: messages.meta.checkout.description,
     locale,
     pathname: location.pathname,
+    robots: "noindex,follow",
     title: formatPageTitle(messages.meta.checkout.title),
   });
 }

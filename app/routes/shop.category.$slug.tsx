@@ -12,10 +12,10 @@ import {
 } from "~/lib/store-api";
 import { formatPageTitle } from "~/root";
 
-export async function clientLoader({
+export async function loader({
   params,
   request,
-}: Route.ClientLoaderArgs) {
+}: Route.LoaderArgs) {
   const locale = getLocaleFromPath(new URL(request.url).pathname);
   const category = await fetchStoreCategoryBySlug({
     locale,

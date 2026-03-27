@@ -24,6 +24,7 @@ export function meta({ location }: Route.MetaArgs) {
     description: messages.meta.cart.description,
     locale,
     pathname: location.pathname,
+    robots: "noindex,follow",
     title: formatPageTitle(messages.meta.cart.title),
   });
 }
@@ -92,7 +93,7 @@ export default function CartPage() {
       <SectionStack>
         <AnimatedOrderSection className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm">
           <SectionPill>{messages.commerce.shopPill}</SectionPill>
-          <h1 className="mt-6 text-4xl font-semibold tracking-tight text-[var(--kanna-ink)]">
+          <h1 className="page-heading mt-6 text-[2.35rem] leading-[0.88] text-[var(--kanna-ink)] md:text-[3.8rem]">
             {messages.cart.title}
           </h1>
         </AnimatedOrderSection>

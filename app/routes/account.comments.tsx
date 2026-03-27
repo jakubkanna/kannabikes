@@ -40,6 +40,7 @@ export function meta({ location }: Route.MetaArgs) {
     description: messages.account.commentsBody,
     locale,
     pathname: location.pathname,
+    robots: "noindex,follow",
     title: formatPageTitle(messages.account.commentsTitle),
   });
 }

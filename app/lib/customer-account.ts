@@ -134,7 +134,12 @@ const WORDPRESS_BASE_URL = (() => {
   }
 })();
 
-const WORDPRESS_REQUEST_BASE = import.meta.env.DEV ? "" : WORDPRESS_BASE_URL;
+const WORDPRESS_REQUEST_BASE =
+  typeof window === "undefined"
+    ? WORDPRESS_BASE_URL
+    : import.meta.env.DEV
+      ? ""
+      : WORDPRESS_BASE_URL;
 
 function buildApiUrl(path: string) {
   const url = `${WORDPRESS_REQUEST_BASE}/wp-json/kanna-auth/v1${path}`;
@@ -143,7 +148,10 @@ function buildApiUrl(path: string) {
     return new URL(url);
   }
 
-  return new URL(url, window.location.origin);
+  const fallbackOrigin =
+    typeof window === "undefined" ? WORDPRESS_BASE_URL : window.location.origin;
+
+  return new URL(url, fallbackOrigin);
 }
 
 async function customerAccountRequest<T>(

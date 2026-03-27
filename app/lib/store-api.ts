@@ -241,7 +241,12 @@ const WORDPRESS_BASE_URL = (() => {
     return DEFAULT_WORDPRESS_API_BASE.replace(/\/wp-json.*$/i, "");
   }
 })();
-const WORDPRESS_REQUEST_BASE = import.meta.env.DEV ? "" : WORDPRESS_BASE_URL;
+const WORDPRESS_REQUEST_BASE =
+  typeof window === "undefined"
+    ? WORDPRESS_BASE_URL
+    : import.meta.env.DEV
+      ? ""
+      : WORDPRESS_BASE_URL;
 
 const STORE_API_BASE = `${WORDPRESS_BASE_URL}/wp-json/wc/store/v1`;
 const CART_TOKEN_STORAGE_KEY = "kanna-store-cart-token";
@@ -254,7 +259,10 @@ function buildApiUrl(path: string) {
     return new URL(url);
   }
 
-  return new URL(url, window.location.origin);
+  const fallbackOrigin =
+    typeof window === "undefined" ? WORDPRESS_BASE_URL : window.location.origin;
+
+  return new URL(url, fallbackOrigin);
 }
 
 function normalizeMoney(

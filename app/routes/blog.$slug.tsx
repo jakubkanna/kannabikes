@@ -7,13 +7,16 @@ import { Button } from "~/components/button";
 import { CustomerSignInForm } from "~/components/customer-sign-in-form";
 import { TextareaField } from "~/components/form-field";
 import { BlogPostHydrateFallback } from "~/components/hydrate-fallbacks";
+import { JsonLd } from "~/components/json-ld";
 import { PageContainer } from "~/components/page-container";
 import { useLocale, useMessages } from "~/components/locale-provider";
 import {
+  buildSiteUrl,
   buildLocalizedMeta,
   getIntlLocale,
   getLocaleFromPath,
   getMessages,
+  localizePath,
 } from "~/lib/i18n";
 import {
   createCustomerBlogComment,
@@ -81,10 +84,10 @@ function formatPublishedDate(value: string, locale: "en" | "pl") {
   }).format(date);
 }
 
-export async function clientLoader({
+export async function loader({
   params,
   request,
-}: Route.ClientLoaderArgs) {
+}: Route.LoaderArgs) {
   const locale = getLocaleFromPath(new URL(request.url).pathname);
 
   try {
@@ -120,13 +123,19 @@ export function meta({ loaderData, location }: Route.MetaArgs) {
   const locale = getLocaleFromPath(location.pathname);
   const messages = getMessages(locale);
   const title = loaderData?.post?.title ?? messages.meta.blog.title;
+  const description = loaderData?.post?.excerpt || messages.meta.blog.description;
 
   return buildLocalizedMeta({
     alternates: loaderData?.alternatePaths,
-    description: loaderData?.post?.excerpt || messages.meta.blog.description,
+    description,
+    image: loaderData?.post?.image.src,
+    imageAlt: loaderData?.post?.image.alt,
     locale,
     pathname: location.pathname,
+    socialDescription: description,
+    socialTitle: title,
     title: formatPageTitle(title),
+    type: "article",
   });
 }
 
@@ -189,6 +198,47 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
   const post = loaderData.post;
   const commentRedirectPath = `${location.pathname}${location.search}#comments`;
   const threadedComments = buildCommentTree(comments);
+  const postUrl = buildSiteUrl(location.pathname);
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    author: {
+      "@type": "Organization",
+      name: "Kanna Bikes",
+    },
+    datePublished: post.publishedAt || undefined,
+    description: post.excerpt || post.title,
+    headline: post.title,
+    image: post.image.src ? [post.image.src] : undefined,
+    mainEntityOfPage: postUrl,
+    publisher: {
+      "@type": "Organization",
+      logo: {
+        "@type": "ImageObject",
+        url: buildSiteUrl("/kannabikes_logo.svg"),
+      },
+      name: "Kanna Bikes",
+    },
+    url: postUrl,
+  };
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: messages.blog.title,
+        item: buildSiteUrl(localizePath("/blog", locale)),
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: post.title,
+        item: postUrl,
+      },
+    ],
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -283,6 +333,8 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
 
   return (
     <main className="min-h-screen bg-white">
+      <JsonLd data={articleJsonLd} />
+      <JsonLd data={breadcrumbJsonLd} />
       <section className="bg-black px-4 pb-12 pt-10 text-white md:px-8 md:pb-16 md:pt-14">
         <PageContainer>
           <Link

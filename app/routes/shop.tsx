@@ -12,7 +12,7 @@ import { buildLocalizedMeta, getLocaleFromPath, getMessages } from "~/lib/i18n";
 import type { Route } from "./+types/shop";
 import { fetchStoreCategories, fetchStoreProducts } from "~/lib/store-api";
 
-export async function clientLoader({ request }: Route.ClientLoaderArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
   const locale = getLocaleFromPath(new URL(request.url).pathname);
   const [categories, products] = await Promise.all([
     fetchStoreCategories(locale).catch(() => []),

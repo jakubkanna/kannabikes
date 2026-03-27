@@ -8,9 +8,14 @@ export type Locale = (typeof SUPPORTED_LOCALES)[number];
 
 export const DEFAULT_LOCALE: Locale = "en";
 export const LOCALE_STORAGE_KEY = "kanna-locale";
-const SITE_URL = (
+export const SITE_URL = (
   import.meta.env.VITE_SITE_URL ?? "http://localhost:5173"
 ).replace(/\/$/, "");
+const BASE_URL = (import.meta.env.BASE_URL ?? "/").replace(/\/$/, "");
+const DEFAULT_SOCIAL_IMAGE_PATH = `${BASE_URL}/2013_DSF6372_jakubkanna.png`.replace(
+  /\/{2,}/g,
+  "/",
+);
 
 export function isSupportedLocale(value: string | null | undefined): value is Locale {
   return value === "en" || value === "pl";
@@ -66,31 +71,60 @@ export function setStoredLocale(locale: Locale) {
   window.localStorage.setItem(LOCALE_STORAGE_KEY, locale);
 }
 
-function buildSiteUrl(pathname: string) {
+export function buildSiteUrl(pathname: string) {
   return `${SITE_URL}${pathname === "/" ? "" : pathname}`;
+}
+
+function buildAbsoluteUrl(pathOrUrl: string) {
+  if (/^https?:\/\//i.test(pathOrUrl)) {
+    return pathOrUrl;
+  }
+
+  return buildSiteUrl(pathOrUrl);
 }
 
 export function buildLocalizedMeta({
   alternates,
   description,
+  image,
+  imageAlt,
   locale,
   pathname,
+  robots = "index,follow",
+  socialDescription,
+  socialTitle,
+  type = "website",
   title,
 }: {
   alternates?: Partial<Record<Locale, string>>;
   description: string;
+  image?: string;
+  imageAlt?: string;
   locale: Locale;
   pathname: string;
+  robots?: string;
+  socialDescription?: string;
+  socialTitle?: string;
+  type?: "website" | "article" | "product";
   title: string;
 }): MetaDescriptor[] {
   const canonicalPath = alternates?.[locale] ?? localizePath(pathname, locale);
   const englishPath = alternates?.en ?? localizePath(pathname, "en");
   const polishPath = alternates?.pl ?? localizePath(pathname, "pl");
+  const canonicalUrl = buildSiteUrl(canonicalPath);
+  const socialImage = buildAbsoluteUrl(image ?? DEFAULT_SOCIAL_IMAGE_PATH);
+  const resolvedSocialTitle = socialTitle ?? title;
+  const resolvedSocialDescription = socialDescription ?? description;
+  const resolvedImageAlt =
+    typeof imageAlt === "string" && imageAlt.trim()
+      ? imageAlt.trim()
+      : resolvedSocialTitle;
+  const twitterCard = image ? "summary_large_image" : "summary";
 
   return [
     { title },
     { name: "description", content: description },
-    { tagName: "link", rel: "canonical", href: buildSiteUrl(canonicalPath) },
+    { tagName: "link", rel: "canonical", href: canonicalUrl },
     {
       tagName: "link",
       rel: "alternate",
@@ -109,6 +143,19 @@ export function buildLocalizedMeta({
       hrefLang: "x-default",
       href: buildSiteUrl(englishPath),
     },
+    { name: "robots", content: robots },
+    { property: "og:url", content: canonicalUrl },
+    { property: "og:type", content: type },
+    { property: "og:title", content: resolvedSocialTitle },
+    { property: "og:description", content: resolvedSocialDescription },
+    { property: "og:image", content: socialImage },
+    { property: "og:image:url", content: socialImage },
+    { property: "og:image:secure_url", content: socialImage },
+    { property: "og:image:alt", content: resolvedImageAlt },
+    { name: "twitter:card", content: twitterCard },
+    { name: "twitter:title", content: resolvedSocialTitle },
+    { name: "twitter:description", content: resolvedSocialDescription },
+    { name: "twitter:image", content: socialImage },
   ];
 }
 

@@ -6,16 +6,19 @@ import { CustomerSignInForm } from "~/components/customer-sign-in-form";
 import { SelectField, TextareaField } from "~/components/form-field";
 import { ProductHydrateFallback } from "~/components/hydrate-fallbacks";
 import { ImageGallery } from "~/components/image-gallery";
+import { JsonLd } from "~/components/json-ld";
 import { LocalizedLink } from "~/components/localized-link";
 import type { Route } from "./+types/shop.product.$slug";
 import { useLocale, useMessages } from "~/components/locale-provider";
 import { PageContainer, PageShell } from "~/components/page-container";
 import { SectionPill } from "~/components/section-pill";
 import {
+  buildSiteUrl,
   buildLocalizedMeta,
   getIntlLocale,
   getLocaleFromPath,
   getMessages,
+  localizePath,
 } from "~/lib/i18n";
 import {
   addStoreCartItem,
@@ -47,10 +50,10 @@ function getInitialOptionSelection(
   );
 }
 
-export async function clientLoader({
+export async function loader({
   params,
   request,
-}: Route.ClientLoaderArgs) {
+}: Route.LoaderArgs) {
   const locale = getLocaleFromPath(new URL(request.url).pathname);
   const product = await fetchStoreProductBySlug({
     locale,
@@ -67,18 +70,32 @@ export async function clientLoader({
   };
 }
 
+function stripHtml(value: string | undefined) {
+  return (value ?? "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
 export function meta({ loaderData, location }: Route.MetaArgs) {
   const locale = getLocaleFromPath(location.pathname);
   const messages = getMessages(locale);
+  const description =
+    stripHtml(loaderData?.product?.shortDescriptionHtml) ||
+    stripHtml(loaderData?.product?.descriptionHtml) ||
+    loaderData?.product?.name ||
+    messages.meta.shop.description;
 
   return buildLocalizedMeta({
     alternates: loaderData?.alternatePaths,
-    description: loaderData?.product?.name ?? messages.meta.shop.description,
+    description,
+    image: loaderData?.product?.images[0]?.src,
+    imageAlt: loaderData?.product?.imageAlt,
     locale,
     pathname: location.pathname,
+    socialDescription: description,
+    socialTitle: loaderData?.product?.name ?? messages.meta.shop.title,
     title: formatPageTitle(
       loaderData?.product?.name ?? messages.meta.shop.title,
     ),
+    type: "product",
   });
 }
 
@@ -144,6 +161,48 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
 
   const product = loaderData.product;
   const reviewRedirectPath = `${location.pathname}${location.search}#reviews`;
+  const productDescription =
+    stripHtml(product.shortDescriptionHtml) ||
+    stripHtml(product.descriptionHtml) ||
+    product.name;
+  const productUrl = buildSiteUrl(location.pathname);
+  const productImageUrls = product.images.map((image) => image.src);
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: productDescription,
+    image: productImageUrls,
+    offers: {
+      "@type": "Offer",
+      availability:
+        product.stockStatus === "instock"
+          ? "https://schema.org/InStock"
+          : "https://schema.org/OutOfStock",
+      price: product.price.replace(/[^\d,.-]/g, "").replace(",", "."),
+      priceCurrency: product.currencyCode,
+      url: productUrl,
+    },
+    url: productUrl,
+  };
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: messages.commerce.shopPill,
+        item: buildSiteUrl(localizePath("/shop", locale)),
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: product.name,
+        item: productUrl,
+      },
+    ],
+  };
 
   useEffect(() => {
     setSelectedOptions(getInitialOptionSelection(product));
@@ -307,6 +366,8 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
   return (
     <PageShell>
       <PageContainer>
+        <JsonLd data={productJsonLd} />
+        <JsonLd data={breadcrumbJsonLd} />
         <nav
           aria-label="Breadcrumb"
           className="mt-1 flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/45"

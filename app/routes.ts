@@ -65,5 +65,6 @@ const polishRoutes = [
 export default [
   ...localizedRoutes,
   ...prefix("pl", polishRoutes),
+  route("robots.txt", "routes/robots[.]txt.ts", { id: "robots" }),
   route("sitemap.xml", "routes/sitemap[.]xml.ts", { id: "sitemap" }),
 ] satisfies RouteConfig;

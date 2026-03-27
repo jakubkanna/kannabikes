@@ -13,10 +13,12 @@ import { useEffect, useRef } from "react";
 import type { Route } from "./+types/root";
 import "./app.css";
 import { CookieConsentBanner } from "./components/cookie-consent-banner";
+import { JsonLd } from "./components/json-ld";
 import { LocaleProvider } from "./components/locale-provider";
 import { SiteFooter } from "./components/site-footer";
 import { SiteHeader } from "./components/site-header";
 import {
+  buildSiteUrl,
   getLocaleFromPath,
   getMessages,
   getStoredLocale,
@@ -30,8 +32,21 @@ const SITE_URL = (
   import.meta.env.VITE_SITE_URL ?? "http://localhost:5173"
 ).replace(/\/$/, "");
 const BASE_URL = import.meta.env.BASE_URL;
-const OG_IMAGE = `${BASE_URL}kannabikes_logo.svg`;
+const OG_IMAGE = `${BASE_URL}2013_DSF6372_jakubkanna.png`;
 const OG_IMAGE_URL = `${SITE_URL}${OG_IMAGE}`;
+const ORGANIZATION_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  logo: OG_IMAGE_URL,
+  name: SITE_NAME,
+  url: SITE_URL,
+};
+const WEBSITE_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: SITE_NAME,
+  url: buildSiteUrl("/"),
+};
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -71,22 +86,6 @@ export function meta({}: Route.MetaArgs) {
   return [
     { title: SITE_NAME },
     { name: "description", content: DEFAULT_SITE_DESCRIPTION },
-    { name: "robots", content: "index,follow" },
-    { property: "og:url", content: SITE_URL },
-    { property: "og:type", content: "website" },
-    { property: "og:title", content: SITE_NAME },
-    { property: "og:description", content: DEFAULT_SITE_DESCRIPTION },
-    { property: "og:image", content: OG_IMAGE_URL },
-    { property: "og:image:url", content: OG_IMAGE_URL },
-    { property: "og:image:secure_url", content: OG_IMAGE_URL },
-    { property: "og:image:type", content: "image/svg+xml" },
-    { property: "og:image:width", content: "1200" },
-    { property: "og:image:height", content: "630" },
-    { property: "og:image:alt", content: `${SITE_NAME} social preview image` },
-    { name: "twitter:card", content: "summary" },
-    { name: "twitter:title", content: SITE_NAME },
-    { name: "twitter:description", content: DEFAULT_SITE_DESCRIPTION },
-    { name: "twitter:image", content: OG_IMAGE_URL },
   ];
 }
 
@@ -101,6 +100,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
+        <JsonLd data={ORGANIZATION_JSON_LD} />
+        <JsonLd data={WEBSITE_JSON_LD} />
       </head>
       <body
         className="bg-white text-gray-900 antialiased"
