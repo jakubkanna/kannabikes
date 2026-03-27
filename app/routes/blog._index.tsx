@@ -68,7 +68,7 @@ export function meta({ location }: Route.MetaArgs) {
   const messages = getMessages(locale);
   return buildLocalizedMeta({
     description: messages.meta.blog.description,
-    image: "/2013_DSF6372_jakubkanna.png",
+    image: "/2013_DSF6372_jakubkanna.jpg",
     locale,
     pathname: location.pathname,
     socialDescription: messages.meta.blog.description,

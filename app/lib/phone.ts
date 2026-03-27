@@ -1,3 +1,5 @@
+import { loadCountryDirectory } from "./countries";
+
 export function normalizePhoneNumber(value: string) {
   return value.replace(/[^\d+]/g, "");
 }
@@ -72,21 +74,22 @@ export async function loadPhoneCountryOptions() {
     return phoneCountryOptionsPromise;
   }
 
-  phoneCountryOptionsPromise = import("country-state-city")
-    .then(({ Country }) => {
+  phoneCountryOptionsPromise = loadCountryDirectory()
+    .then((countries) => {
       cachedPhoneCountryOptions = sortPhoneCountryOptions(
-        Country.getAllCountries()
+        countries
           .filter(
             (country) =>
-              typeof country.phonecode === "string" && country.phonecode.trim() !== "",
+              typeof country.phoneCode === "string" &&
+              country.phoneCode.trim() !== "",
           )
           .map((country) => {
-            const dialCode = normalizeDialCode(`+${country.phonecode.trim()}`);
+            const dialCode = normalizeDialCode(`+${country.phoneCode.trim()}`);
 
             return {
-              countryCode: country.isoCode,
+              countryCode: country.code,
               dialCode,
-              label: `${country.isoCode} (${dialCode})`,
+              label: `${country.code} (${dialCode})`,
               name: country.name,
             };
           }),

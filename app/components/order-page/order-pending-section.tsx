@@ -11,6 +11,7 @@ import { useLocale, useMessages } from "~/components/locale-provider";
 import { PhoneNumberField } from "~/components/phone-number-field";
 import { SectionPill } from "~/components/section-pill";
 import { Spinner } from "~/components/spinner";
+import { getOrderPendingCopy } from "~/lib/i18n-messages";
 import { AnimatedOrderSection } from "./order-motion";
 import {
   MOCK_DELIVERED_ON,
@@ -18,6 +19,12 @@ import {
   type DepositPaymentMethod,
   type OrderStage,
 } from "~/lib/mock-order";
+import {
+  findCountryByCode,
+  findCountryByName,
+  loadCountryDirectory,
+  type CountryDirectoryEntry,
+} from "~/lib/countries";
 import type { OrderShippingAddress, OrderShippingState } from "~/lib/order-api";
 import { isPhoneNumberWithCountryCode } from "~/lib/phone";
 import { formatOrderMoney, getInclusiveTaxBreakdown } from "~/lib/order-tax";
@@ -33,7 +40,6 @@ type CountryOption = {
 
 type ShippingReferenceData = {
   availableCountries: CountryOption[];
-  getCityOptions: (countryCode: string) => string[];
   getCountryLabel: (countryCode: string) => string;
   getCountryCodeByName: (countryName: string) => string;
   isValidCountry: (countryCode: string) => boolean;
@@ -43,177 +49,20 @@ type ShippingReferenceData = {
 
 let shippingReferenceDataPromise: Promise<ShippingReferenceData> | null = null;
 
-function getProductionCopy(locale: "en" | "pl") {
-  if (locale === "pl") {
-    return {
-      errors: {
-        fullName: "Wpisz imię i nazwisko odbiorcy.",
-        lastName: "Wpisz nazwisko odbiorcy.",
-        email: "Wpisz poprawny adres e-mail.",
-        street: "Wpisz ulicę i numer domu.",
-        postalCode: "Wpisz poprawny kod pocztowy dla wybranego kraju.",
-        cityFromList: "Wybierz miasto z listy.",
-        city: "Wpisz miasto.",
-        country: "Wybierz poprawny kraj.",
-        shippingQuote: "Nie udało się obliczyć kosztu dostawy dla tego adresu.",
-      },
-      bankTransferDetails: "Dane do przelewu",
-      accountHolder: "Właściciel konta",
-      amount: "Kwota",
-      transferTitle: "Tytuł przelewu",
-      finalPaymentForOrder: (orderNumber: string) =>
-        `Płatność końcowa za zamówienie ${orderNumber}`,
-      nextBikeDesign: "Dalej: projekt roweru",
-      nextBikeDesignDescription:
-        "Gdy prześlesz pomiary i zaliczka zostanie zaksięgowana, projekt będzie gotowy do rozpoczęcia i trafi do naszego projektanta na kolejny etap realizacji.",
-      production: "Produkcja",
-      waitingForFinalPayment: "Oczekiwanie na płatność końcową",
-      waitingForFinalPaymentDescription:
-        "Płatność końcowa obejmuje koszt materiałów, wybranych części i produkcji Twojego roweru na zamówienie. Gdy ją otrzymamy, rower przejdzie bezpośrednio do produkcji, a my przekażemy szacowany termin dostawy. (Zwykle 4-6 tygodni)",
-      shippingDetails: "Dane dostawy",
-      firstName: "Imię",
-      lastName: "Nazwisko",
-      email: "E-mail",
-      phoneNumber: "Numer telefonu",
-      country: "Kraj",
-      postalCode: "Kod pocztowy",
-      city: "Miasto",
-      street: "Ulica i numer domu",
-      shippingOption: "Opcja dostawy",
-      courierDelivery: "Dostawa kurierem",
-      showroomPickup: "Odbiór w showroomie",
-      paymentOptions: "Opcje płatności",
-      classicBankTransfer: "Klasyczny przelew bankowy",
-      summary: "Podsumowanie",
-      totalAmount: "Łączna kwota",
-      deposit: "Zaliczka",
-      shipping: "Dostawa",
-      fillShippingDetails: "Uzupełnij dane dostawy",
-      contactUs: "Skontaktuj się z nami",
-      paymentMethod: "Metoda płatności",
-      classicTransfer: "Przelew tradycyjny",
-      vatIncluded: "Łączny VAT (w tym 23%)",
-      totalDue: "Do zapłaty",
-      submittingPayment: "Wysyłanie płatności...",
-      continueWithTransfer: "Kontynuuj przelew",
-      payFinalAmount: "Zapłać kwotę końcową",
-      inReview: "W weryfikacji",
-      inReviewDescription:
-        "Weryfikujemy płatność końcową. Gdy zostanie potwierdzona, zamówienie przejdzie ręcznie do produkcji.",
-      inProduction: "W produkcji",
-      ready: "Gotowe",
-      delivered: "Dostarczone",
-      readyDescription:
-        "Twój rower jest gotowy do dostawy lub odbioru osobistego.",
-      courierTrackingAvailable:
-        "Twój rower jest gotowy do dostawy lub odbioru osobistego. Link do śledzenia przesyłki znajdziesz poniżej.",
-      courierTracking: "Śledzenie przesyłki",
-      deliveredOn: "Dostarczono",
-      estimatedDeliveryTime: "Szacowany termin dostawy",
-      estimatedDeliveryWindow: "6-8 tygodni",
-      shippingAddress: "Adres dostawy",
-      paymentDate: "Data płatności",
-      amountPaidByCustomer: "Kwota opłacona przez klienta",
-      nextProduction: "Dalej: produkcja",
-      nextProductionDescription:
-        "Gdy projekt roweru zostanie dopracowany i zatwierdzony, zamówienie przejdzie do produkcji.",
-    };
-  }
-
-  return {
-    errors: {
-      fullName: "Enter recipient name and lastname.",
-      lastName: "Enter recipient lastname.",
-      email: "Enter a valid email address.",
-      street: "Enter street and house number.",
-      postalCode: "Enter a valid postal code for the selected country.",
-      cityFromList: "Select a city from the list.",
-      city: "Enter city.",
-      country: "Select a valid country.",
-      shippingQuote: "We could not calculate shipping for this address.",
-    },
-    bankTransferDetails: "Bank transfer details",
-    accountHolder: "Account holder",
-    amount: "Amount",
-    transferTitle: "Transfer title",
-    finalPaymentForOrder: (orderNumber: string) =>
-      `Final payment for order ${orderNumber}`,
-    nextBikeDesign: "Next: bike design",
-    nextBikeDesignDescription:
-      "Once your measurements are submitted and the deposit is received, your project will be ready to start and assigned to our designer for the next stage of the build.",
-    production: "Production",
-    waitingForFinalPayment: "Waiting for final payment",
-    waitingForFinalPaymentDescription:
-      "Final payment will cover the cost of materials, specified parts, and production of your custom bicycle. Once we receive it, your bike will move directly into production and we will provide an estimated delivery time. (Usually 4-6 weeks)",
-    shippingDetails: "Shipping details",
-    firstName: "First name",
-    lastName: "Last name",
-    email: "Email",
-    phoneNumber: "Phone number",
-    country: "Country",
-    postalCode: "Postal code",
-    city: "City",
-    street: "Street and house number",
-    shippingOption: "Shipping option",
-    courierDelivery: "Courier delivery",
-    showroomPickup: "Showroom pickup",
-    paymentOptions: "Payment options",
-    classicBankTransfer: "Classic bank transfer",
-    summary: "Summary",
-    totalAmount: "Total amount",
-    deposit: "Deposit",
-    shipping: "Shipping",
-    fillShippingDetails: "Fill shipping details",
-    contactUs: "Contact us",
-    paymentMethod: "Payment method",
-    classicTransfer: "Classic transfer",
-    vatIncluded: "VAT total (23% included)",
-    totalDue: "Total due",
-    submittingPayment: "Submitting payment...",
-    continueWithTransfer: "Continue with transfer",
-    payFinalAmount: "Pay final amount",
-    inReview: "In review",
-    inReviewDescription:
-      "We are reviewing the final payment. Once it is confirmed, the order will move into production manually.",
-    inProduction: "In production",
-    ready: "Ready",
-    delivered: "Delivered",
-    readyDescription:
-      "Your bicycle is ready for delivery or pickup.",
-    courierTrackingAvailable:
-      "Your bicycle is ready for delivery or pickup. Courier tracking is available below.",
-    courierTracking: "Courier tracking",
-    deliveredOn: "Delivered on",
-    estimatedDeliveryTime: "Estimated delivery time",
-    estimatedDeliveryWindow: "6-8 weeks",
-    shippingAddress: "Shipping address",
-    paymentDate: "Payment date",
-    amountPaidByCustomer: "Amount paid by customer",
-    nextProduction: "Next: production",
-    nextProductionDescription:
-      "Once the bike design is finalized and approved, the project will move into production.",
-  };
-}
-
 function getCountryLabel(
   countryCode: string,
-  availableCountries: CountryOption[],
+  availableCountries: CountryDirectoryEntry[],
 ) {
-  const match = availableCountries.find(
-    (country) => country.code === countryCode.toUpperCase(),
-  );
+  const match = findCountryByCode(countryCode, availableCountries);
 
   return match?.name ?? "";
 }
 
 function getCountryCodeByName(
   countryName: string,
-  availableCountries: CountryOption[],
+  availableCountries: CountryDirectoryEntry[],
 ) {
-  const normalizedCountryName = countryName.trim().toLowerCase();
-  const match = availableCountries.find(
-    (country) => country.name.toLowerCase() === normalizedCountryName,
-  );
+  const match = findCountryByName(countryName, availableCountries);
 
   return match?.code ?? "";
 }
@@ -224,13 +73,12 @@ function loadShippingReferenceData() {
   }
 
   shippingReferenceDataPromise = Promise.all([
-    import("country-state-city"),
+    loadCountryDirectory(),
     import("validator"),
-  ]).then(([countryStateCity, validatorModule]) => {
-    const { City, Country } = countryStateCity;
+  ]).then(([countryDirectory, validatorModule]) => {
     const validator = validatorModule.default;
-    const availableCountries = Country.getAllCountries().map((country) => ({
-      code: country.isoCode,
+    const availableCountries = countryDirectory.map((country) => ({
+      code: country.code,
       name: country.name,
     }));
     const postalCodeLocales = new Set(
@@ -239,29 +87,14 @@ function loadShippingReferenceData() {
 
     return {
       availableCountries,
-      getCityOptions(countryCode: string) {
-        if (!countryCode) {
-          return [];
-        }
-
-        return Array.from(
-          new Set(
-            (City.getCitiesOfCountry(countryCode) ?? [])
-              .map((city) => city.name.trim())
-              .filter(Boolean),
-          ),
-        ).sort((left, right) => left.localeCompare(right));
-      },
       getCountryLabel(countryCode: string) {
-        return getCountryLabel(countryCode, availableCountries);
+        return getCountryLabel(countryCode, countryDirectory);
       },
       getCountryCodeByName(countryName: string) {
-        return getCountryCodeByName(countryName, availableCountries);
+        return getCountryCodeByName(countryName, countryDirectory);
       },
       isValidCountry(countryCode: string) {
-        return availableCountries.some(
-          (country) => country.code === countryCode.toUpperCase(),
-        );
+        return Boolean(findCountryByCode(countryCode, countryDirectory));
       },
       isValidPostalCode(postalCode: string, countryCode: string) {
         const trimmedPostalCode = postalCode.trim();
@@ -281,6 +114,9 @@ function loadShippingReferenceData() {
         return validator.isEmail(email.trim());
       },
     };
+  }).catch((error) => {
+    shippingReferenceDataPromise = null;
+    throw error;
   });
 
   return shippingReferenceDataPromise;
@@ -288,11 +124,10 @@ function loadShippingReferenceData() {
 
 function validateShippingDetails(
   shippingAddress: OrderShippingAddress,
-  cityOptions: string[],
   shippingOption: "courier" | "pickup",
   shippingReferenceData: ShippingReferenceData | null,
   phoneErrorMessage: string,
-  copy: ReturnType<typeof getProductionCopy>,
+  copy: ReturnType<typeof getOrderPendingCopy>,
 ) {
   const errors: Partial<Record<keyof typeof shippingAddress, string>> = {};
   const [firstName, ...lastNameParts] = shippingAddress.fullName
@@ -331,16 +166,7 @@ function validateShippingDetails(
     ) {
       errors.postalCode = copy.errors.postalCode;
     }
-    if (cityOptions.length > 0) {
-      const cityMatch = cityOptions.some(
-        (city) =>
-          city.toLowerCase() === shippingAddress.city.trim().toLowerCase(),
-      );
-
-      if (!cityMatch) {
-        errors.city = copy.errors.cityFromList;
-      }
-    } else if (shippingAddress.city.trim().length < 2) {
+    if (shippingAddress.city.trim().length < 2) {
       errors.city = copy.errors.city;
     }
     if (
@@ -421,7 +247,7 @@ function BankTransferDetails({
   orderNumber,
 }: {
   amountLabel: string;
-  copy: ReturnType<typeof getProductionCopy>;
+  copy: ReturnType<typeof getOrderPendingCopy>;
   orderNumber: string;
 }) {
   return (
@@ -507,7 +333,7 @@ export function OrderPendingSection({
 
 export function OrderBikeDesignPreviewSection() {
   const locale = useLocale();
-  const copy = getProductionCopy(locale);
+  const copy = getOrderPendingCopy(locale);
   return (
     <OrderPendingSection
       title={copy.nextBikeDesign}
@@ -562,8 +388,7 @@ export function OrderProductionPreviewSection({
 }) {
   const locale = useLocale();
   const messages = useMessages();
-  const copy = getProductionCopy(locale);
-  const cityListId = useId();
+  const copy = getOrderPendingCopy(locale);
   const countryListId = useId();
   const [shippingOption, setShippingOption] = useState<"courier" | "pickup">(
     initialShippingState?.option ?? "courier",
@@ -633,11 +458,8 @@ export function OrderProductionPreviewSection({
   });
   const trackingUrl = initialShippingState?.trackingUrl?.trim() ?? "";
   const availableCountries = shippingReferenceData?.availableCountries ?? [];
-  const cityOptions =
-    shippingReferenceData?.getCityOptions(shippingAddress.countryCode) ?? [];
   const shippingErrors = validateShippingDetails(
     shippingAddress,
-    cityOptions,
     shippingOption,
     shippingReferenceData,
     messages.common.phoneNumberWithCountryCodeError,
@@ -1083,7 +905,6 @@ export function OrderProductionPreviewSection({
               <label className="block">
                 <InputField
                   type="text"
-                  list={cityOptions.length > 0 ? cityListId : undefined}
                   value={shippingAddress.city}
                   onChange={(event) => {
                     setShippingAddress((prev) => ({
@@ -1100,13 +921,6 @@ export function OrderProductionPreviewSection({
                   }
                   className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                 />
-                {cityOptions.length > 0 ? (
-                  <datalist id={cityListId}>
-                    {cityOptions.map((city) => (
-                      <option key={city} value={city} />
-                    ))}
-                  </datalist>
-                ) : null}
                 {showShippingValidation && shippingErrors.city ? (
                   <p className="mt-2 text-sm text-red-600">
                     {shippingErrors.city}

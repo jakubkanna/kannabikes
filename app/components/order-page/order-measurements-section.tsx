@@ -1,6 +1,7 @@
 import type { MeasurementsSectionProps } from "./types";
 import { InputField } from "~/components/form-field";
 import { useLocale } from "~/components/locale-provider";
+import { getOrderMeasurementsCopy } from "~/lib/i18n-messages";
 import { OrderSubmittedSummarySection } from "./order-submitted-summary-section";
 import { SectionPill } from "~/components/section-pill";
 import { AnimatedOrderSection } from "./order-motion";
@@ -25,58 +26,7 @@ export function OrderMeasurementsSection({
   onToggleGuidelines,
 }: MeasurementsSectionProps) {
   const locale = useLocale();
-  const copy =
-    locale === "pl"
-      ? {
-          sectionPill: "Pomiary",
-          title: "Prześlij swoje dane dotyczące sylwetki",
-          received: "Otrzymano",
-          description:
-            "Na tym etapie zbieramy wymiary ciała potrzebne do weryfikacji zamówienia i przygotowania kolejnego kroku projektowego.",
-          submittedDescription:
-            "Twoje pomiary zostały zapisane i przekazane do procesu projektowego.",
-          bodyDrawing: "Rysunek sylwetki",
-          bodyDrawingActive: (measurement: string) =>
-            `Rysunek sylwetki z aktywnym pomiarem ${measurement}`,
-          bodyData: "Dane sylwetki",
-          bodyWeight: "Waga ciała (kg)",
-          bodyType: "Typ sylwetki",
-          male: "Mężczyzna",
-          female: "Kobieta",
-          measurements: "Pomiary",
-          enterBodyWeight: "Wpisz wagę ciała w kg",
-          enterMeasurement: (key: string) => `Wpisz pomiar ${key} w cm`,
-          howToMeasure: "Jak mierzyć",
-          guidelinePlaceholder: (key: string) =>
-            `Dodaj instrukcję wideo lub obraz dla pomiaru ${key}.`,
-          submittingMeasurements: "Wysyłanie pomiarów...",
-          submitBodyData: "Prześlij dane sylwetki",
-        }
-      : {
-          sectionPill: "Measurements",
-          title: "Submit your body data",
-          received: "Received",
-          description:
-            "During this stage we collect the body measurements required to review the order and prepare the next design step.",
-          submittedDescription:
-            "Your body measurements have been submitted and recorded for the design process.",
-          bodyDrawing: "Body drawing",
-          bodyDrawingActive: (measurement: string) =>
-            `Body drawing with measurement ${measurement} active`,
-          bodyData: "Body Data",
-          bodyWeight: "Body weight (kg)",
-          bodyType: "Body type",
-          male: "Male",
-          female: "Female",
-          measurements: "Measurements",
-          enterBodyWeight: "Enter body weight in kg",
-          enterMeasurement: (key: string) => `Enter measurement ${key} in cm`,
-          howToMeasure: "How to measure",
-          guidelinePlaceholder: (key: string) =>
-            `Add a guideline video or image for ${key}.`,
-          submittingMeasurements: "Submitting measurements...",
-          submitBodyData: "Submit body data",
-        };
+  const copy = getOrderMeasurementsCopy(locale);
   const hasBodyWeight = bodyWeight.trim().length > 0;
   const hasBodyData = hasBodyWeight && Boolean(bodyType);
   const completedMeasurementCount = measurementKeys.findIndex(
@@ -105,6 +55,7 @@ export function OrderMeasurementsSection({
         collapsible
         defaultExpanded={false}
         title={copy.sectionPill}
+        heading={copy.received}
         description={copy.submittedDescription}
         imageAlt={copy.bodyDrawing}
         imageContent={

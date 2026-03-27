@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { closeOutline, menuOutline } from "ionicons/icons";
 import { AnimatePresence, motion } from "motion/react";
 import { useLocation } from "react-router";
 import { CartDrawer } from "~/components/cart-drawer";
@@ -29,6 +30,7 @@ export function SiteHeader() {
     localizedPathname === "/shop" || localizedPathname.startsWith("/shop/");
   const [useBlendMode, setUseBlendMode] = useState(!isHome);
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [cartItemsCount, setCartItemsCount] = useState(0);
   const navItems = [
     { to: "/pre-order", label: messages.nav.customOrder },
@@ -36,12 +38,52 @@ export function SiteHeader() {
     { to: "/about", label: messages.nav.about },
     { to: "/contact", label: messages.nav.contact },
   ] as const;
+  const mobileNavItems = [
+    ...navItems,
+    { to: "/account", label: messages.account.title },
+    ...(isCommerceRoute
+      ? [
+          {
+            to: "/cart",
+            label:
+              cartItemsCount > 0
+                ? `${messages.cart.title} (${cartItemsCount})`
+                : messages.cart.title,
+          },
+        ]
+      : []),
+  ] as const;
 
   useEffect(() => {
     if (!isCommerceRoute) {
       setIsCartDrawerOpen(false);
     }
   }, [isCommerceRoute]);
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isMobileMenuOpen]);
 
   useEffect(() => {
     if (!isCommerceRoute) {
@@ -147,7 +189,7 @@ export function SiteHeader() {
           </LocalizedLink>
 
           <div
-            className={`flex items-center gap-3 text-sm font-black uppercase ${
+            className={`hidden items-center gap-3 text-sm font-black uppercase md:flex ${
               useBlendMode ? "text-white" : "text-(--kanna-color)"
             }`}
             style={KANNA_MENU_FONT_STYLE}
@@ -245,8 +287,104 @@ export function SiteHeader() {
               <LanguageSwitcher />
             </div>
           </div>
+
+          <button
+            type="button"
+            aria-label={messages.common.openMenu}
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="mobile-site-menu"
+            className="inline-flex items-center justify-center p-2 md:hidden"
+            onClick={() => setIsMobileMenuOpen(true)}
+          >
+            <img
+              src={menuOutline}
+              alt=""
+              aria-hidden="true"
+              className={`h-7 w-7 ${useBlendMode ? "brightness-0 invert" : ""}`}
+            />
+          </button>
         </nav>
       </header>
+      <AnimatePresence>
+        {isMobileMenuOpen ? (
+          <motion.div
+            key="mobile-site-menu"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 bg-white text-(--kanna-ink) md:hidden"
+          >
+            <div className="flex h-(--site-header-height) items-center justify-between px-2">
+              <LocalizedLink to="/" className="shrink-0" onClick={() => setIsMobileMenuOpen(false)}>
+                <img
+                  src={`${import.meta.env.BASE_URL}kannabikes_logo.svg`}
+                  alt="Kanna Bikes"
+                  className="h-10 w-auto"
+                />
+              </LocalizedLink>
+              <button
+                type="button"
+                aria-label={messages.common.closeMenu}
+                className="inline-flex items-center justify-center p-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <img src={closeOutline} alt="" aria-hidden="true" className="h-7 w-7" />
+              </button>
+            </div>
+
+            <nav
+              id="mobile-site-menu"
+              aria-label="Mobile"
+              className="flex min-h-[calc(100svh-var(--site-header-height))] flex-col items-center justify-center gap-10 px-6 pb-8 pt-4 text-center"
+            >
+              <motion.ul
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+                variants={{
+                  hidden: {},
+                  visible: {
+                    transition: {
+                      staggerChildren: 0.05,
+                    },
+                  },
+                }}
+                className="space-y-5 text-[2rem] uppercase leading-none"
+                style={KANNA_MENU_FONT_STYLE}
+              >
+                {mobileNavItems.map((item) => (
+                  <motion.li
+                    key={item.to}
+                    variants={{
+                      hidden: { opacity: 0, y: 10 },
+                      visible: { opacity: 1, y: 0 },
+                    }}
+                    transition={{ duration: 0.22 }}
+                  >
+                    <LocalizedNavLink
+                      to={item.to}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={({ isActive }) =>
+                        [
+                          "block transition",
+                          isActive ? "opacity-100" : "opacity-65 hover:opacity-100",
+                        ].join(" ")
+                      }
+                    >
+                      {item.label}
+                    </LocalizedNavLink>
+                  </motion.li>
+                ))}
+              </motion.ul>
+
+              <div className="flex flex-col items-center gap-5">
+                <LanguageSwitcher />
+              </div>
+            </nav>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
       <CartDrawer
         isOpen={isCartDrawerOpen}
         onClose={() => setIsCartDrawerOpen(false)}

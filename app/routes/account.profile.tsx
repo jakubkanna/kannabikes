@@ -1,14 +1,13 @@
 import { useState } from "react";
-import { redirect } from "react-router";
 import { AccountShell } from "~/components/account-shell";
 import { Button } from "~/components/button";
 import { InputField, LockedField } from "~/components/form-field";
 import { AccountHydrateFallback } from "~/components/hydrate-fallbacks";
 import { useMessages } from "~/components/locale-provider";
 import { PhoneNumberField } from "~/components/phone-number-field";
+import { loadProtectedAccountRouteData } from "~/lib/account-route";
 import {
   fetchCustomerAccount,
-  fetchCustomerSession,
   updateCustomerProfile,
   type CustomerUser,
 } from "~/lib/customer-account";
@@ -18,19 +17,9 @@ import { formatPageTitle } from "~/root";
 import type { Route } from "./+types/account.profile";
 
 export async function clientLoader({ request }: Route.ClientLoaderArgs) {
-  const pathname = new URL(request.url).pathname;
-  const locale = getLocaleFromPath(pathname);
-  const session = await fetchCustomerSession(locale);
-
-  if (!session.authenticated) {
-    throw redirect(
-      `${session.account_paths.sign_in}?redirect=${encodeURIComponent(pathname)}`,
-    );
-  }
-
-  const account = await fetchCustomerAccount(locale);
-
-  return { account, locale, session };
+  return loadProtectedAccountRouteData(request.url, async ({ locale }) => ({
+    account: await fetchCustomerAccount(locale),
+  }));
 }
 
 export function meta({ location }: Route.MetaArgs) {

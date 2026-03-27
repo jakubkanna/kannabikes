@@ -268,7 +268,7 @@ export default function Home() {
           aria-hidden="true"
           className="absolute inset-0 bg-cover bg-center will-change-transform translate-x-[var(--walker-bg-x,0px)] translate-y-[var(--walker-bg-y,0px)] scale-[1.04]"
           style={{
-            backgroundImage: `url(${baseUrl}2013_DSF6372_jakubkanna.png)`,
+            backgroundImage: `url(${baseUrl}2013_DSF6372_jakubkanna.jpg)`,
           }}
         />
         <div className="relative z-10 w-full flex min-h-[34rem] items-start">
@@ -318,7 +318,7 @@ export default function Home() {
             className={`flex items-center justify-end reveal-slide-right ${revealedSections.chainringImage ? "is-visible" : ""}`}
           >
             <img
-              src={`${baseUrl}Survior_Chainring_v147_2024-Jan-10_05-04-08PM-000_CustomizedView27250563922.png`}
+              src={`${baseUrl}Survior_Chainring_v147_2024-Jan-10_05-04-08PM-000_CustomizedView27250563922.webp`}
               alt={messages.home.chainring.imageAlt}
               className="w-full max-w-xl object-contain"
             />

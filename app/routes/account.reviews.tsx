@@ -1,33 +1,22 @@
 import { useState } from "react";
-import { redirect } from "react-router";
 import { AccountShell } from "~/components/account-shell";
 import { Button } from "~/components/button";
 import { SelectField, TextareaField } from "~/components/form-field";
 import { AccountHydrateFallback } from "~/components/hydrate-fallbacks";
 import { useMessages } from "~/components/locale-provider";
+import { loadProtectedAccountRouteData } from "~/lib/account-route";
 import {
   createCustomerReview,
   fetchCustomerReviews,
-  fetchCustomerSession,
 } from "~/lib/customer-account";
 import { buildLocalizedMeta, getLocaleFromPath, getMessages } from "~/lib/i18n";
 import { formatPageTitle } from "~/root";
 import type { Route } from "./+types/account.reviews";
 
 export async function clientLoader({ request }: Route.ClientLoaderArgs) {
-  const pathname = new URL(request.url).pathname;
-  const locale = getLocaleFromPath(pathname);
-  const session = await fetchCustomerSession(locale);
-
-  if (!session.authenticated) {
-    throw redirect(
-      `${session.account_paths.sign_in}?redirect=${encodeURIComponent(pathname)}`,
-    );
-  }
-
-  const reviewsPayload = await fetchCustomerReviews(locale);
-
-  return { locale, reviewsPayload, session };
+  return loadProtectedAccountRouteData(request.url, async ({ locale }) => ({
+    reviewsPayload: await fetchCustomerReviews(locale),
+  }));
 }
 
 export function meta({ location }: Route.MetaArgs) {

@@ -12,7 +12,7 @@ export const SITE_URL = (
   import.meta.env.VITE_SITE_URL ?? "http://localhost:5173"
 ).replace(/\/$/, "");
 const BASE_URL = (import.meta.env.BASE_URL ?? "/").replace(/\/$/, "");
-const DEFAULT_SOCIAL_IMAGE_PATH = `${BASE_URL}/2013_DSF6372_jakubkanna.png`.replace(
+const DEFAULT_SOCIAL_IMAGE_PATH = `${BASE_URL}/2013_DSF6372_jakubkanna.jpg`.replace(
   /\/{2,}/g,
   "/",
 );

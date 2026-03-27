@@ -1,6 +1,7 @@
 import { fetchStoreCategories, fetchStoreProducts } from "~/lib/store-api";
 import { SITE_URL, type Locale } from "~/lib/i18n";
 import { fetchWordpressPostsByCategory } from "~/lib/wordpress";
+import { getStaticPublicSitemapEntries } from "../../route-manifest";
 import type { Route } from "./+types/sitemap[.]xml";
 
 type SitemapEntry = {
@@ -9,26 +10,7 @@ type SitemapEntry = {
   priority?: string;
 };
 
-const STATIC_PUBLIC_PATHS: SitemapEntry[] = [
-  { path: "/", priority: "1.0" },
-  { path: "/about" },
-  { path: "/blog" },
-  { path: "/contact" },
-  { path: "/delivery" },
-  { path: "/pre-order" },
-  { path: "/privacy-terms" },
-  { path: "/shop" },
-  { path: "/warranty" },
-  { path: "/pl", priority: "1.0" },
-  { path: "/pl/about" },
-  { path: "/pl/blog" },
-  { path: "/pl/contact" },
-  { path: "/pl/delivery" },
-  { path: "/pl/pre-order" },
-  { path: "/pl/privacy-terms" },
-  { path: "/pl/shop" },
-  { path: "/pl/warranty" },
-];
+const STATIC_PUBLIC_PATHS: SitemapEntry[] = getStaticPublicSitemapEntries();
 
 function reportSitemapSourceFailure(source: string, error: unknown) {
   console.error(`[sitemap] Failed to fetch ${source}.`, error);

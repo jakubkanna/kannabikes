@@ -9,6 +9,7 @@ import { LockedField } from "~/components/form-field";
 import { LocalizedLink } from "~/components/localized-link";
 import { useLocale, useMessages } from "~/components/locale-provider";
 import { getIntlLocale } from "~/lib/i18n";
+import { getOrderDepositTransferTitle } from "~/lib/i18n-messages";
 import type {
   DepositPaymentMethod,
   OrderStage,
@@ -175,9 +176,7 @@ export function OrderDepositSection({
                         {depositMessages.transferTitle}
                       </span>
                       <p className="mt-1 font-medium text-gray-900">
-                        {locale === "pl"
-                          ? `Płatność depozytu za zamówienie ${orderNumber}`
-                          : `Deposit payment for order ${orderNumber}`}
+                        {getOrderDepositTransferTitle(locale, orderNumber)}
                       </p>
                     </div>
                   </div>

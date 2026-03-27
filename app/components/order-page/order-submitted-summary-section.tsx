@@ -9,7 +9,7 @@ export function OrderSubmittedSummarySection({
   defaultExpanded = true,
   children,
   description,
-  heading = "Received",
+  heading,
   imageAlt,
   imageContent,
   title,
@@ -18,7 +18,7 @@ export function OrderSubmittedSummarySection({
   defaultExpanded?: boolean;
   children: ReactNode;
   description: string;
-  heading?: string;
+  heading: string;
   imageAlt: string;
   imageContent: ReactNode;
   title: string;

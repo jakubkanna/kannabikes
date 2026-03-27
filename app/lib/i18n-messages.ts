@@ -266,8 +266,10 @@ export const messages = {
       viewCart: "View cart",
     },
     common: {
+      closeMenu: "Close menu",
       comingSoon: "Coming soon",
       languageLabel: "Language",
+      openMenu: "Open menu",
       phoneCountryCode: "Country code",
       phoneNumber: "Phone number",
       phoneNumberExample: "+48 123 456 789",
@@ -749,8 +751,10 @@ export const messages = {
       viewCart: "Zobacz koszyk",
     },
     common: {
+      closeMenu: "Zamknij menu",
       comingSoon: "Wkrótce",
       languageLabel: "Język",
+      openMenu: "Otwórz menu",
       phoneCountryCode: "Numer kierunkowy",
       phoneNumber: "Numer telefonu",
       phoneNumberExample: "+48 123 456 789",
@@ -965,5 +969,399 @@ export const messages = {
     },
   },
 } as const;
+
+export function getOrderDepositTransferTitle(
+  locale: "en" | "pl",
+  orderNumber: string,
+) {
+  return locale === "pl"
+    ? `Płatność depozytu za zamówienie ${orderNumber}`
+    : `Deposit payment for order ${orderNumber}`;
+}
+
+export function getOrderMeasurementsCopy(locale: "en" | "pl") {
+  if (locale === "pl") {
+    return {
+      sectionPill: "Pomiary",
+      title: "Prześlij swoje dane dotyczące sylwetki",
+      received: "Otrzymano",
+      description:
+        "Na tym etapie zbieramy wymiary ciała potrzebne do weryfikacji zamówienia i przygotowania kolejnego kroku projektowego.",
+      submittedDescription:
+        "Twoje pomiary zostały zapisane i przekazane do procesu projektowego.",
+      bodyDrawing: "Rysunek sylwetki",
+      bodyDrawingActive: (measurement: string) =>
+        `Rysunek sylwetki z aktywnym pomiarem ${measurement}`,
+      bodyData: "Dane sylwetki",
+      bodyWeight: "Waga ciała (kg)",
+      bodyType: "Typ sylwetki",
+      male: "Mężczyzna",
+      female: "Kobieta",
+      measurements: "Pomiary",
+      enterBodyWeight: "Wpisz wagę ciała w kg",
+      enterMeasurement: (key: string) => `Wpisz pomiar ${key} w cm`,
+      howToMeasure: "Jak mierzyć",
+      guidelinePlaceholder: (key: string) =>
+        `Dodaj instrukcję wideo lub obraz dla pomiaru ${key}.`,
+      submittingMeasurements: "Wysyłanie pomiarów...",
+      submitBodyData: "Prześlij dane sylwetki",
+    };
+  }
+
+  return {
+    sectionPill: "Measurements",
+    title: "Submit your body data",
+    received: "Received",
+    description:
+      "During this stage we collect the body measurements required to review the order and prepare the next design step.",
+    submittedDescription:
+      "Your body measurements have been submitted and recorded for the design process.",
+    bodyDrawing: "Body drawing",
+    bodyDrawingActive: (measurement: string) =>
+      `Body drawing with measurement ${measurement} active`,
+    bodyData: "Body Data",
+    bodyWeight: "Body weight (kg)",
+    bodyType: "Body type",
+    male: "Male",
+    female: "Female",
+    measurements: "Measurements",
+    enterBodyWeight: "Enter body weight in kg",
+    enterMeasurement: (key: string) => `Enter measurement ${key} in cm`,
+    howToMeasure: "How to measure",
+    guidelinePlaceholder: (key: string) =>
+      `Add a guideline video or image for ${key}.`,
+    submittingMeasurements: "Submitting measurements...",
+    submitBodyData: "Submit body data",
+  };
+}
+
+export function getOrderPendingCopy(locale: "en" | "pl") {
+  if (locale === "pl") {
+    return {
+      errors: {
+        fullName: "Wpisz imię i nazwisko odbiorcy.",
+        lastName: "Wpisz nazwisko odbiorcy.",
+        email: "Wpisz poprawny adres e-mail.",
+        street: "Wpisz ulicę i numer domu.",
+        postalCode: "Wpisz poprawny kod pocztowy dla wybranego kraju.",
+        cityFromList: "Wybierz miasto z listy.",
+        city: "Wpisz miasto.",
+        country: "Wybierz poprawny kraj.",
+        shippingQuote: "Nie udało się obliczyć kosztu dostawy dla tego adresu.",
+      },
+      bankTransferDetails: "Dane do przelewu",
+      accountHolder: "Właściciel konta",
+      amount: "Kwota",
+      transferTitle: "Tytuł przelewu",
+      finalPaymentForOrder: (orderNumber: string) =>
+        `Płatność końcowa za zamówienie ${orderNumber}`,
+      nextBikeDesign: "Dalej: projekt roweru",
+      nextBikeDesignDescription:
+        "Gdy prześlesz pomiary i zaliczka zostanie zaksięgowana, projekt będzie gotowy do rozpoczęcia i trafi do naszego projektanta na kolejny etap realizacji.",
+      production: "Produkcja",
+      waitingForFinalPayment: "Oczekiwanie na płatność końcową",
+      waitingForFinalPaymentDescription:
+        "Płatność końcowa obejmuje koszt materiałów, wybranych części i produkcji Twojego roweru na zamówienie. Gdy ją otrzymamy, rower przejdzie bezpośrednio do produkcji, a my przekażemy szacowany termin dostawy. (Zwykle 4-6 tygodni)",
+      shippingDetails: "Dane dostawy",
+      firstName: "Imię",
+      lastName: "Nazwisko",
+      email: "E-mail",
+      phoneNumber: "Numer telefonu",
+      country: "Kraj",
+      postalCode: "Kod pocztowy",
+      city: "Miasto",
+      street: "Ulica i numer domu",
+      shippingOption: "Opcja dostawy",
+      courierDelivery: "Dostawa kurierem",
+      showroomPickup: "Odbiór w showroomie",
+      paymentOptions: "Opcje płatności",
+      classicBankTransfer: "Klasyczny przelew bankowy",
+      summary: "Podsumowanie",
+      totalAmount: "Łączna kwota",
+      deposit: "Zaliczka",
+      shipping: "Dostawa",
+      fillShippingDetails: "Uzupełnij dane dostawy",
+      contactUs: "Skontaktuj się z nami",
+      paymentMethod: "Metoda płatności",
+      classicTransfer: "Przelew tradycyjny",
+      vatIncluded: "Łączny VAT (w tym 23%)",
+      totalDue: "Do zapłaty",
+      submittingPayment: "Wysyłanie płatności...",
+      continueWithTransfer: "Kontynuuj przelew",
+      payFinalAmount: "Zapłać kwotę końcową",
+      inReview: "W weryfikacji",
+      inReviewDescription:
+        "Weryfikujemy płatność końcową. Gdy zostanie potwierdzona, zamówienie przejdzie ręcznie do produkcji.",
+      inProduction: "W produkcji",
+      ready: "Gotowe",
+      delivered: "Dostarczone",
+      readyDescription:
+        "Twój rower jest gotowy do dostawy lub odbioru osobistego.",
+      courierTrackingAvailable:
+        "Twój rower jest gotowy do dostawy lub odbioru osobistego. Link do śledzenia przesyłki znajdziesz poniżej.",
+      courierTracking: "Śledzenie przesyłki",
+      deliveredOn: "Dostarczono",
+      estimatedDeliveryTime: "Szacowany termin dostawy",
+      estimatedDeliveryWindow: "6-8 tygodni",
+      shippingAddress: "Adres dostawy",
+      paymentDate: "Data płatności",
+      amountPaidByCustomer: "Kwota opłacona przez klienta",
+      nextProduction: "Dalej: produkcja",
+      nextProductionDescription:
+        "Gdy projekt roweru zostanie dopracowany i zatwierdzony, zamówienie przejdzie do produkcji.",
+    };
+  }
+
+  return {
+    errors: {
+      fullName: "Enter recipient name and lastname.",
+      lastName: "Enter recipient lastname.",
+      email: "Enter a valid email address.",
+      street: "Enter street and house number.",
+      postalCode: "Enter a valid postal code for the selected country.",
+      cityFromList: "Select a city from the list.",
+      city: "Enter city.",
+      country: "Select a valid country.",
+      shippingQuote: "We could not calculate shipping for this address.",
+    },
+    bankTransferDetails: "Bank transfer details",
+    accountHolder: "Account holder",
+    amount: "Amount",
+    transferTitle: "Transfer title",
+    finalPaymentForOrder: (orderNumber: string) =>
+      `Final payment for order ${orderNumber}`,
+    nextBikeDesign: "Next: bike design",
+    nextBikeDesignDescription:
+      "Once your measurements are submitted and the deposit is received, your project will be ready to start and assigned to our designer for the next stage of the build.",
+    production: "Production",
+    waitingForFinalPayment: "Waiting for final payment",
+    waitingForFinalPaymentDescription:
+      "Final payment will cover the cost of materials, specified parts, and production of your custom bicycle. Once we receive it, your bike will move directly into production and we will provide an estimated delivery time. (Usually 4-6 weeks)",
+    shippingDetails: "Shipping details",
+    firstName: "First name",
+    lastName: "Last name",
+    email: "Email",
+    phoneNumber: "Phone number",
+    country: "Country",
+    postalCode: "Postal code",
+    city: "City",
+    street: "Street and house number",
+    shippingOption: "Shipping option",
+    courierDelivery: "Courier delivery",
+    showroomPickup: "Showroom pickup",
+    paymentOptions: "Payment options",
+    classicBankTransfer: "Classic bank transfer",
+    summary: "Summary",
+    totalAmount: "Total amount",
+    deposit: "Deposit",
+    shipping: "Shipping",
+    fillShippingDetails: "Fill shipping details",
+    contactUs: "Contact us",
+    paymentMethod: "Payment method",
+    classicTransfer: "Classic transfer",
+    vatIncluded: "VAT total (23% included)",
+    totalDue: "Total due",
+    submittingPayment: "Submitting payment...",
+    continueWithTransfer: "Continue with transfer",
+    payFinalAmount: "Pay final amount",
+    inReview: "In review",
+    inReviewDescription:
+      "We are reviewing the final payment. Once it is confirmed, the order will move into production manually.",
+    inProduction: "In production",
+    ready: "Ready",
+    delivered: "Delivered",
+    readyDescription: "Your bicycle is ready for delivery or pickup.",
+    courierTrackingAvailable:
+      "Your bicycle is ready for delivery or pickup. Courier tracking is available below.",
+    courierTracking: "Courier tracking",
+    deliveredOn: "Delivered on",
+    estimatedDeliveryTime: "Estimated delivery time",
+    estimatedDeliveryWindow: "6-8 weeks",
+    shippingAddress: "Shipping address",
+    paymentDate: "Payment date",
+    amountPaidByCustomer: "Amount paid by customer",
+    nextProduction: "Next: production",
+    nextProductionDescription:
+      "Once the bike design is finalized and approved, the project will move into production.",
+  };
+}
+
+export function getOrderBikeDesignText(locale: "en" | "pl", value: string) {
+  if (locale === "en") {
+    return value;
+  }
+
+  return (
+    {
+      Approved: "Zatwierdzono",
+      Received: "Otrzymano",
+      Specification: "Specyfikacja",
+      "Your bike specification has been submitted and recorded for the next design and production steps.":
+        "Specyfikacja roweru została zapisana i przekazana do kolejnych etapów projektowania oraz produkcji.",
+      "Bike drawing": "Rysunek roweru",
+      "We are verifying your payment": "Weryfikujemy Twoją płatność",
+      "We are designing your bicycle": "Projektujemy Twój rower",
+      "Your specification has been received. Once the deposit is verified, we will move your bike into the design stage.":
+        "Twoja specyfikacja została zapisana. Gdy zaliczka zostanie zweryfikowana, przejdziemy do etapu projektowania roweru.",
+      "Your measurements and specification have been received, and we are now working on the design of your bicycle. Once it is ready, you will be asked for approval.":
+        "Otrzymaliśmy Twoje pomiary i specyfikację, a teraz pracujemy nad projektem roweru. Gdy będzie gotowy, poprosimy Cię o zatwierdzenie.",
+      Riding: "Styl jazdy",
+      "Additional notes": "Dodatkowe uwagi",
+      Paintjob: "Malowanie",
+      Variant: "Wariant",
+      Colors: "Kolory",
+      "Other color": "Inny kolor",
+      Style: "Styl",
+      "Attach image": "Dodaj obraz",
+      Components: "Komponenty",
+      "Build type": "Typ projektu",
+      "Designer-led specification": "Specyfikacja prowadzona przez projektanta",
+      "Frame only": "Sam frameset",
+      "Self-defined specification": "Specyfikacja zdefiniowana samodzielnie",
+      Budget: "Budżet",
+      Notes: "Uwagi",
+      "This order will continue as a frame-only project. The designer will prepare the frame direction based on your submitted measurements and project goals.":
+        "To zamówienie będzie kontynuowane jako projekt samego framesetu. Projektant przygotuje kierunek projektu ramy na podstawie Twoich pomiarów i założeń.",
+      Geometry: "Geometria",
+      "From the artist": "Od projektanta",
+      "The geometry and component direction are prepared based on your submitted measurements and project goals. Please review the setup below and approve it if everything looks right.":
+        "Geometria i kierunek doboru komponentów zostały przygotowane na podstawie przesłanych pomiarów oraz założeń projektu. Sprawdź poniższą konfigurację i zatwierdź ją, jeśli wszystko się zgadza.",
+      "Amount left to pay": "Kwota pozostała do zapłaty",
+      "Final amount after deducting the deposit already paid.":
+        "Kwota końcowa po odliczeniu już opłaconej zaliczki.",
+      "Design waiting for approval": "Projekt oczekuje na zatwierdzenie",
+      "Review the proposed bike setup below. Once approved, the order can move into production.":
+        "Sprawdź poniżej proponowaną konfigurację roweru. Po zatwierdzeniu zamówienie będzie mogło przejść do produkcji.",
+      "Bike design preview": "Podgląd projektu roweru",
+      "Build data": "Dane projektu",
+      "Review the selected configuration, riding direction, and finish details before approving the project.":
+        "Przed zatwierdzeniem projektu sprawdź wybraną konfigurację, kierunek jazdy i szczegóły wykończenia.",
+      "This geometry proposal is prepared specifically for this order and should be reviewed together with the design image.":
+        "Ta propozycja geometrii została przygotowana specjalnie dla tego zamówienia i powinna być oceniona razem z wizualizacją projektu.",
+      "Approving design...": "Zatwierdzanie projektu...",
+      "Approve design": "Zatwierdź projekt",
+      "Define the bike specification": "Określ specyfikację roweru",
+      "During the design stage we collect the preferred parts and build direction for the bike based on initial conversation.":
+        "Na etapie projektowym zbieramy preferowane części oraz kierunek budowy roweru na podstawie wstępnej rozmowy.",
+      "Let the designer define the specification":
+        "Pozwól projektantowi określić specyfikację",
+      "You provide direction and the designer prepares the component specification for you.":
+        "Określasz kierunek projektu, a projektant przygotowuje dla Ciebie specyfikację komponentów.",
+      "No limit": "Bez limitu",
+      "I want to define the specification":
+        "Chcę samodzielnie określić specyfikację",
+      "Fill in the preferred parts and component choices yourself.":
+        "Samodzielnie uzupełnij preferowane części i wybory komponentów.",
+      "Continue this order as a frame-only project without a full bike component specification.":
+        "Kontynuuj to zamówienie jako projekt samego framesetu bez pełnej specyfikacji komponentów roweru.",
+      "Select transmission": "Wybierz napęd",
+      "Select wheel size": "Wybierz rozmiar koła",
+      "Submitting direction...": "Wysyłanie założeń...",
+      Submit: "Wyślij",
+      "Confirm frame-only project": "Potwierdź projekt framesetu",
+      "Submitting specification...": "Wysyłanie specyfikacji...",
+      "Submit specification": "Prześlij specyfikację",
+      Frameset: "Frameset",
+      "Front wheel": "Przednie koło",
+      "Back wheel": "Tylne koło",
+      Brakes: "Hamulce",
+      Other: "Inne",
+      Drivetrain: "Napęd",
+      Fork: "Widelec",
+      Headset: "Stery",
+      Cockpit: "Kokpit",
+      Size: "Rozmiar",
+      "Front rim": "Przednia obręcz",
+      "Front hub": "Przednia piasta",
+      "Front tire": "Przednia opona",
+      "Rear rim": "Tylna obręcz",
+      "Rear hub": "Tylna piasta",
+      "Rear tire": "Tylna opona",
+      "Front brake": "Przedni hamulec",
+      "Rear brake": "Tylny hamulec",
+      Rotors: "Tarcze",
+      Saddle: "Siodełko",
+      Seatpost: "Sztyca",
+      Pedals: "Pedały",
+      Accessories: "Akcesoria",
+      Transmission: "Przeniesienie napędu",
+      Gearbox: "Przekładnia",
+      "Hub transmission": "Napęd w piaście",
+      Derailleur: "Przerzutka",
+      Crankset: "Korba",
+      "Belt / chain": "Pasek / łańcuch",
+      "Rear cog": "Tylna zębatka",
+      Shifter: "Manetka",
+      Hub: "Piasta",
+      Chainring: "Tarcza",
+      Cog: "Zębatka",
+      Cassette: "Kaseta",
+      "Rear derailleur": "Tylna przerzutka",
+      Chain: "Łańcuch",
+      Shifters: "Manetki",
+      Stack: "Stack",
+      Reach: "Reach",
+      "Top tube": "Górna rura",
+      "Seat tube": "Rura podsiodłowa",
+      "Head tube": "Główka ramy",
+      "Head angle": "Kąt główki",
+      "Seat angle": "Kąt podsiodłowy",
+      Chainstay: "Tylny trójkąt",
+      "BB height": "Wysokość suportu",
+      "Riding style": "Styl jazdy",
+      "Riding destinations": "Miejsca jazdy",
+      Range: "Dystans",
+      "Preferred bike type": "Preferowany typ roweru",
+      "Frame material": "Materiał ramy",
+      easy: "spokojny",
+      aggressive: "agresywny",
+      mixed: "mieszany",
+      mountains: "góry",
+      "flat terrain": "płaski teren",
+      city: "miasto",
+      short: "krótki",
+      mid: "średni",
+      long: "długi",
+      mtb: "mtb",
+      gravel: "gravel",
+      road: "szosa",
+      track: "tor",
+      other: "inne",
+      steel: "stal",
+      titanium: "tytan",
+      "Add any additional riding notes":
+        "Dodaj dodatkowe uwagi dotyczące jazdy",
+      "I want to rely fully on the artist":
+        "Chcę w pełni zaufać projektantowi",
+      "I have a design in mind": "Mam własny pomysł na projekt",
+      Black: "Czarny",
+      White: "Biały",
+      Red: "Czerwony",
+      Blue: "Niebieski",
+      Green: "Zielony",
+      Yellow: "Żółty",
+      Orange: "Pomarańczowy",
+      Purple: "Fioletowy",
+      Pink: "Różowy",
+      Silver: "Srebrny",
+      "raw material": "surowy materiał",
+      coating: "powłoka",
+      graphics: "grafika",
+      gradients: "gradienty",
+      "Give some tips to the artist":
+        "Dodaj wskazówki dla projektanta",
+      "Paint reference image": "Obraz referencyjny malowania",
+    } as Record<string, string>
+  )[value] ?? value;
+}
+
+export function getOrderBikeDesignFieldPlaceholder(
+  locale: "en" | "pl",
+  label: string,
+) {
+  return locale === "pl"
+    ? `Podaj ${label.toLowerCase()}`
+    : `Specify ${label.toLowerCase()}`;
+}
 
 export type AppMessages = (typeof messages)[keyof typeof messages];

@@ -1,29 +1,18 @@
 import { AccountShell } from "~/components/account-shell";
 import { AccountHydrateFallback } from "~/components/hydrate-fallbacks";
+import { useMessages } from "~/components/locale-provider";
+import { loadProtectedAccountRouteData } from "~/lib/account-route";
 import { buildLocalizedMeta, getLocaleFromPath, getMessages } from "~/lib/i18n";
 import { formatPageTitle } from "~/root";
-import {
-  fetchCustomerOrders,
-  fetchCustomerSession,
-} from "~/lib/customer-account";
-import { redirect } from "react-router";
-import { useMessages } from "~/components/locale-provider";
+import { fetchCustomerOrders } from "~/lib/customer-account";
 import type { Route } from "./+types/account.orders";
 
 export async function clientLoader({ request }: Route.ClientLoaderArgs) {
-  const pathname = new URL(request.url).pathname;
-  const locale = getLocaleFromPath(pathname);
-  const session = await fetchCustomerSession(locale);
+  return loadProtectedAccountRouteData(request.url, async ({ locale }) => {
+    const { orders } = await fetchCustomerOrders(locale);
 
-  if (!session.authenticated) {
-    throw redirect(
-      `${session.account_paths.sign_in}?redirect=${encodeURIComponent(pathname)}`,
-    );
-  }
-
-  const { orders } = await fetchCustomerOrders(locale);
-
-  return { orders, session };
+    return { orders };
+  });
 }
 
 export function meta({ location }: Route.MetaArgs) {

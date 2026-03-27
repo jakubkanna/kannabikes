@@ -1,12 +1,9 @@
-import { redirect } from "react-router";
 import { AccountShell } from "~/components/account-shell";
 import { AccountHydrateFallback } from "~/components/hydrate-fallbacks";
 import { LocalizedLink } from "~/components/localized-link";
 import { useMessages } from "~/components/locale-provider";
-import {
-  fetchCustomerComments,
-  fetchCustomerSession,
-} from "~/lib/customer-account";
+import { loadProtectedAccountRouteData } from "~/lib/account-route";
+import { fetchCustomerComments } from "~/lib/customer-account";
 import {
   buildLocalizedMeta,
   getIntlLocale,
@@ -17,19 +14,11 @@ import { formatPageTitle } from "~/root";
 import type { Route } from "./+types/account.comments";
 
 export async function clientLoader({ request }: Route.ClientLoaderArgs) {
-  const pathname = new URL(request.url).pathname;
-  const locale = getLocaleFromPath(pathname);
-  const session = await fetchCustomerSession(locale);
+  return loadProtectedAccountRouteData(request.url, async ({ locale }) => {
+    const { comments } = await fetchCustomerComments(locale);
 
-  if (!session.authenticated) {
-    throw redirect(
-      `${session.account_paths.sign_in}?redirect=${encodeURIComponent(pathname)}`,
-    );
-  }
-
-  const { comments } = await fetchCustomerComments(locale);
-
-  return { comments, locale, session };
+    return { comments };
+  });
 }
 
 export function meta({ location }: Route.MetaArgs) {

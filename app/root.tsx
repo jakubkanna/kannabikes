@@ -32,7 +32,7 @@ const SITE_URL = (
   import.meta.env.VITE_SITE_URL ?? "http://localhost:5173"
 ).replace(/\/$/, "");
 const BASE_URL = import.meta.env.BASE_URL;
-const OG_IMAGE = `${BASE_URL}2013_DSF6372_jakubkanna.png`;
+const OG_IMAGE = `${BASE_URL}2013_DSF6372_jakubkanna.jpg`;
 const OG_IMAGE_URL = `${SITE_URL}${OG_IMAGE}`;
 const ORGANIZATION_JSON_LD = {
   "@context": "https://schema.org",

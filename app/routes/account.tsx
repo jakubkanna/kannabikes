@@ -1,11 +1,11 @@
 import { redirect } from "react-router";
 import { AccountHydrateFallback } from "~/components/hydrate-fallbacks";
+import { requireAuthenticatedAccountRoute } from "~/lib/account-route";
 import {
   buildLocalizedMeta,
   getLocaleFromPath,
   getMessages,
 } from "~/lib/i18n";
-import { fetchCustomerSession } from "~/lib/customer-account";
 import { formatPageTitle } from "~/root";
 import type { Route } from "./+types/account";
 
@@ -27,15 +27,7 @@ export function HydrateFallback() {
 }
 
 export async function clientLoader({ request }: Route.ClientLoaderArgs) {
-  const pathname = new URL(request.url).pathname;
-  const locale = getLocaleFromPath(pathname);
-  const session = await fetchCustomerSession(locale);
-
-  if (!session.authenticated) {
-    throw redirect(
-      `${session.account_paths.sign_in}?redirect=${encodeURIComponent(pathname)}`,
-    );
-  }
+  const { session } = await requireAuthenticatedAccountRoute(request.url);
 
   throw redirect(session.account_paths.orders);
 }
