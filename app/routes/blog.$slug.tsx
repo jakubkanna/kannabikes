@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { Link } from "react-router";
 import { useLocation } from "react-router";
 
@@ -28,6 +28,40 @@ import {
   type WordpressPost,
 } from "~/lib/wordpress";
 import { formatPageTitle } from "~/root";
+
+type ThreadedWordpressComment = WordpressComment & {
+  children: ThreadedWordpressComment[];
+};
+
+function buildCommentTree(comments: WordpressComment[]) {
+  const nodes = new Map<number, ThreadedWordpressComment>();
+  const roots: ThreadedWordpressComment[] = [];
+
+  comments.forEach((comment) => {
+    nodes.set(comment.id, { ...comment, children: [] });
+  });
+
+  comments.forEach((comment) => {
+    const node = nodes.get(comment.id);
+
+    if (!node) {
+      return;
+    }
+
+    if (comment.parentId > 0) {
+      const parentNode = nodes.get(comment.parentId);
+
+      if (parentNode) {
+        parentNode.children.push(node);
+        return;
+      }
+    }
+
+    roots.push(node);
+  });
+
+  return roots;
+}
 
 function formatPublishedDate(value: string, locale: "en" | "pl") {
   if (!value) {
@@ -113,6 +147,8 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
   const [commentBody, setCommentBody] = useState("");
   const [commentSubmitting, setCommentSubmitting] = useState(false);
   const [commentStatus, setCommentStatus] = useState<string | null>(null);
+  const [replyBody, setReplyBody] = useState("");
+  const [replyingToCommentId, setReplyingToCommentId] = useState<number | null>(null);
   const [activeVoteCommentId, setActiveVoteCommentId] = useState<number | null>(
     null,
   );
@@ -151,6 +187,7 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
 
   const post = loaderData.post;
   const commentRedirectPath = `${location.pathname}${location.search}#comments`;
+  const threadedComments = buildCommentTree(comments);
 
   useEffect(() => {
     let cancelled = false;
@@ -209,6 +246,39 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
       cancelled = true;
     };
   }, [locale]);
+
+  const submitComment = async ({
+    content,
+    parentId = 0,
+  }: {
+    content: string;
+    parentId?: number;
+  }) => {
+    if (!customerSession?.csrfToken) {
+      return;
+    }
+
+    const response = await createCustomerBlogComment({
+      csrfToken: customerSession.csrfToken,
+      locale,
+      payload: {
+        content,
+        parentId,
+        postId: post.postId,
+      },
+    });
+
+    const nextComments = await fetchWordpressComments(post.postId);
+    const commentExists = nextComments.some(
+      (comment) => comment.id === response.comment.id,
+    );
+
+    setComments(
+      commentExists ? nextComments : [...nextComments, response.comment],
+    );
+
+    return response.comment;
+  };
 
   return (
     <main className="min-h-screen bg-white">
@@ -281,176 +351,55 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
 
               {!commentsLoading && !commentsError && comments.length > 0 ? (
                 <div className="mt-6 space-y-4">
-                  {comments.map((comment) => (
-                    <article
+                  {threadedComments.map((comment) => (
+                    <CommentThread
                       key={comment.id}
-                      className="border border-black/15 bg-white p-5"
-                    >
-                      <div className="flex gap-4">
-                        <div className="flex w-10 shrink-0 flex-col items-center">
-                          <button
-                            type="button"
-                            aria-label={messages.blog.voteCommentUp}
-                            disabled={
-                              !customerSession?.authenticated ||
-                              activeVoteCommentId === comment.id
-                            }
-                            className={`inline-flex h-8 w-8 cursor-pointer items-center justify-center border border-black/15 text-[var(--kanna-ink)] transition hover:border-black ${comment.currentUserVote === 1 ? "bg-black text-white" : "bg-white"} disabled:cursor-not-allowed disabled:opacity-50`}
-                            onClick={async () => {
-                              if (
-                                !customerSession?.authenticated ||
-                                !customerSession.csrfToken
-                              ) {
-                                return;
-                              }
+                      activeVoteCommentId={activeVoteCommentId}
+                      commentsLocale={loaderData.locale}
+                      commentStatus={commentStatus}
+                      customerSession={customerSession}
+                      locale={locale}
+                      messages={messages}
+                      onReplyCancel={() => {
+                        setReplyingToCommentId(null);
+                        setReplyBody("");
+                        setCommentStatus(null);
+                      }}
+                      onReplyChange={setReplyBody}
+                      onReplyOpen={(commentId) => {
+                        setReplyingToCommentId(commentId);
+                        setReplyBody("");
+                        setCommentStatus(null);
+                      }}
+                      onReplySubmit={async (parentId) => {
+                        setCommentSubmitting(true);
+                        setCommentStatus(null);
 
-                              setActiveVoteCommentId(comment.id);
-
-                              try {
-                                const response = await voteCustomerBlogComment({
-                                  commentId: comment.id,
-                                  csrfToken: customerSession.csrfToken,
-                                  direction: "up",
-                                  locale,
-                                });
-
-                                setComments((currentComments) =>
-                                  currentComments.map((currentComment) =>
-                                    currentComment.id === comment.id
-                                      ? {
-                                          ...currentComment,
-                                          currentUserVote:
-                                            response.currentUserVote,
-                                          voteScore: response.voteScore,
-                                        }
-                                      : currentComment,
-                                  ),
-                                );
-                              } catch {
-                                // Keep the UI unchanged on vote errors; the server stays authoritative.
-                              } finally {
-                                setActiveVoteCommentId(null);
-                              }
-                            }}
-                          >
-                            <svg
-                              aria-hidden="true"
-                              viewBox="0 0 20 20"
-                              className="h-4 w-4"
-                            >
-                              <path
-                                d="M4.5 12.5L10 7l5.5 5.5"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="1.7"
-                              />
-                            </svg>
-                          </button>
-                          <p className="mt-2 text-xs font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
-                            {comment.voteScore}
-                          </p>
-                          <button
-                            type="button"
-                            aria-label={messages.blog.voteCommentDown}
-                            disabled={
-                              !customerSession?.authenticated ||
-                              activeVoteCommentId === comment.id
-                            }
-                            className={`mt-2 inline-flex h-8 w-8 cursor-pointer items-center justify-center border border-black/15 text-[var(--kanna-ink)] transition hover:border-black ${comment.currentUserVote === -1 ? "bg-black text-white" : "bg-white"} disabled:cursor-not-allowed disabled:opacity-50`}
-                            onClick={async () => {
-                              if (
-                                !customerSession?.authenticated ||
-                                !customerSession.csrfToken
-                              ) {
-                                return;
-                              }
-
-                              setActiveVoteCommentId(comment.id);
-
-                              try {
-                                const response = await voteCustomerBlogComment({
-                                  commentId: comment.id,
-                                  csrfToken: customerSession.csrfToken,
-                                  direction: "down",
-                                  locale,
-                                });
-
-                                setComments((currentComments) =>
-                                  currentComments.map((currentComment) =>
-                                    currentComment.id === comment.id
-                                      ? {
-                                          ...currentComment,
-                                          currentUserVote:
-                                            response.currentUserVote,
-                                          voteScore: response.voteScore,
-                                        }
-                                      : currentComment,
-                                  ),
-                                );
-                              } catch {
-                                // Keep the UI unchanged on vote errors; the server stays authoritative.
-                              } finally {
-                                setActiveVoteCommentId(null);
-                              }
-                            }}
-                          >
-                            <svg
-                              aria-hidden="true"
-                              viewBox="0 0 20 20"
-                              className="h-4 w-4"
-                            >
-                              <path
-                                d="M4.5 7.5L10 13l5.5-5.5"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="1.7"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-3">
-                            {comment.avatarUrl ? (
-                              <img
-                                src={comment.avatarUrl}
-                                alt={comment.authorName}
-                                className="h-9 w-9 border border-black/15 object-cover"
-                              />
-                            ) : (
-                              <div className="flex h-9 w-9 items-center justify-center border border-black/15 bg-stone-100 text-xs font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
-                                {comment.authorName.slice(0, 1)}
-                              </div>
-                            )}
-                            <p className="text-sm font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
-                              {comment.authorName}
-                            </p>
-                            {comment.createdAt ? (
-                              <p className="ml-auto text-xs uppercase tracking-[0.08em] text-black/45">
-                                {new Intl.DateTimeFormat(
-                                  getIntlLocale(loaderData.locale),
-                                  {
-                                    day: "numeric",
-                                    month: "long",
-                                    year: "numeric",
-                                  },
-                                ).format(new Date(comment.createdAt))}
-                              </p>
-                            ) : null}
-                          </div>
-                          <div
-                            className="blog-content mt-3 text-sm text-[var(--kanna-ink)]"
-                            dangerouslySetInnerHTML={{
-                              __html: comment.contentHtml,
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </article>
+                        try {
+                          await submitComment({
+                            content: replyBody,
+                            parentId,
+                          });
+                          setReplyBody("");
+                          setReplyingToCommentId(null);
+                          setCommentStatus(messages.blog.submitCommentSuccess);
+                        } catch (error) {
+                          setCommentStatus(
+                            error instanceof Error
+                              ? error.message
+                              : messages.blog.submitCommentError,
+                          );
+                        } finally {
+                          setCommentSubmitting(false);
+                        }
+                      }}
+                      replyBody={replyBody}
+                      replyingToCommentId={replyingToCommentId}
+                      replySubmitting={commentSubmitting}
+                      rootComment={comment}
+                      setActiveVoteCommentId={setActiveVoteCommentId}
+                      setComments={setComments}
+                    />
                   ))}
                 </div>
               ) : null}
@@ -496,29 +445,9 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
                         setCommentStatus(null);
 
                         try {
-                          const response = await createCustomerBlogComment({
-                            csrfToken: customerSession.csrfToken,
-                            locale,
-                            payload: {
-                              content: commentBody,
-                              postId: post.postId,
-                            },
-                          });
-
+                          await submitComment({ content: commentBody });
                           setCommentBody("");
-                          setCommentStatus(
-                            response.comment.status === "approved"
-                              ? messages.blog.submitCommentSuccess
-                              : messages.blog.submitCommentSuccess,
-                          );
-                          if (response.comment.status === "approved") {
-                            const nextComments = await fetchWordpressComments(
-                              post.postId,
-                            );
-                            setComments(nextComments);
-                          } else {
-                            setComments((currentComments) => currentComments);
-                          }
+                          setCommentStatus(messages.blog.submitCommentSuccess);
                         } catch (error) {
                           setCommentStatus(
                             error instanceof Error
@@ -575,5 +504,334 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
         </PageContainer>
       </article>
     </main>
+  );
+}
+
+function CommentThread({
+  activeVoteCommentId,
+  commentsLocale,
+  commentStatus,
+  customerSession,
+  locale,
+  messages,
+  onReplyCancel,
+  onReplyChange,
+  onReplyOpen,
+  onReplySubmit,
+  replyBody,
+  replyingToCommentId,
+  replySubmitting,
+  rootComment,
+  setActiveVoteCommentId,
+  setComments,
+}: {
+  activeVoteCommentId: number | null;
+  commentsLocale: "en" | "pl";
+  commentStatus: string | null;
+  customerSession: CustomerSession | null;
+  locale: "en" | "pl";
+  messages: ReturnType<typeof useMessages>;
+  onReplyCancel: () => void;
+  onReplyChange: (value: string) => void;
+  onReplyOpen: (commentId: number) => void;
+  onReplySubmit: (parentId: number) => Promise<void>;
+  replyBody: string;
+  replyingToCommentId: number | null;
+  replySubmitting: boolean;
+  rootComment: ThreadedWordpressComment;
+  setActiveVoteCommentId: (commentId: number | null) => void;
+  setComments: Dispatch<SetStateAction<WordpressComment[]>>;
+}) {
+  return (
+    <CommentCard
+      activeVoteCommentId={activeVoteCommentId}
+      commentsLocale={commentsLocale}
+      commentStatus={commentStatus}
+      customerSession={customerSession}
+      depth={0}
+      locale={locale}
+      messages={messages}
+      node={rootComment}
+      onReplyCancel={onReplyCancel}
+      onReplyChange={onReplyChange}
+      onReplyOpen={onReplyOpen}
+      onReplySubmit={onReplySubmit}
+      replyBody={replyBody}
+      replyingToCommentId={replyingToCommentId}
+      replySubmitting={replySubmitting}
+      setActiveVoteCommentId={setActiveVoteCommentId}
+      setComments={setComments}
+    />
+  );
+}
+
+function CommentCard({
+  activeVoteCommentId,
+  commentsLocale,
+  commentStatus,
+  customerSession,
+  depth,
+  locale,
+  messages,
+  node,
+  onReplyCancel,
+  onReplyChange,
+  onReplyOpen,
+  onReplySubmit,
+  replyBody,
+  replyingToCommentId,
+  replySubmitting,
+  setActiveVoteCommentId,
+  setComments,
+}: {
+  activeVoteCommentId: number | null;
+  commentsLocale: "en" | "pl";
+  commentStatus: string | null;
+  customerSession: CustomerSession | null;
+  depth: number;
+  locale: "en" | "pl";
+  messages: ReturnType<typeof useMessages>;
+  node: ThreadedWordpressComment;
+  onReplyCancel: () => void;
+  onReplyChange: (value: string) => void;
+  onReplyOpen: (commentId: number) => void;
+  onReplySubmit: (parentId: number) => Promise<void>;
+  replyBody: string;
+  replyingToCommentId: number | null;
+  replySubmitting: boolean;
+  setActiveVoteCommentId: (commentId: number | null) => void;
+  setComments: Dispatch<SetStateAction<WordpressComment[]>>;
+}) {
+  const isReplying = replyingToCommentId === node.id;
+
+  return (
+    <div className={depth > 0 ? "ml-6 mt-4 border-l border-black/10 pl-4 md:ml-10 md:pl-6" : ""}>
+      <article className="border border-black/15 bg-white p-5">
+        <div className="flex gap-4">
+          <div className="flex w-10 shrink-0 flex-col items-center">
+            <button
+              type="button"
+              aria-label={messages.blog.voteCommentUp}
+              disabled={
+                !customerSession?.authenticated ||
+                activeVoteCommentId === node.id
+              }
+              className={`inline-flex h-8 w-8 cursor-pointer items-center justify-center border border-black/15 text-[var(--kanna-ink)] transition hover:border-black ${node.currentUserVote === 1 ? "bg-black text-white" : "bg-white"} disabled:cursor-not-allowed disabled:opacity-50`}
+              onClick={async () => {
+                if (!customerSession?.authenticated || !customerSession.csrfToken) {
+                  return;
+                }
+
+                setActiveVoteCommentId(node.id);
+
+                try {
+                  const response = await voteCustomerBlogComment({
+                    commentId: node.id,
+                    csrfToken: customerSession.csrfToken,
+                    direction: "up",
+                    locale,
+                  });
+
+                  setComments((currentComments) =>
+                    currentComments.map((currentComment) =>
+                      currentComment.id === node.id
+                        ? {
+                            ...currentComment,
+                            currentUserVote: response.currentUserVote,
+                            voteScore: response.voteScore,
+                          }
+                        : currentComment,
+                    ),
+                  );
+                } catch {
+                  // Keep the UI unchanged on vote errors; the server stays authoritative.
+                } finally {
+                  setActiveVoteCommentId(null);
+                }
+              }}
+            >
+              <svg aria-hidden="true" viewBox="0 0 20 20" className="h-4 w-4">
+                <path
+                  d="M4.5 12.5L10 7l5.5 5.5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.7"
+                />
+              </svg>
+            </button>
+            <p className="mt-2 text-xs font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
+              {node.voteScore}
+            </p>
+            <button
+              type="button"
+              aria-label={messages.blog.voteCommentDown}
+              disabled={
+                !customerSession?.authenticated ||
+                activeVoteCommentId === node.id
+              }
+              className={`mt-2 inline-flex h-8 w-8 cursor-pointer items-center justify-center border border-black/15 text-[var(--kanna-ink)] transition hover:border-black ${node.currentUserVote === -1 ? "bg-black text-white" : "bg-white"} disabled:cursor-not-allowed disabled:opacity-50`}
+              onClick={async () => {
+                if (!customerSession?.authenticated || !customerSession.csrfToken) {
+                  return;
+                }
+
+                setActiveVoteCommentId(node.id);
+
+                try {
+                  const response = await voteCustomerBlogComment({
+                    commentId: node.id,
+                    csrfToken: customerSession.csrfToken,
+                    direction: "down",
+                    locale,
+                  });
+
+                  setComments((currentComments) =>
+                    currentComments.map((currentComment) =>
+                      currentComment.id === node.id
+                        ? {
+                            ...currentComment,
+                            currentUserVote: response.currentUserVote,
+                            voteScore: response.voteScore,
+                          }
+                        : currentComment,
+                    ),
+                  );
+                } catch {
+                  // Keep the UI unchanged on vote errors; the server stays authoritative.
+                } finally {
+                  setActiveVoteCommentId(null);
+                }
+              }}
+            >
+              <svg aria-hidden="true" viewBox="0 0 20 20" className="h-4 w-4">
+                <path
+                  d="M4.5 7.5L10 13l5.5-5.5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.7"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-3">
+              {node.avatarUrl ? (
+                <img
+                  src={node.avatarUrl}
+                  alt={node.authorName}
+                  className="h-9 w-9 border border-black/15 object-cover"
+                />
+              ) : (
+                <div className="flex h-9 w-9 items-center justify-center border border-black/15 bg-stone-100 text-xs font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
+                  {node.authorName.slice(0, 1)}
+                </div>
+              )}
+              <p className="text-sm font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
+                {node.authorName}
+              </p>
+              {node.status !== "approved" ? (
+                <p className="text-xs uppercase tracking-[0.08em] text-black/45">
+                  {messages.account.commentPending}
+                </p>
+              ) : null}
+              {node.createdAt ? (
+                <p className="ml-auto text-xs uppercase tracking-[0.08em] text-black/45">
+                  {new Intl.DateTimeFormat(getIntlLocale(commentsLocale), {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  }).format(new Date(node.createdAt))}
+                </p>
+              ) : null}
+            </div>
+            <div
+              className="blog-content mt-3 text-sm text-[var(--kanna-ink)]"
+              dangerouslySetInnerHTML={{
+                __html: node.contentHtml,
+              }}
+            />
+            {customerSession?.authenticated ? (
+              <div className="mt-4">
+                {isReplying ? (
+                  <form
+                    className="space-y-4 border-t border-black/10 pt-4"
+                    onSubmit={async (event) => {
+                      event.preventDefault();
+                      await onReplySubmit(node.id);
+                    }}
+                  >
+                    <label className="block">
+                      <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
+                        {messages.blog.replyToComment}
+                      </span>
+                      <TextareaField
+                        required
+                        rows={4}
+                        value={replyBody}
+                        onChange={(event) => onReplyChange(event.currentTarget.value)}
+                      />
+                    </label>
+                    <div className="flex flex-wrap gap-3">
+                      <Button type="submit" disabled={replySubmitting} className="rounded-none">
+                        {messages.blog.submitComment}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="rounded-none"
+                        onClick={onReplyCancel}
+                      >
+                        {messages.blog.cancelReply}
+                      </Button>
+                    </div>
+                    {commentStatus ? (
+                      <p className="text-sm text-[var(--kanna-ink)]">
+                        {commentStatus}
+                      </p>
+                    ) : null}
+                  </form>
+                ) : (
+                  <button
+                    type="button"
+                    className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)] underline decoration-black/20 underline-offset-4 transition hover:decoration-black"
+                    onClick={() => onReplyOpen(node.id)}
+                  >
+                    {messages.blog.replyToComment}
+                  </button>
+                )}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </article>
+
+      {node.children.map((child) => (
+        <CommentCard
+          key={child.id}
+          activeVoteCommentId={activeVoteCommentId}
+          commentsLocale={commentsLocale}
+          commentStatus={commentStatus}
+          customerSession={customerSession}
+          depth={depth + 1}
+          locale={locale}
+          messages={messages}
+          node={child}
+          onReplyCancel={onReplyCancel}
+          onReplyChange={onReplyChange}
+          onReplyOpen={onReplyOpen}
+          onReplySubmit={onReplySubmit}
+          replyBody={replyBody}
+          replyingToCommentId={replyingToCommentId}
+          replySubmitting={replySubmitting}
+          setActiveVoteCommentId={setActiveVoteCommentId}
+          setComments={setComments}
+        />
+      ))}
+    </div>
   );
 }

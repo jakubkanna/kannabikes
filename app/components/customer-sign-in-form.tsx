@@ -11,6 +11,7 @@ import type { Locale } from "~/lib/i18n";
 type CustomerSignInFormProps = {
   description?: ReactNode;
   locale: Locale;
+  onRequestSignUp?: () => void;
   onSuccess?: (session: CustomerSession) => void | Promise<void>;
   redirectTo?: string | null;
   secondaryDescription?: ReactNode;
@@ -21,6 +22,7 @@ type CustomerSignInFormProps = {
 export function CustomerSignInForm({
   description,
   locale,
+  onRequestSignUp,
   onSuccess,
   redirectTo,
   secondaryDescription,
@@ -203,12 +205,22 @@ export function CustomerSignInForm({
 
         <p className={isPageVariant ? "mt-10 text-sm text-[var(--kanna-ink)]" : "text-sm text-[var(--kanna-ink)]"}>
           {messages.account.joinPrompt}{" "}
-          <LocalizedLink
-            to={signUpPath}
-            className="font-semibold underline underline-offset-2 transition hover:text-black"
-          >
-            {messages.account.signUpTitle}
-          </LocalizedLink>
+          {onRequestSignUp ? (
+            <button
+              type="button"
+              onClick={onRequestSignUp}
+              className="font-semibold underline underline-offset-2 transition hover:text-black"
+            >
+              {messages.account.signUpTitle}
+            </button>
+          ) : (
+            <LocalizedLink
+              to={signUpPath}
+              className="font-semibold underline underline-offset-2 transition hover:text-black"
+            >
+              {messages.account.signUpTitle}
+            </LocalizedLink>
+          )}
         </p>
       </div>
     </>

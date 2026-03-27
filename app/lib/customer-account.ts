@@ -95,9 +95,14 @@ export type ReviewableProduct = {
 };
 
 export type CustomerBlogComment = {
+  authorName: string;
+  avatarUrl: string | null;
   contentHtml: string;
   createdAt: string;
+  currentUserVote: -1 | 0 | 1;
   id: number;
+  parentId: number;
+  voteScore: number;
   status: "approved" | "pending";
 };
 
@@ -387,6 +392,7 @@ export async function createCustomerBlogComment({
   locale: Locale;
   payload: {
     content: string;
+    parentId?: number;
     postId: number;
   };
 }) {

@@ -119,7 +119,7 @@ export function AccountShell({
 
           <Button
             variant="secondary"
-            className="min-h-12"
+            className="uppercase tracking-[0.08em]"
             onClick={async () => {
               if (!session.csrfToken) {
                 navigate(localizePath("/sign-in", locale));

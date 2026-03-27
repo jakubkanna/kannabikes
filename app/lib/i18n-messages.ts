@@ -104,6 +104,7 @@ export const messages = {
       comments: "Comments",
       commentsClosed: "Comments are closed for this post.",
       commentsLoadError: "We could not load the comments right now.",
+      cancelReply: "Cancel reply",
       description: "Notes from the workshop and the road.",
       empty: "No posts found.",
       inlineSignInHint:
@@ -117,6 +118,7 @@ export const messages = {
       notFound: "This blog post was not found.",
       pill: "Blog",
       readArticle: "Read article",
+      replyToComment: "Reply",
       signInToComment: "Sign in to comment",
       submitComment: "Publish comment",
       submitCommentError:
@@ -144,6 +146,7 @@ export const messages = {
       vat: "VAT",
     },
     checkout: {
+      accountSignedInAs: "Signed in as",
       classicTransfer: "Classic bank transfer",
       empty: "Your cart is empty. Add a product before checking out.",
       heading: "Checkout",
@@ -151,6 +154,8 @@ export const messages = {
       placeOrder: "Place order",
       paymentMethod: "Payment method",
       paymentOptions: "Payment options",
+      signInDescription:
+        "Already have a customer account? Sign in here and continue checkout without leaving the page.",
       stripe: "Stripe",
       submitError: "We could not place your order right now. Please try again.",
       success: "Order submitted successfully.",
@@ -486,6 +491,7 @@ export const messages = {
       comments: "Komentarze",
       commentsClosed: "Komentarze są wyłączone dla tego wpisu.",
       commentsLoadError: "Nie udało się teraz załadować komentarzy.",
+      cancelReply: "Anuluj odpowiedź",
       description: "Notatki z warsztatu i z drogi.",
       empty: "Brak postów.",
       inlineSignInHint:
@@ -499,6 +505,7 @@ export const messages = {
       notFound: "Nie znaleziono tego wpisu.",
       pill: "Blog",
       readArticle: "Czytaj artykuł",
+      replyToComment: "Odpowiedz",
       signInToComment: "Zaloguj się, aby skomentować",
       submitComment: "Opublikuj komentarz",
       submitCommentError:
@@ -526,6 +533,7 @@ export const messages = {
       vat: "VAT",
     },
     checkout: {
+      accountSignedInAs: "Zalogowano jako",
       classicTransfer: "Klasyczny przelew bankowy",
       empty: "Twój koszyk jest pusty. Dodaj produkt przed checkoutem.",
       heading: "Checkout",
@@ -533,6 +541,8 @@ export const messages = {
       placeOrder: "Złóż zamówienie",
       paymentMethod: "Metoda płatności",
       paymentOptions: "Opcje płatności",
+      signInDescription:
+        "Masz już konto klienta? Zaloguj się tutaj i kontynuuj checkout bez opuszczania strony.",
       stripe: "Stripe",
       submitError: "Nie udało się teraz złożyć zamówienia. Spróbuj ponownie.",
       success: "Zamówienie zostało poprawnie złożone.",

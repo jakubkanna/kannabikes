@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { Route } from "./+types/checkout";
+import { Button } from "~/components/button";
 import { DetailPanel } from "~/components/commerce/detail-panel";
+import { CustomerSignInForm } from "~/components/customer-sign-in-form";
 import {
   BankTransferIcon,
   PaymentOption,
@@ -18,7 +20,14 @@ import {
 import { useLocale, useMessages } from "~/components/locale-provider";
 import { PageShell } from "~/components/page-container";
 import { SectionPill } from "~/components/section-pill";
+import { getGoogleAuthUrl } from "~/lib/auth";
 import { buildLocalizedMeta, getLocaleFromPath, getMessages } from "~/lib/i18n";
+import {
+  fetchCustomerAccount,
+  fetchCustomerSession,
+  registerCustomerAccount,
+  type CustomerSession,
+} from "~/lib/customer-account";
 import {
   fetchStoreCart,
   submitStoreCheckout,
@@ -27,6 +36,14 @@ import {
 import { formatPageTitle } from "~/root";
 
 type CheckoutPaymentMethod = "stripe" | "classic_transfer";
+
+function fillIfEmpty(currentValue: string, nextValue: string | undefined) {
+  if (currentValue.trim() !== "") {
+    return currentValue;
+  }
+
+  return nextValue?.trim() ?? "";
+}
 
 export function meta({ location }: Route.MetaArgs) {
   const locale = getLocaleFromPath(location.pathname);
@@ -42,6 +59,15 @@ export function meta({ location }: Route.MetaArgs) {
 export default function CheckoutPage() {
   const locale = useLocale();
   const messages = useMessages();
+  const googleAuthUrl = useMemo(
+    () =>
+      getGoogleAuthUrl({
+        intent: "sign-in",
+        locale,
+        redirectTo: locale === "pl" ? "/pl/checkout" : "/checkout",
+      }),
+    [locale],
+  );
   const [cart, setCart] = useState<StoreCart | null>(null);
   const [isLoadingCart, setIsLoadingCart] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,6 +75,16 @@ export default function CheckoutPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] =
     useState<CheckoutPaymentMethod>("stripe");
+  const [customerSession, setCustomerSession] = useState<CustomerSession | null>(
+    null,
+  );
+  const [isLoadingSession, setIsLoadingSession] = useState(true);
+  const [accountMode, setAccountMode] = useState<"sign-in" | "sign-up">(
+    "sign-in",
+  );
+  const [accountPassword, setAccountPassword] = useState("");
+  const [accountPasswordConfirm, setAccountPasswordConfirm] = useState("");
+  const prefetchedCustomerIdRef = useRef<number | null>(null);
   const [formValues, setFormValues] = useState({
     address1: "",
     city: "",
@@ -60,6 +96,96 @@ export default function CheckoutPage() {
     phone: "",
     postcode: "",
   });
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void fetchCustomerSession(locale)
+      .then((session) => {
+        if (cancelled) {
+          return;
+        }
+
+        setCustomerSession(session);
+        setIsLoadingSession(false);
+      })
+      .catch(() => {
+        if (cancelled) {
+          return;
+        }
+
+        setCustomerSession(null);
+        setIsLoadingSession(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [locale]);
+
+  useEffect(() => {
+    if (!customerSession?.authenticated || !customerSession.user) {
+      prefetchedCustomerIdRef.current = null;
+      return;
+    }
+
+    if (prefetchedCustomerIdRef.current === customerSession.user.id) {
+      return;
+    }
+
+    let cancelled = false;
+
+    void fetchCustomerAccount(locale)
+      .then((account) => {
+        if (cancelled) {
+          return;
+        }
+
+        prefetchedCustomerIdRef.current = customerSession.user?.id ?? null;
+
+        setFormValues((current) => ({
+          ...current,
+          address1: fillIfEmpty(
+            current.address1,
+            account.addresses.billing.address1,
+          ),
+          city: fillIfEmpty(current.city, account.addresses.billing.city),
+          country: fillIfEmpty(current.country, account.addresses.billing.country),
+          email: fillIfEmpty(
+            current.email,
+            account.addresses.billing.email || account.user.email,
+          ),
+          firstName: fillIfEmpty(
+            current.firstName,
+            account.addresses.billing.firstName || account.user.firstName,
+          ),
+          lastName: fillIfEmpty(
+            current.lastName,
+            account.addresses.billing.lastName || account.user.lastName,
+          ),
+          note: current.note,
+          phone: fillIfEmpty(
+            current.phone,
+            account.addresses.billing.phone || account.user.phone,
+          ),
+          postcode: fillIfEmpty(
+            current.postcode,
+            account.addresses.billing.postcode,
+          ),
+        }));
+      })
+      .catch(() => {
+        if (cancelled) {
+          return;
+        }
+
+        prefetchedCustomerIdRef.current = customerSession.user?.id ?? null;
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [customerSession, locale]);
 
   useEffect(() => {
     let cancelled = false;
@@ -93,6 +219,7 @@ export default function CheckoutPage() {
     event.preventDefault();
     setSubmitError(null);
     setSubmitMessage(null);
+
     setIsSubmitting(true);
 
     try {
@@ -167,6 +294,194 @@ export default function CheckoutPage() {
                 className="space-y-6"
                 onSubmit={handleSubmit}
               >
+                <DetailPanel title={messages.account.title}>
+                  <div className="mt-4 space-y-6">
+                    {!customerSession?.authenticated ? (
+                      <div>
+                        {isLoadingSession ? (
+                          <p className="text-sm leading-relaxed text-gray-600">
+                            {messages.account.signInTitle}...
+                          </p>
+                        ) : accountMode === "sign-in" ? (
+                          <CustomerSignInForm
+                            description={messages.checkout.signInDescription}
+                            locale={locale}
+                            onRequestSignUp={() => {
+                              setAccountMode("sign-up");
+                              setSubmitError(null);
+                            }}
+                            onSuccess={(session) => {
+                              setCustomerSession(session);
+                              setSubmitError(null);
+                            }}
+                          />
+                        ) : (
+                          <>
+                            <h2 className="text-lg font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
+                              {messages.account.signUpTitle}
+                            </h2>
+                            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-black/75">
+                              Create your Kanna Bikes customer account with
+                              email and password, or{" "}
+                              <a
+                                href={googleAuthUrl ?? "#"}
+                                className="font-semibold underline underline-offset-2 transition hover:text-black"
+                              >
+                                {messages.account.continueWithGoogle}
+                              </a>{" "}
+                              if you prefer.
+                            </p>
+
+                            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                              <label className="block">
+                                <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
+                                  {messages.account.firstNameLabel}
+                                </span>
+                                <InputField
+                                  autoComplete="given-name"
+                                  value={formValues.firstName}
+                                  onChange={(event) =>
+                                    setFormValues((prev) => ({
+                                      ...prev,
+                                      firstName: event.currentTarget.value,
+                                    }))
+                                  }
+                                />
+                              </label>
+                              <label className="block">
+                                <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
+                                  {messages.account.lastNameLabel}
+                                </span>
+                                <InputField
+                                  autoComplete="family-name"
+                                  value={formValues.lastName}
+                                  onChange={(event) =>
+                                    setFormValues((prev) => ({
+                                      ...prev,
+                                      lastName: event.currentTarget.value,
+                                    }))
+                                  }
+                                />
+                              </label>
+                              <label className="block sm:col-span-2">
+                                <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
+                                  {messages.account.emailLabel}
+                                </span>
+                                <InputField
+                                  autoComplete="email"
+                                  type="email"
+                                  value={formValues.email}
+                                  onChange={(event) =>
+                                    setFormValues((prev) => ({
+                                      ...prev,
+                                      email: event.currentTarget.value,
+                                    }))
+                                  }
+                                />
+                              </label>
+                              <label className="block">
+                                <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
+                                  {messages.account.passwordLabel}
+                                </span>
+                                <InputField
+                                  autoComplete="new-password"
+                                  minLength={8}
+                                  type="password"
+                                  value={accountPassword}
+                                  onChange={(event) =>
+                                    setAccountPassword(event.currentTarget.value)
+                                  }
+                                />
+                              </label>
+                              <label className="block">
+                                <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
+                                  {messages.account.confirmPasswordLabel}
+                                </span>
+                                <InputField
+                                  autoComplete="new-password"
+                                  minLength={8}
+                                  type="password"
+                                  value={accountPasswordConfirm}
+                                  onChange={(event) =>
+                                    setAccountPasswordConfirm(
+                                      event.currentTarget.value,
+                                    )
+                                  }
+                                />
+                              </label>
+                            </div>
+
+                            <div className="mt-6 flex flex-wrap gap-3">
+                              <Button
+                                type="button"
+                                size="sm"
+                                onClick={async () => {
+                                  setSubmitError(null);
+
+                                  if (accountPassword.length < 8) {
+                                    setSubmitError(messages.account.passwordMinLength);
+                                    return;
+                                  }
+
+                                  if (accountPassword !== accountPasswordConfirm) {
+                                    setSubmitError(messages.account.passwordMismatch);
+                                    return;
+                                  }
+
+                                  try {
+                                    await registerCustomerAccount({
+                                      email: formValues.email,
+                                      firstName: formValues.firstName,
+                                      lastName: formValues.lastName,
+                                      locale,
+                                      password: accountPassword,
+                                    });
+                                    const session = await fetchCustomerSession(locale);
+
+                                    setCustomerSession(session);
+                                    setAccountMode("sign-in");
+                                    setAccountPassword("");
+                                    setAccountPasswordConfirm("");
+                                  } catch (error) {
+                                    setSubmitError(
+                                      error instanceof Error
+                                        ? error.message
+                                        : messages.account.signUpError,
+                                    );
+                                  }
+                                }}
+                              >
+                                {messages.account.createAccount}
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="secondary"
+                                onClick={() => {
+                                  setAccountMode("sign-in");
+                                  setSubmitError(null);
+                                }}
+                              >
+                                {messages.account.signInTitle}
+                              </Button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="space-y-2 text-sm text-gray-700">
+                        <p>
+                          <span className="font-semibold text-[var(--kanna-ink)]">
+                            {messages.checkout.accountSignedInAs}
+                          </span>{" "}
+                          {customerSession.user?.displayName ||
+                            customerSession.user?.email}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </DetailPanel>
+
                 <DetailPanel title="Shipping details">
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
                     <label className="block">

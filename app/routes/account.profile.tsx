@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { redirect } from "react-router";
 import { AccountShell } from "~/components/account-shell";
+import { Button } from "~/components/button";
 import { InputField, LockedField } from "~/components/form-field";
 import { AccountHydrateFallback } from "~/components/hydrate-fallbacks";
 import { useMessages } from "~/components/locale-provider";
@@ -133,13 +134,13 @@ export default function AccountProfilePage({
             onChange={(event) => setPhone(event.currentTarget.value)}
           />
         </label>
-        <button
+        <Button
           type="submit"
           disabled={isSaving}
-          className="inline-flex min-h-12 cursor-pointer items-center justify-center border border-[var(--kanna-ink)] bg-[var(--kanna-ink)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-white transition hover:bg-black disabled:opacity-60"
+          className="uppercase tracking-[0.08em]"
         >
           {messages.account.profileSave}
-        </button>
+        </Button>
         {status ? <p className="text-sm text-gray-600">{status}</p> : null}
       </form>
     </AccountShell>

@@ -31,6 +31,7 @@ export type WordpressComment = {
   createdAt: string;
   currentUserVote: -1 | 0 | 1;
   id: number;
+  parentId: number;
   status?: "approved" | "pending";
   voteScore: number;
 };
@@ -83,6 +84,7 @@ type WordpressCommentsApiResponse = {
     createdAt?: string;
     currentUserVote?: number;
     id: number;
+    parentId?: number;
     status?: "approved" | "pending";
     voteScore?: number;
   }>;
@@ -531,6 +533,7 @@ export async function fetchWordpressComments(
           ? -1
           : 0,
     id: comment.id,
+    parentId: Number.isFinite(comment.parentId) ? Number(comment.parentId) : 0,
     status: comment.status,
     voteScore: Number.isFinite(comment.voteScore) ? Number(comment.voteScore) : 0,
   }));
