@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import {
   isRouteErrorResponse,
   Links,
@@ -7,7 +6,6 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
-import { defineCustomElements } from "ionicons/loader";
 
 import type { Route } from "./+types/root";
 import "./app.css";
@@ -50,10 +48,6 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  useEffect(() => {
-    defineCustomElements(window);
-  }, []);
-
   return (
     <html lang="en">
       <head>
@@ -62,7 +56,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body className="bg-white text-slate-900 antialiased">
+      <body className="bg-stone-950 text-stone-100 antialiased">
         {children}
         <ScrollRestoration />
         <Scripts />
@@ -94,14 +88,14 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   return (
     <main className="mx-auto min-h-screen max-w-3xl px-4 pb-20 pt-24">
       <h1 className="text-3xl font-semibold">{message}</h1>
-      <p className="mt-3 text-slate-700">{details}</p>
+      <p className="mt-3 text-stone-300">{details}</p>
       <p className="mt-4">
         <a className="text-sm underline" href="/">
           Go to homepage
         </a>
       </p>
       {stack && (
-        <pre className="mt-6 w-full overflow-x-auto rounded-lg bg-slate-900 p-4 text-sm text-slate-100">
+        <pre className="mt-6 w-full overflow-x-auto rounded-lg bg-black/40 p-4 text-sm text-stone-100">
           <code>{stack}</code>
         </pre>
       )}

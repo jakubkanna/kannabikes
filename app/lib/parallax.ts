@@ -22,11 +22,8 @@ export function attachBackgroundParallax(target: HTMLElement): Cleanup {
     const normX = (event.clientX / innerWidth - 0.5) * 2;
     const normY = (event.clientY / innerHeight - 0.5) * 2;
 
-    const offsetX = clamp(normX, -1, 1) * 12;
-    const offsetY = clamp(normY, -1, 1) * 12;
-
-    lastX = offsetX;
-    lastY = offsetY;
+    lastX = clamp(normX, -1, 1) * 12;
+    lastY = clamp(normY, -1, 1) * 12;
 
     if (!rafId) {
       rafId = window.requestAnimationFrame(update);
@@ -36,6 +33,7 @@ export function attachBackgroundParallax(target: HTMLElement): Cleanup {
   const handlePointerLeave = () => {
     lastX = 0;
     lastY = 0;
+
     if (!rafId) {
       rafId = window.requestAnimationFrame(update);
     }
@@ -49,6 +47,9 @@ export function attachBackgroundParallax(target: HTMLElement): Cleanup {
     window.removeEventListener("pointermove", handlePointerMove);
     window.removeEventListener("pointerleave", handlePointerLeave);
     window.removeEventListener("blur", handlePointerLeave);
-    if (rafId) window.cancelAnimationFrame(rafId);
+
+    if (rafId) {
+      window.cancelAnimationFrame(rafId);
+    }
   };
 }
