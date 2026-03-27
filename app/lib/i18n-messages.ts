@@ -264,6 +264,12 @@ export const messages = {
     common: {
       comingSoon: "Coming soon",
       languageLabel: "Language",
+      phoneCountryCode: "Country code",
+      phoneNumber: "Phone number",
+      phoneNumberExample: "+48 123 456 789",
+      phoneNumberLocalExample: "123 456 789",
+      phoneNumberWithCountryCodeError:
+        "Enter a valid phone number with country code, for example +48 123 456 789.",
       polish: "Polski",
     },
     cookieConsent: {
@@ -289,7 +295,8 @@ export const messages = {
         firstName: "Enter first name.",
         lastName: "Enter last name.",
         message: "Enter at least 20 characters.",
-        phoneNumber: "Enter a valid phone number.",
+        phoneNumber:
+          "Enter a valid phone number with country code, for example +48 123 456 789.",
         privacyAccepted: "You must confirm the privacy information.",
         reachService:
           "We could not reach the contact service. Please try again in a moment.",
@@ -626,7 +633,7 @@ export const messages = {
       passwordActivationNotice:
         "Zapisz je bezpiecznie. Będzie potrzebne, aby uzyskać dostęp do konfiguratora i sprawdzać status zamówienia.",
       prepareDepositError:
-        "Nie udało się przygotować płatności depozytu.",
+        "Nie udało się przygotować płatności zaliczki.",
       prepareFinalPaymentError:
         "Nie udało się przygotować płatności końcowej.",
       protectedOrder: "Chronione zamówienie",
@@ -644,24 +651,24 @@ export const messages = {
       depositAgreementRequired:
         "Zaakceptuj warunki zamówienia, aby kontynuować.",
       depositSignInHint:
-        "Użyj sekcji konta poniżej, aby aktywować konto lub zalogować się przed opłaceniem depozytu.",
+        "Użyj sekcji konta poniżej, aby aktywować konto lub zalogować się przed opłaceniem zaliczki.",
       deposit: {
         accountHolder: "Właściciel konta",
         amount: "Kwota",
-        amountDueNow: "Kwota depozytu do zapłaty teraz",
+        amountDueNow: "Kwota zaliczki do zapłaty teraz",
         bankTransferDetails: "Dane do przelewu",
         classicBankTransfer: "Klasyczny przelew bankowy",
         classicTransfer: "Przelew tradycyjny",
         depositAgreement:
-          "Akceptuję warunki zamówienia, warunki depozytu oraz przetwarzanie moich danych dotyczących tego projektu roweru. Rozumiem, że po wejściu roweru do produkcji depozyt staje się bezzwrotny.",
+          "Akceptuję warunki zamówienia, warunki zaliczki oraz przetwarzanie moich danych dotyczących tego projektu roweru. Rozumiem, że po wejściu roweru do produkcji zaliczka staje się bezzwrotna.",
         description:
-          "Zarezerwuj miejsce w kolejce na rower na zamówienie. Gdy otrzymamy depozyt, rozpoczniemy projektowanie Twojego wymarzonego roweru.",
+          "Zarezerwuj miejsce w kolejce na rower na zamówienie. Gdy otrzymamy zaliczkę, rozpoczniemy projektowanie Twojego wymarzonego roweru.",
         email: "E-mail",
         firstName: "Imię",
         iban: "IBAN",
         inReview: "W weryfikacji",
         inReviewDescription:
-          "Weryfikujemy Twój depozyt i potwierdzamy, że płatność została poprawnie otrzymana. W międzyczasie możesz dodać pomiary potrzebne do procesu projektowego.",
+          "Weryfikujemy Twoją zaliczkę i potwierdzamy, że płatność została poprawnie otrzymana. W międzyczasie możesz dodać pomiary potrzebne do procesu projektowego.",
         lastName: "Nazwisko",
         netAmount: "Kwota netto",
         orderAgreement: "warunki zamówienia",
@@ -670,7 +677,7 @@ export const messages = {
           "Użyjemy tych danych, aby kontaktować się z Tobą w sprawie zamówienia.",
         orderSummary: "Podsumowanie zamówienia",
         orderTitle: "Tytuł zamówienia",
-        payDeposit: "Zapłać depozyt",
+        payDeposit: "Zapłać zaliczkę",
         paymentDate: "Data płatności",
         paymentMethod: "Metoda płatności",
         paymentOptions: "Opcje płatności",
@@ -678,12 +685,12 @@ export const messages = {
         preparingPayment: "Przygotowywanie płatności...",
         received: "Otrzymano",
         receivedDescription:
-          "Depozyt został potwierdzony. Zamówienie jest zabezpieczone i przejdzie przez kolejne etapy realizacji.",
-        sectionPill: "Depozyt",
+          "Zaliczka została potwierdzona. Zamówienie jest zabezpieczone i przejdzie przez kolejne etapy realizacji.",
+        sectionPill: "Zaliczka",
         swift: "SWIFT / BIC",
         total: "Razem",
         transferTitle: "Tytuł przelewu",
-        waitingForDeposit: "Oczekiwanie na depozyt",
+        waitingForDeposit: "Oczekiwanie na zaliczkę",
         customBuildFallback: "Rower Kanna Bikes na zamówienie",
       },
     },
@@ -731,6 +738,12 @@ export const messages = {
     common: {
       comingSoon: "Wkrótce",
       languageLabel: "Język",
+      phoneCountryCode: "Numer kierunkowy",
+      phoneNumber: "Numer telefonu",
+      phoneNumberExample: "+48 123 456 789",
+      phoneNumberLocalExample: "123 456 789",
+      phoneNumberWithCountryCodeError:
+        "Wpisz poprawny numer telefonu z numerem kierunkowym kraju, na przykład +48 123 456 789.",
       polish: "Polski",
     },
     cookieConsent: {
@@ -756,7 +769,8 @@ export const messages = {
         firstName: "Wpisz imię.",
         lastName: "Wpisz nazwisko.",
         message: "Wpisz co najmniej 20 znaków.",
-        phoneNumber: "Wpisz poprawny numer telefonu.",
+        phoneNumber:
+          "Wpisz poprawny numer telefonu z numerem kierunkowym kraju, na przykład +48 123 456 789.",
         privacyAccepted: "Musisz potwierdzić informacje o prywatności.",
         reachService:
           "Nie udało się połączyć z formularzem kontaktowym. Spróbuj ponownie za chwilę.",
@@ -834,7 +848,7 @@ export const messages = {
     },
     legal: {
       intro:
-        "Ta strona przedstawia informacje o prywatności i warunki zamówienia dla klientów kontaktujących się z Kanna Bikes przez stronę internetową na trzech etapach: kontakt i wycena, depozyt oraz dostawa.",
+        "Ta strona przedstawia informacje o prywatności i warunki zamówienia dla klientów kontaktujących się z Kanna Bikes przez stronę internetową na trzech etapach: kontakt i wycena, zaliczka oraz dostawa.",
       pill: "Informacje prawne",
       title: "Prywatność i warunki",
     },
@@ -899,12 +913,12 @@ export const messages = {
         contact: "Kontakt",
         imageAlt: "Etapy procesu pre-order",
         intro:
-          "Korzystamy ze sprawdzonego systemu opartego na depozycie, który prowadzi każde zamówienie od pierwszego kontaktu do finalnego odbioru.",
+          "Korzystamy ze sprawdzonego systemu opartego na zaliczce, który prowadzi każde zamówienie od pierwszego kontaktu do finalnego odbioru.",
         pill: "Na zamówienie",
         steps: [
           {
-            body: "po pierwszym kontakcie poprosimy Cię o wpłatę depozytu w wysokości 590 euro. Dzięki temu otrzymasz dostęp do konfiguratora roweru na naszej stronie.",
-            title: "Depozyt:",
+            body: "po pierwszym kontakcie poprosimy Cię o wpłatę zaliczki w wysokości 2500 pln. Dzięki temu otrzymasz dostęp do konfiguratora roweru na naszej stronie.",
+            title: "Zaliczka:",
           },
           {
             body: "zostaniesz poproszony(-a) o uzupełnienie niezbędnych danych w konfiguratorze, a projekt Twojego roweru otrzymasz w ciągu 2 do 3 tygodni, razem z geometrią ramy i komponentami zależnie od tego, czy zamawiasz samą ramę, czy pełny build.",

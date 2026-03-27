@@ -19,6 +19,7 @@ import {
 } from "~/components/form-field";
 import { useLocale, useMessages } from "~/components/locale-provider";
 import { PageShell } from "~/components/page-container";
+import { PhoneNumberField } from "~/components/phone-number-field";
 import { SectionPill } from "~/components/section-pill";
 import { getGoogleAuthUrl } from "~/lib/auth";
 import { buildLocalizedMeta, getLocaleFromPath, getMessages } from "~/lib/i18n";
@@ -34,6 +35,7 @@ import {
   type StoreCart,
 } from "~/lib/store-api";
 import { formatPageTitle } from "~/root";
+import { isPhoneNumberWithCountryCode } from "~/lib/phone";
 
 type CheckoutPaymentMethod = "stripe" | "classic_transfer";
 
@@ -219,6 +221,11 @@ export default function CheckoutPage() {
     event.preventDefault();
     setSubmitError(null);
     setSubmitMessage(null);
+
+    if (!isPhoneNumberWithCountryCode(formValues.phone)) {
+      setSubmitError(messages.common.phoneNumberWithCountryCodeError);
+      return;
+    }
 
     setIsSubmitting(true);
 
@@ -539,17 +546,16 @@ export default function CheckoutPage() {
                       <span className="mb-2 block text-sm font-semibold text-gray-700">
                         Phone number
                       </span>
-                      <InputField
-                        type="tel"
+                      <PhoneNumberField
+                        inputClassName="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
+                        selectClassName="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                         value={formValues.phone}
-                        onChange={(event) =>
+                        onChange={(phone) =>
                           setFormValues((prev) => ({
                             ...prev,
-                            phone: event.target.value,
+                            phone,
                           }))
                         }
-                        placeholder="Phone number"
-                        className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                       />
                     </label>
                     <label className="block sm:col-span-2">

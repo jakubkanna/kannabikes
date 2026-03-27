@@ -9,9 +9,11 @@ import {
 } from "~/components/form-field";
 import { LocalizedLink } from "~/components/localized-link";
 import { useLocale, useMessages } from "~/components/locale-provider";
+import { PhoneNumberField } from "~/components/phone-number-field";
 import { SectionPill } from "~/components/section-pill";
 import { formatPageTitle } from "~/root";
 import { buildLocalizedMeta, getLocaleFromPath, getMessages } from "~/lib/i18n";
+import { isPhoneNumberWithCountryCode } from "~/lib/phone";
 
 const DEFAULT_WORDPRESS_API_BASE =
   import.meta.env.VITE_WORDPRESS_API_BASE_URL ??
@@ -47,7 +49,7 @@ function validateContactForm(
     errors.email = routeMessages.contact.errors.email;
   }
 
-  if (values.phoneNumber.replace(/[^\d+]/g, "").length < 7) {
+  if (!isPhoneNumberWithCountryCode(values.phoneNumber)) {
     errors.phoneNumber = routeMessages.contact.errors.phoneNumber;
   }
 
@@ -274,17 +276,15 @@ export default function ContactPage() {
                   <span className="mb-2 block text-sm font-semibold text-stone-700">
                     {messages.contact.phoneNumber}
                   </span>
-                  <InputField
-                    type="tel"
+                  <PhoneNumberField
+                    hasError={showValidation && Boolean(errors.phoneNumber)}
                     value={formValues.phoneNumber}
-                    onChange={(event) =>
+                    onChange={(phoneNumber) =>
                       setFormValues((prev) => ({
                         ...prev,
-                        phoneNumber: event.target.value,
+                        phoneNumber,
                       }))
                     }
-                    onFocus={() => setShowValidation(false)}
-                    hasError={showValidation && Boolean(errors.phoneNumber)}
                   />
                   {showValidation && errors.phoneNumber ? (
                     <p className="mt-2 text-sm text-red-600">

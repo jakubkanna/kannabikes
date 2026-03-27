@@ -7,7 +7,8 @@ import {
 } from "~/components/commerce/payment-option";
 import { InputField } from "~/components/form-field";
 import { LocalizedLink } from "~/components/localized-link";
-import { useLocale } from "~/components/locale-provider";
+import { useLocale, useMessages } from "~/components/locale-provider";
+import { PhoneNumberField } from "~/components/phone-number-field";
 import { SectionPill } from "~/components/section-pill";
 import { Spinner } from "~/components/spinner";
 import { AnimatedOrderSection } from "./order-motion";
@@ -18,6 +19,7 @@ import {
   type OrderStage,
 } from "~/lib/mock-order";
 import type { OrderShippingAddress, OrderShippingState } from "~/lib/order-api";
+import { isPhoneNumberWithCountryCode } from "~/lib/phone";
 import { formatOrderMoney, getInclusiveTaxBreakdown } from "~/lib/order-tax";
 
 const PRODUCTION_SUCCESS_HIGHLIGHT_DELAY_MS = 4000;
@@ -136,6 +138,7 @@ function validateShippingDetails(
   cityOptions: string[],
   shippingOption: "courier" | "pickup",
   shippingReferenceData: ShippingReferenceData | null,
+  phoneErrorMessage: string,
 ) {
   const errors: Partial<Record<keyof typeof shippingAddress, string>> = {};
   const [firstName, ...lastNameParts] = shippingAddress.fullName
@@ -157,13 +160,8 @@ function validateShippingDetails(
     errors.email = "Enter a valid email address.";
   }
 
-  const normalizedPhoneNumber = shippingAddress.phoneNumber.replace(
-    /[^\d+]/g,
-    "",
-  );
-
-  if (normalizedPhoneNumber.length < 7) {
-    errors.phoneNumber = "Enter a valid phone number.";
+  if (!isPhoneNumberWithCountryCode(shippingAddress.phoneNumber)) {
+    errors.phoneNumber = phoneErrorMessage;
   }
 
   if (shippingOption === "courier") {
@@ -218,7 +216,7 @@ function isShippingFormReady(
     return false;
   }
 
-  if (shippingAddress.phoneNumber.replace(/[^\d+]/g, "").length < 7) {
+  if (!isPhoneNumberWithCountryCode(shippingAddress.phoneNumber)) {
     return false;
   }
 
@@ -405,6 +403,7 @@ export function OrderProductionPreviewSection({
   }) => void;
 }) {
   const locale = useLocale();
+  const messages = useMessages();
   const cityListId = useId();
   const countryListId = useId();
   const [shippingOption, setShippingOption] = useState<"courier" | "pickup">(
@@ -482,6 +481,7 @@ export function OrderProductionPreviewSection({
     cityOptions,
     shippingOption,
     shippingReferenceData,
+    messages.common.phoneNumberWithCountryCodeError,
   );
   const [shippingFirstName, ...shippingLastNameParts] = shippingAddress.fullName
     .split(/\s+/)
@@ -835,23 +835,21 @@ export function OrderProductionPreviewSection({
                 <span className="mb-2 block text-sm font-semibold text-gray-700">
                   Phone number
                 </span>
-                <InputField
-                  type="tel"
-                  value={shippingAddress.phoneNumber}
-                  onChange={(event) => {
-                    setShippingAddress((prev) => ({
-                      ...prev,
-                      phoneNumber: event.target.value,
-                    }));
-                    resetShippingQuoteState();
-                  }}
-                  onFocus={resetShippingQuoteState}
-                  placeholder="Phone number"
+                <PhoneNumberField
                   hasError={
                     showShippingValidation &&
                     Boolean(shippingErrors.phoneNumber)
                   }
-                  className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
+                  inputClassName="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
+                  selectClassName="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
+                  value={shippingAddress.phoneNumber}
+                  onChange={(phoneNumber) => {
+                    setShippingAddress((prev) => ({
+                      ...prev,
+                      phoneNumber,
+                    }));
+                    resetShippingQuoteState();
+                  }}
                 />
                 {showShippingValidation && shippingErrors.phoneNumber ? (
                   <p className="mt-2 text-sm text-red-600">

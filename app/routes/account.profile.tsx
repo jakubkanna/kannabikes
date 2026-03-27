@@ -5,6 +5,7 @@ import { Button } from "~/components/button";
 import { InputField, LockedField } from "~/components/form-field";
 import { AccountHydrateFallback } from "~/components/hydrate-fallbacks";
 import { useMessages } from "~/components/locale-provider";
+import { PhoneNumberField } from "~/components/phone-number-field";
 import {
   fetchCustomerAccount,
   fetchCustomerSession,
@@ -12,6 +13,7 @@ import {
   type CustomerUser,
 } from "~/lib/customer-account";
 import { buildLocalizedMeta, getLocaleFromPath, getMessages } from "~/lib/i18n";
+import { isPhoneNumberWithCountryCode } from "~/lib/phone";
 import { formatPageTitle } from "~/root";
 import type { Route } from "./+types/account.profile";
 
@@ -71,6 +73,10 @@ export default function AccountProfilePage({
         className="max-w-3xl space-y-5 border border-black/15 bg-white p-6"
         onSubmit={async (event) => {
           event.preventDefault();
+          if (!isPhoneNumberWithCountryCode(phone)) {
+            setStatus(messages.common.phoneNumberWithCountryCodeError);
+            return;
+          }
           setIsSaving(true);
           setStatus(null);
 
@@ -129,10 +135,7 @@ export default function AccountProfilePage({
           <span className="mb-2 block text-sm font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
             {messages.account.phoneLabel}
           </span>
-          <InputField
-            value={phone}
-            onChange={(event) => setPhone(event.currentTarget.value)}
-          />
+          <PhoneNumberField value={phone} onChange={setPhone} />
         </label>
         <Button
           type="submit"
