@@ -61,6 +61,7 @@ type StoreApiProduct = {
     sale_price?: string;
   };
   short_description?: string;
+  sku?: string;
   slug?: string;
   stock_status?: string;
   summary?: string;
@@ -129,6 +130,10 @@ export type StoreProduct = {
   categorySlugs: string[];
   currencyCode: string;
   currencyMinorUnit: number;
+  details: Array<{
+    name: string;
+    values: string[];
+  }>;
   descriptionHtml: string;
   hasOptions: boolean;
   id: number;
@@ -155,6 +160,7 @@ export type StoreProduct = {
   regularPrice: string;
   salePrice: string;
   shortDescriptionHtml: string;
+  sku: string;
   slug: string;
   stockStatus: string;
   translationPaths: Partial<Record<Locale, string>>;
@@ -484,6 +490,17 @@ function mapOptionAttributes(attributes: StoreApiProduct["attributes"]) {
     .filter((attribute) => attribute.name && attribute.terms.length > 0);
 }
 
+function mapProductDetails(attributes: StoreApiProduct["attributes"]) {
+  return (attributes ?? [])
+    .map((attribute) => ({
+      name: attribute.name ?? "",
+      values: (attribute.terms ?? [])
+        .map((term) => term.name ?? "")
+        .filter(Boolean),
+    }))
+    .filter((attribute) => attribute.name && attribute.values.length > 0);
+}
+
 function mapProductVariations(variations: StoreApiProduct["variations"]) {
   return (variations ?? []).map((variation) => ({
     attributes: Object.fromEntries(
@@ -506,6 +523,7 @@ function mapStoreProduct(product: StoreApiProduct, locale: Locale): StoreProduct
     slug: product.slug,
   });
   const optionAttributes = mapOptionAttributes(product.attributes);
+  const details = mapProductDetails(product.attributes);
   const variations = mapProductVariations(product.variations);
   const images = (product.images ?? [])
     .map((image) => ({
@@ -520,6 +538,7 @@ function mapStoreProduct(product: StoreApiProduct, locale: Locale): StoreProduct
       .filter(Boolean),
     currencyCode,
     currencyMinorUnit,
+    details,
     descriptionHtml: product.description ?? "",
     hasOptions: Boolean(product.has_options),
     id: product.id,
@@ -549,6 +568,7 @@ function mapStoreProduct(product: StoreApiProduct, locale: Locale): StoreProduct
     ),
     shortDescriptionHtml:
       product.short_description ?? product.summary ?? product.description ?? "",
+    sku: product.sku ?? "",
     slug: product.slug ?? String(product.id),
     stockStatus: product.stock_status ?? "",
     translationPaths: mapTranslationPaths(product.translations, path),

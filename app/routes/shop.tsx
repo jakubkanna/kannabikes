@@ -3,10 +3,10 @@ import { useState } from "react";
 import { ArchivoInkBleed } from "~/components/archivo-ink-bleed";
 import { InputField, SelectField } from "~/components/form-field";
 import { StoreGridHydrateFallback } from "~/components/hydrate-fallbacks";
-import { LocalizedLink } from "~/components/localized-link";
 import { useMessages } from "~/components/locale-provider";
 import { PageContainer, PageShell } from "~/components/page-container";
 import { SectionPill } from "~/components/section-pill";
+import { StoreProductCard } from "~/components/store-product-card";
 import { formatPageTitle } from "~/root";
 import { buildLocalizedMeta, getLocaleFromPath, getMessages } from "~/lib/i18n";
 import type { Route } from "./+types/shop";
@@ -98,27 +98,11 @@ export default function ShopPage({ loaderData }: Route.ComponentProps) {
           {filteredProducts.length > 0 ? (
             <div className="mt-4 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
               {filteredProducts.map((product) => (
-                <LocalizedLink
+                <StoreProductCard
                   key={product.id}
-                  to={product.path}
-                  className="overflow-hidden border border-stone-200 bg-white shadow-sm transition hover:-translate-y-1"
-                >
-                  {product.imageSrc ? (
-                    <img
-                      src={product.imageSrc}
-                      alt={product.imageAlt}
-                      className="aspect-[4/3] w-full object-cover"
-                    />
-                  ) : null}
-                  <div className="p-5">
-                    <h2 className="text-xl font-semibold text-[var(--kanna-ink)]">
-                      {product.name}
-                    </h2>
-                    <p className="mt-2 text-sm text-stone-600">
-                      {product.price}
-                    </p>
-                  </div>
-                </LocalizedLink>
+                  locale={loaderData.locale}
+                  product={product}
+                />
               ))}
             </div>
           ) : (

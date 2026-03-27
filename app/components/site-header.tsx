@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { closeOutline, menuOutline } from "ionicons/icons";
 import { AnimatePresence, motion } from "motion/react";
 import { useLocation } from "react-router";
 import { CartDrawer } from "~/components/cart-drawer";
@@ -19,6 +18,40 @@ const KANNA_MENU_FONT_STYLE = {
   fontWeight: 900,
 } as const;
 
+function MenuOutlineIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 512 512"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeMiterlimit="10"
+      strokeWidth="32"
+    >
+      <path d="M80 160h352M80 256h352M80 352h352" />
+    </svg>
+  );
+}
+
+function CloseOutlineIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 512 512"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="32"
+    >
+      <path d="M368 368 144 144M368 144 144 368" />
+    </svg>
+  );
+}
+
 export function SiteHeader() {
   const { pathname } = useLocation();
   const messages = useMessages();
@@ -32,6 +65,10 @@ export function SiteHeader() {
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [cartItemsCount, setCartItemsCount] = useState(0);
+  const headerMarkToneClassName = useBlendMode ? "brightness-0 invert" : "";
+  const headerToneClassName = useBlendMode
+    ? "text-white"
+    : "text-(--kanna-color)";
   const navItems = [
     { to: "/pre-order", label: messages.nav.customOrder },
     { to: "/shop", label: messages.nav.shop },
@@ -168,9 +205,7 @@ export function SiteHeader() {
   return (
     <>
       <header
-        className={`fixed inset-x-0 top-0 z-40 h-(--site-header-height) px-2 md:px-3${
-          useBlendMode ? "text-white" : "text-(--kanna-color)"
-        }`}
+        className={`fixed inset-x-0 top-0 z-40 h-(--site-header-height) px-2 md:px-3 ${headerToneClassName}`}
         style={useBlendMode ? { mixBlendMode: "difference" } : undefined}
       >
         <nav
@@ -184,14 +219,12 @@ export function SiteHeader() {
             <img
               src={`${import.meta.env.BASE_URL}kannabikes_logo.svg`}
               alt="Kanna Bikes"
-              className={`h-10 w-auto ${useBlendMode ? "brightness-0 invert" : ""}`}
+              className={`h-10 w-auto ${headerMarkToneClassName}`}
             />
           </LocalizedLink>
 
           <div
-            className={`hidden items-center gap-3 text-sm font-black uppercase md:flex ${
-              useBlendMode ? "text-white" : "text-(--kanna-color)"
-            }`}
+            className={`hidden items-center gap-3 text-sm font-black uppercase md:flex ${headerToneClassName}`}
             style={KANNA_MENU_FONT_STYLE}
           >
             <ul className="flex items-center gap-3">
@@ -293,15 +326,10 @@ export function SiteHeader() {
             aria-label={messages.common.openMenu}
             aria-expanded={isMobileMenuOpen}
             aria-controls="mobile-site-menu"
-            className="inline-flex items-center justify-center p-2 md:hidden"
+            className={`inline-flex items-center justify-center p-2 md:hidden ${headerToneClassName}`}
             onClick={() => setIsMobileMenuOpen(true)}
           >
-            <img
-              src={menuOutline}
-              alt=""
-              aria-hidden="true"
-              className={`h-7 w-7 ${useBlendMode ? "brightness-0 invert" : ""}`}
-            />
+            <MenuOutlineIcon className="h-7 w-7" />
           </button>
         </nav>
       </header>
@@ -329,7 +357,7 @@ export function SiteHeader() {
                 className="inline-flex items-center justify-center p-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <img src={closeOutline} alt="" aria-hidden="true" className="h-7 w-7" />
+                <CloseOutlineIcon className="h-7 w-7" />
               </button>
             </div>
 

@@ -4,6 +4,7 @@ import { LocalizedLink } from "~/components/localized-link";
 import { useMessages } from "~/components/locale-provider";
 import { PageContainer, PageShell } from "~/components/page-container";
 import { SectionPill } from "~/components/section-pill";
+import { StoreProductCard } from "~/components/store-product-card";
 import { buildLocalizedMeta, getLocaleFromPath, getMessages } from "~/lib/i18n";
 import {
   fetchStoreCategories,
@@ -111,25 +112,11 @@ export default function ShopCategoryPage({ loaderData }: Route.ComponentProps) {
         {products.length > 0 ? (
           <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {products.map((product) => (
-              <LocalizedLink
+              <StoreProductCard
                 key={product.id}
-                to={product.path}
-                className="overflow-hidden border border-stone-200 bg-white shadow-sm transition hover:-translate-y-1"
-              >
-                {product.imageSrc ? (
-                  <img
-                    src={product.imageSrc}
-                    alt={product.imageAlt}
-                    className="aspect-[4/3] w-full object-cover"
-                  />
-                ) : null}
-                <div className="p-5">
-                  <h2 className="text-xl font-semibold text-[var(--kanna-ink)]">
-                    {product.name}
-                  </h2>
-                  <p className="mt-2 text-sm text-gray-600">{product.price}</p>
-                </div>
-              </LocalizedLink>
+                locale={loaderData.locale}
+                product={product}
+              />
             ))}
           </div>
         ) : (

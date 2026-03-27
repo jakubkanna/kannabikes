@@ -50,10 +50,7 @@ function getInitialOptionSelection(
   );
 }
 
-export async function loader({
-  params,
-  request,
-}: Route.LoaderArgs) {
+export async function loader({ params, request }: Route.LoaderArgs) {
   const locale = getLocaleFromPath(new URL(request.url).pathname);
   const product = await fetchStoreProductBySlug({
     locale,
@@ -71,7 +68,10 @@ export async function loader({
 }
 
 function stripHtml(value: string | undefined) {
-  return (value ?? "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  return (value ?? "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 export function meta({ loaderData, location }: Route.MetaArgs) {
@@ -107,6 +107,9 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
   const locale = useLocale();
   const location = useLocation();
   const messages = useMessages();
+  const [activeTab, setActiveTab] = useState<"details" | "reviews">(() =>
+    location.hash === "#reviews" ? "reviews" : "details",
+  );
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [addToCartError, setAddToCartError] = useState<string | null>(null);
   const [addedToCart, setAddedToCart] = useState(false);
@@ -203,10 +206,32 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
       },
     ],
   };
+  const detailRows = [
+    ...(product.sku
+      ? [{ label: messages.commerce.sku, values: [product.sku] }]
+      : []),
+    ...product.details.map((detail) => ({
+      label: detail.name,
+      values: detail.values,
+    })),
+  ];
+  const hasDetailsContent =
+    detailRows.length > 0 || Boolean(product.descriptionHtml);
 
   useEffect(() => {
     setSelectedOptions(getInitialOptionSelection(product));
   }, [product]);
+
+  useEffect(() => {
+    if (location.hash === "#reviews") {
+      setActiveTab("reviews");
+      return;
+    }
+
+    if (location.hash === "#details") {
+      setActiveTab("details");
+    }
+  }, [location.hash]);
 
   useEffect(() => {
     let cancelled = false;
@@ -363,6 +388,30 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
       : 0;
   const visibleStarCount = Math.round(averageRating);
 
+  const openProductTab = (tab: "details" | "reviews") => {
+    setActiveTab(tab);
+
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const hash = tab === "reviews" ? "#reviews" : "#details";
+    window.history.replaceState(
+      null,
+      "",
+      `${location.pathname}${location.search}${hash}`,
+    );
+
+    window.setTimeout(() => {
+      document
+        .getElementById(tab === "reviews" ? "reviews" : "details")
+        ?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+    }, 0);
+  };
+
   return (
     <PageShell>
       <PageContainer>
@@ -379,7 +428,7 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
           <span className="text-[var(--kanna-ink)]">{product.name}</span>
         </nav>
 
-        <div className="mt-8 grid gap-10 lg:grid-cols-[0.95fr_1.05fr]">
+        <div className="mt-8 grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
           <div>
             {product.images.length > 0 ? (
               <ImageGallery
@@ -390,12 +439,16 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
             ) : null}
           </div>
 
-          <div>
-            <h1 className="page-heading text-[2.35rem] leading-[0.88] text-[var(--kanna-ink)] md:text-[3.8rem]">
+          <div className="lg:self-start">
+            <h1 className="page-heading mt-0 text-[2.35rem] leading-[0.88] text-[var(--kanna-ink)] md:text-[3.8rem]">
               {product.name}
             </h1>
             {reviewCount > 0 ? (
-              <div className="mt-4 flex flex-wrap items-center gap-3 text-[var(--kanna-ink)]">
+              <button
+                type="button"
+                onClick={() => openProductTab("reviews")}
+                className="mt-4 flex flex-wrap items-center gap-3 text-left text-[var(--kanna-ink)] transition hover:opacity-75"
+              >
                 <div
                   aria-label={`${averageRating.toFixed(1)} out of 5 stars`}
                   className="flex items-center gap-1 text-sm"
@@ -418,7 +471,7 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
                 <p className="text-sm font-semibold uppercase tracking-[0.08em] text-black/60">
                   {averageRating.toFixed(1)} · {reviewCount}
                 </p>
-              </div>
+              </button>
             ) : null}
             <p className="mt-4 text-lg font-semibold text-[var(--kanna-ink)]">
               {product.price || product.regularPrice}
@@ -465,7 +518,11 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
             ) : null}
 
             <div className="mt-8 flex flex-wrap gap-4">
-              <Button onClick={handleAddToCart} disabled={isAddingToCart}>
+              <Button
+                onClick={handleAddToCart}
+                disabled={isAddingToCart}
+                className="min-h-16 px-8 text-lg"
+              >
                 {isAddingToCart
                   ? `${messages.commerce.addToCart}...`
                   : messages.commerce.addToCart}
@@ -480,210 +537,248 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
             {addToCartError ? (
               <p className="mt-4 text-sm text-red-700">{addToCartError}</p>
             ) : null}
-
-            {product.descriptionHtml ? (
-              <div
-                className="blog-content mt-10 text-base"
-                dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
-              />
-            ) : null}
-
-            {reviewsLoading || reviewsError || reviews.length > 0 ? (
-              <section
-                id="reviews"
-                className="mt-12 border-t border-black/15 pt-10"
-              >
-                <SectionPill>{messages.commerce.reviews}</SectionPill>
-                <div className="mt-6 border border-black/90 bg-white p-6">
-                  {customerSessionLoading ? (
-                    <p className="text-sm text-black/70">
-                      {messages.commerce.reviewsLoading}
-                    </p>
-                  ) : customerSession?.authenticated &&
-                    customerSession.csrfToken &&
-                    canReviewProduct ? (
-                    <form
-                      className="space-y-4"
-                      onSubmit={async (event) => {
-                        event.preventDefault();
-                        setReviewSubmitting(true);
-                        setReviewSubmitStatus(null);
-
-                        try {
-                          await createCustomerReview({
-                            csrfToken: customerSession.csrfToken,
-                            locale,
-                            payload: {
-                              productId: product.id,
-                              rating: Number(reviewRating),
-                              review: reviewBody,
-                            },
-                          });
-
-                          setReviewBody("");
-                          setReviewRating("5");
-                          setReviewSubmitStatus(messages.account.reviewSaved);
-                          const nextReviews = await fetchStoreProductReviews({
-                            locale,
-                            productId: product.id,
-                          });
-                          setReviews(nextReviews);
-                        } catch (error) {
-                          setReviewSubmitStatus(
-                            error instanceof Error
-                              ? error.message
-                              : messages.account.saveError,
-                          );
-                        } finally {
-                          setReviewSubmitting(false);
-                        }
-                      }}
-                    >
-                      <h2 className="text-xl font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
-                        {messages.commerce.leaveReview}
-                      </h2>
-                      <label className="block">
-                        <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
-                          {messages.account.ratingLabel}
-                        </span>
-                        <SelectField
-                          value={reviewRating}
-                          onChange={(event) =>
-                            setReviewRating(event.currentTarget.value)
-                          }
-                        >
-                          {[5, 4, 3, 2, 1].map((value) => (
-                            <option key={value} value={value}>
-                              {value}
-                            </option>
-                          ))}
-                        </SelectField>
-                      </label>
-                      <label className="block">
-                        <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
-                          {messages.account.reviewBodyLabel}
-                        </span>
-                        <TextareaField
-                          rows={5}
-                          value={reviewBody}
-                          onChange={(event) =>
-                            setReviewBody(event.currentTarget.value)
-                          }
-                        />
-                      </label>
-                      <Button type="submit" disabled={reviewSubmitting}>
-                        {messages.account.reviewPublish}
-                      </Button>
-                      {reviewSubmitStatus ? (
-                        <p className="text-sm text-gray-600">
-                          {reviewSubmitStatus}
-                        </p>
-                      ) : null}
-                    </form>
-                  ) : customerSession?.authenticated ? (
-                    <>
-                      <h2 className="text-xl font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
-                        {messages.commerce.leaveReview}
-                      </h2>
-                      <p className="mt-3 max-w-2xl text-sm leading-relaxed text-black/75">
-                        {messages.commerce.reviewsPurchaseRequired}
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <h2 className="text-xl font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
-                        {messages.commerce.leaveReview}
-                      </h2>
-                      <CustomerSignInForm
-                        description={messages.commerce.reviewsSignInCta}
-                        locale={locale}
-                        redirectTo={reviewRedirectPath}
-                        secondaryDescription={
-                          messages.commerce.reviewsSignUpCta
-                        }
-                        onSuccess={async (session) => {
-                          setReviewSubmitStatus(null);
-                          setCustomerSession(session);
-
-                          try {
-                            const nextReviewData =
-                              await fetchCustomerReviews(locale);
-                            setReviewableProducts(
-                              nextReviewData.reviewableProducts,
-                            );
-                          } catch {
-                            setReviewableProducts([]);
-                          }
-                        }}
-                      />
-                    </>
-                  )}
-                </div>
-
-                <div className="mt-6 space-y-4">
-                  {reviewsLoading ? (
-                    <p className="text-sm text-black/70">
-                      {messages.commerce.reviewsLoading}
-                    </p>
-                  ) : null}
-                  {!reviewsLoading && reviewsError ? (
-                    <p className="text-sm text-red-700">{reviewsError}</p>
-                  ) : null}
-                  {!reviewsLoading && !reviewsError
-                    ? reviews.map((review) => (
-                        <article
-                          key={review.id}
-                          className="border border-black/15 bg-white p-5"
-                        >
-                          <div className="flex flex-wrap items-center gap-3">
-                            {review.avatarSrc ? (
-                              <img
-                                src={review.avatarSrc}
-                                alt={review.author}
-                                className="h-9 w-9 border border-black/15 object-cover"
-                              />
-                            ) : (
-                              <div className="flex h-9 w-9 items-center justify-center border border-black/15 bg-stone-100 text-xs font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
-                                {review.author.slice(0, 1)}
-                              </div>
-                            )}
-                            <p className="text-sm font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
-                              {review.author}
-                            </p>
-                            <p className="text-xs uppercase tracking-[0.08em] text-black/45">
-                              {"★".repeat(
-                                Math.max(0, Math.min(review.rating, 5)),
-                              )}
-                            </p>
-                            {review.verified ? (
-                              <p className="text-xs uppercase tracking-[0.08em] text-black/55">
-                                {messages.commerce.verifiedReview}
-                              </p>
-                            ) : null}
-                            {review.createdAt ? (
-                              <p className="ml-auto text-xs uppercase tracking-[0.08em] text-black/45">
-                                {new Intl.DateTimeFormat(
-                                  getIntlLocale(locale),
-                                  {
-                                    day: "numeric",
-                                    month: "long",
-                                    year: "numeric",
-                                  },
-                                ).format(new Date(review.createdAt))}
-                              </p>
-                            ) : null}
-                          </div>
-                          <p className="mt-3 text-sm leading-relaxed text-[var(--kanna-ink)]">
-                            {review.body}
-                          </p>
-                        </article>
-                      ))
-                    : null}
-                </div>
-              </section>
-            ) : null}
           </div>
         </div>
+
+        <section className="mt-12 border-t border-black/15 pt-8">
+          <div className="flex flex-wrap gap-3">
+            <Button
+              type="button"
+              variant={activeTab === "details" ? "primary" : "secondary"}
+              size="sm"
+              className="min-w-32"
+              onClick={() => openProductTab("details")}
+            >
+              {messages.commerce.details}
+            </Button>
+            <Button
+              type="button"
+              variant={activeTab === "reviews" ? "primary" : "secondary"}
+              size="sm"
+              className="min-w-32"
+              onClick={() => openProductTab("reviews")}
+            >
+              {messages.commerce.reviews}
+            </Button>
+          </div>
+
+          {activeTab === "details" ? (
+            <div id="details" className="mt-6 space-y-6">
+              {product.descriptionHtml ? (
+                <div
+                  className="blog-content border border-black/10 bg-white p-6 text-base"
+                  dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
+                />
+              ) : null}
+
+              {detailRows.length > 0 ? (
+                <dl className="divide-y divide-black/10 border border-black/10 bg-white">
+                  {detailRows.map((detail) => (
+                    <div
+                      key={`${detail.label}-${detail.values.join("|")}`}
+                      className="grid gap-2 px-5 py-4 md:grid-cols-[12rem_minmax(0,1fr)]"
+                    >
+                      <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-black/45">
+                        {detail.label}
+                      </dt>
+                      <dd className="text-sm text-[var(--kanna-ink)]">
+                        {detail.values.join(", ")}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              ) : !product.descriptionHtml ? (
+                <p className="text-sm text-black/60">
+                  {messages.commerce.noProducts}
+                </p>
+              ) : null}
+            </div>
+          ) : (
+            <section id="reviews" className="mt-6">
+              <div className="border border-black/90 bg-white p-6">
+                {customerSessionLoading ? (
+                  <p className="text-sm text-black/70">
+                    {messages.commerce.reviewsLoading}
+                  </p>
+                ) : customerSession?.authenticated &&
+                  customerSession.csrfToken &&
+                  canReviewProduct ? (
+                  <form
+                    className="space-y-4"
+                    onSubmit={async (event) => {
+                      event.preventDefault();
+                      setReviewSubmitting(true);
+                      setReviewSubmitStatus(null);
+
+                      try {
+                        await createCustomerReview({
+                          csrfToken: customerSession.csrfToken,
+                          locale,
+                          payload: {
+                            productId: product.id,
+                            rating: Number(reviewRating),
+                            review: reviewBody,
+                          },
+                        });
+
+                        setReviewBody("");
+                        setReviewRating("5");
+                        setReviewSubmitStatus(messages.account.reviewSaved);
+                        const nextReviews = await fetchStoreProductReviews({
+                          locale,
+                          productId: product.id,
+                        });
+                        setReviews(nextReviews);
+                      } catch (error) {
+                        setReviewSubmitStatus(
+                          error instanceof Error
+                            ? error.message
+                            : messages.account.saveError,
+                        );
+                      } finally {
+                        setReviewSubmitting(false);
+                      }
+                    }}
+                  >
+                    <h2 className="text-xl font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
+                      {messages.commerce.leaveReview}
+                    </h2>
+                    <label className="block">
+                      <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
+                        {messages.account.ratingLabel}
+                      </span>
+                      <SelectField
+                        value={reviewRating}
+                        onChange={(event) =>
+                          setReviewRating(event.currentTarget.value)
+                        }
+                      >
+                        {[5, 4, 3, 2, 1].map((value) => (
+                          <option key={value} value={value}>
+                            {value}
+                          </option>
+                        ))}
+                      </SelectField>
+                    </label>
+                    <label className="block">
+                      <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
+                        {messages.account.reviewBodyLabel}
+                      </span>
+                      <TextareaField
+                        rows={5}
+                        value={reviewBody}
+                        onChange={(event) =>
+                          setReviewBody(event.currentTarget.value)
+                        }
+                      />
+                    </label>
+                    <Button type="submit" disabled={reviewSubmitting}>
+                      {messages.account.reviewPublish}
+                    </Button>
+                    {reviewSubmitStatus ? (
+                      <p className="text-sm text-gray-600">
+                        {reviewSubmitStatus}
+                      </p>
+                    ) : null}
+                  </form>
+                ) : customerSession?.authenticated ? (
+                  <>
+                    <h2 className="text-xl font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
+                      {messages.commerce.leaveReview}
+                    </h2>
+                    <p className="mt-3 max-w-2xl text-sm leading-relaxed text-black/75">
+                      {messages.commerce.reviewsPurchaseRequired}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-xl font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
+                      {messages.commerce.leaveReview}
+                    </h2>
+                    <CustomerSignInForm
+                      description={messages.commerce.reviewsSignInCta}
+                      locale={locale}
+                      redirectTo={reviewRedirectPath}
+                      secondaryDescription={messages.commerce.reviewsSignUpCta}
+                      onSuccess={async (session) => {
+                        setReviewSubmitStatus(null);
+                        setCustomerSession(session);
+
+                        try {
+                          const nextReviewData =
+                            await fetchCustomerReviews(locale);
+                          setReviewableProducts(
+                            nextReviewData.reviewableProducts,
+                          );
+                        } catch {
+                          setReviewableProducts([]);
+                        }
+                      }}
+                    />
+                  </>
+                )}
+              </div>
+
+              <div className="mt-6 space-y-4">
+                {reviewsLoading ? (
+                  <p className="text-sm text-black/70">
+                    {messages.commerce.reviewsLoading}
+                  </p>
+                ) : null}
+                {!reviewsLoading && reviewsError ? (
+                  <p className="text-sm text-red-700">{reviewsError}</p>
+                ) : null}
+                {!reviewsLoading && !reviewsError
+                  ? reviews.map((review) => (
+                      <article
+                        key={review.id}
+                        className="border border-black/15 bg-white p-5"
+                      >
+                        <div className="flex flex-wrap items-center gap-3">
+                          {review.avatarSrc ? (
+                            <img
+                              src={review.avatarSrc}
+                              alt={review.author}
+                              className="h-9 w-9 border border-black/15 object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-9 w-9 items-center justify-center border border-black/15 bg-stone-100 text-xs font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
+                              {review.author.slice(0, 1)}
+                            </div>
+                          )}
+                          <p className="text-sm font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
+                            {review.author}
+                          </p>
+                          <p className="text-xs uppercase tracking-[0.08em] text-black/45">
+                            {"★".repeat(
+                              Math.max(0, Math.min(review.rating, 5)),
+                            )}
+                          </p>
+                          {review.verified ? (
+                            <p className="text-xs uppercase tracking-[0.08em] text-black/55">
+                              {messages.commerce.verifiedReview}
+                            </p>
+                          ) : null}
+                          {review.createdAt ? (
+                            <p className="ml-auto text-xs uppercase tracking-[0.08em] text-black/45">
+                              {new Intl.DateTimeFormat(getIntlLocale(locale), {
+                                day: "numeric",
+                                month: "long",
+                                year: "numeric",
+                              }).format(new Date(review.createdAt))}
+                            </p>
+                          ) : null}
+                        </div>
+                        <p className="mt-3 text-sm leading-relaxed text-[var(--kanna-ink)]">
+                          {review.body}
+                        </p>
+                      </article>
+                    ))
+                  : null}
+              </div>
+            </section>
+          )}
+        </section>
       </PageContainer>
     </PageShell>
   );

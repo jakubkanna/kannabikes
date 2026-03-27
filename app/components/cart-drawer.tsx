@@ -1,3 +1,4 @@
+import { Button, getButtonClassName } from "~/components/button";
 import { useEffect, useState } from "react";
 import { LocalizedLink } from "~/components/localized-link";
 import { useLocale, useMessages } from "~/components/locale-provider";
@@ -139,13 +140,15 @@ export function CartDrawer({
           <h2 className="text-lg font-semibold text-[var(--kanna-ink)]">
             {messages.cart.title}
           </h2>
-          <button
+          <Button
             type="button"
+            variant="secondary"
+            size="sm"
+            className="border-stone-300 px-3 py-1"
             onClick={onClose}
-            className="rounded-full border border-stone-300 px-3 py-1 text-sm font-semibold text-[var(--kanna-ink)] transition hover:border-[var(--kanna-ink)]"
           >
             {messages.cart.close}
-          </button>
+          </Button>
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 py-5">
@@ -238,7 +241,9 @@ export function CartDrawer({
             <LocalizedLink
               to="/checkout"
               onClick={onClose}
-              className="inline-flex flex-1 items-center justify-center bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black"
+              className={getButtonClassName({
+                className: "flex-1 px-4",
+              })}
             >
               {messages.cart.checkout}
             </LocalizedLink>

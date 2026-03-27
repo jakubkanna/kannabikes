@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { Button } from "~/components/button";
+import { Button, getButtonClassName } from "~/components/button";
 import type { Route } from "./+types/cart";
 import { LocalizedLink } from "~/components/localized-link";
 import { useLocale, useMessages } from "~/components/locale-provider";
@@ -174,7 +174,9 @@ export default function CartPage() {
                 </p>
                 <LocalizedLink
                   to="/checkout"
-                  className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-[var(--kanna-ink)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-black"
+                  className={getButtonClassName({
+                    className: "mt-6 w-full",
+                  })}
                 >
                   {messages.cart.checkout}
                 </LocalizedLink>
