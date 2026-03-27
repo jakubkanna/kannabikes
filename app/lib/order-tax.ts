@@ -6,7 +6,10 @@ function roundCurrency(value: number) {
   return Math.round(value * 100) / 100;
 }
 
-export function getInclusiveTaxBreakdown(grossAmount: number) {
+export function getInclusiveTaxBreakdown(
+  grossAmount: number,
+  locale: Locale = "en",
+) {
   const normalizedGrossAmount = Math.max(0, grossAmount);
   const taxAmount = roundCurrency(
     normalizedGrossAmount - normalizedGrossAmount / (1 + KANNA_VAT_RATE),
@@ -17,7 +20,7 @@ export function getInclusiveTaxBreakdown(grossAmount: number) {
     grossAmount: roundCurrency(normalizedGrossAmount),
     netAmount,
     taxAmount,
-    taxLabel: "VAT (23% included)",
+    taxLabel: locale === "pl" ? "VAT (w tym 23%)" : "VAT (23% included)",
   };
 }
 
@@ -31,7 +34,7 @@ export function formatOrderMoney(
   if (locale === "pl") {
     return new Intl.NumberFormat(getIntlLocale(locale), {
       style: "currency",
-      currency: "PLN",
+      currency: currency || "EUR",
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(normalizedAmount);

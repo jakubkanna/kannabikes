@@ -145,6 +145,81 @@ export const messages = {
       title: "Cart",
       vat: "VAT",
     },
+    orderPortal: {
+      accountActivationHint:
+        "Activate your Kanna Bikes account with email and password, or",
+      activateAccount: "Activate account",
+      activatingAccount: "Activating account...",
+      checkingAccount: "Checking your account...",
+      continueWithAccount: "Continue with your account",
+      invalidActivationLink: "This activation link is missing or invalid.",
+      loadError: "We could not load this order right now.",
+      loadingConfigurator: "Loading your bike configurator...",
+      measurementPreviewDescription:
+        "We will ask you to provide the necessary measurements to start the design process.",
+      measurementPreviewTitle: "Next: measurements",
+      missingSession: "A valid bike configurator session is required.",
+      passwordActivationNotice:
+        "Save it securely. You will need it to access the configurator and view your order status.",
+      prepareDepositError: "We could not prepare the deposit payment.",
+      prepareFinalPaymentError:
+        "We could not prepare the final payment.",
+      protectedOrder: "Protected order",
+      signInRequired: "Please sign in to access this order.",
+      submitMeasurementsError: "We could not submit the measurements.",
+      submitSpecificationError:
+        "We could not submit the bike specification.",
+      approveDesignError: "We could not approve the design.",
+      connectAccountError:
+        "We could not connect this order to your account.",
+      openSignedInAccountError:
+        "We could not open this order for the signed-in account.",
+      depositAgreementRequired:
+        "Accept the order agreement before continuing.",
+      depositSignInHint:
+        "Use the account section below to activate your account or sign in before continuing with the deposit.",
+      deposit: {
+        accountHolder: "Account holder",
+        amount: "Amount",
+        amountDueNow: "Deposit amount due now",
+        bankTransferDetails: "Bank transfer details",
+        classicBankTransfer: "Classic bank transfer",
+        classicTransfer: "Classic transfer",
+        depositAgreement:
+          "I accept the order agreement, deposit terms, and processing of my order data for this bike build. I understand that, once the bike enters production, the deposit becomes non-refundable.",
+        description:
+          "Book your place in the custom build queue. Once we receive the deposit, we will begin designing your dream bike.",
+        email: "Email",
+        firstName: "First name",
+        iban: "IBAN",
+        inReview: "In review",
+        inReviewDescription:
+          "We are reviewing your deposit and confirming that the payment has been received correctly. In the meantime, you can add the measurements required for the design process below.",
+        lastName: "Last name",
+        netAmount: "Net amount",
+        orderAgreement: "order agreement",
+        orderDetails: "Order details",
+        orderDetailsDescription:
+          "We will use this data to contact you about your order.",
+        orderSummary: "Order summary",
+        orderTitle: "Order title",
+        payDeposit: "Pay deposit",
+        paymentDate: "Payment date",
+        paymentMethod: "Payment method",
+        paymentOptions: "Payment options",
+        phoneNumber: "Phone number",
+        preparingPayment: "Preparing payment...",
+        received: "Received",
+        receivedDescription:
+          "Deposit has been confirmed. The order is secured and will continue through the remaining build stages.",
+        sectionPill: "Deposit",
+        swift: "SWIFT / BIC",
+        total: "Total",
+        transferTitle: "Transfer title",
+        waitingForDeposit: "Waiting for deposit",
+        customBuildFallback: "Custom Kanna Bike Build",
+      },
+    },
     checkout: {
       accountSignedInAs: "Signed in as",
       classicTransfer: "Classic bank transfer",
@@ -531,6 +606,86 @@ export const messages = {
       total: "Razem",
       title: "Koszyk",
       vat: "VAT",
+    },
+    orderPortal: {
+      accountActivationHint:
+        "Aktywuj konto Kanna Bikes przez e-mail i hasło albo",
+      activateAccount: "Aktywuj konto",
+      activatingAccount: "Aktywowanie konta...",
+      checkingAccount: "Sprawdzanie konta...",
+      continueWithAccount: "Kontynuuj na swoim koncie",
+      invalidActivationLink:
+        "Ten link aktywacyjny jest nieprawidłowy lub wygasł.",
+      loadError: "Nie udało się teraz załadować tego zamówienia.",
+      loadingConfigurator: "Ładowanie konfiguratora roweru...",
+      measurementPreviewDescription:
+        "Poprosimy Cię o podanie niezbędnych pomiarów, aby rozpocząć proces projektowy.",
+      measurementPreviewTitle: "Dalej: pomiary",
+      missingSession:
+        "Wymagana jest prawidłowa sesja konfiguratora roweru.",
+      passwordActivationNotice:
+        "Zapisz je bezpiecznie. Będzie potrzebne, aby uzyskać dostęp do konfiguratora i sprawdzać status zamówienia.",
+      prepareDepositError:
+        "Nie udało się przygotować płatności depozytu.",
+      prepareFinalPaymentError:
+        "Nie udało się przygotować płatności końcowej.",
+      protectedOrder: "Chronione zamówienie",
+      signInRequired: "Zaloguj się, aby uzyskać dostęp do tego zamówienia.",
+      submitMeasurementsError:
+        "Nie udało się wysłać pomiarów.",
+      submitSpecificationError:
+        "Nie udało się wysłać specyfikacji roweru.",
+      approveDesignError:
+        "Nie udało się zatwierdzić projektu.",
+      connectAccountError:
+        "Nie udało się połączyć tego zamówienia z Twoim kontem.",
+      openSignedInAccountError:
+        "Nie udało się otworzyć tego zamówienia dla zalogowanego konta.",
+      depositAgreementRequired:
+        "Zaakceptuj warunki zamówienia, aby kontynuować.",
+      depositSignInHint:
+        "Użyj sekcji konta poniżej, aby aktywować konto lub zalogować się przed opłaceniem depozytu.",
+      deposit: {
+        accountHolder: "Właściciel konta",
+        amount: "Kwota",
+        amountDueNow: "Kwota depozytu do zapłaty teraz",
+        bankTransferDetails: "Dane do przelewu",
+        classicBankTransfer: "Klasyczny przelew bankowy",
+        classicTransfer: "Przelew tradycyjny",
+        depositAgreement:
+          "Akceptuję warunki zamówienia, warunki depozytu oraz przetwarzanie moich danych dotyczących tego projektu roweru. Rozumiem, że po wejściu roweru do produkcji depozyt staje się bezzwrotny.",
+        description:
+          "Zarezerwuj miejsce w kolejce na rower na zamówienie. Gdy otrzymamy depozyt, rozpoczniemy projektowanie Twojego wymarzonego roweru.",
+        email: "E-mail",
+        firstName: "Imię",
+        iban: "IBAN",
+        inReview: "W weryfikacji",
+        inReviewDescription:
+          "Weryfikujemy Twój depozyt i potwierdzamy, że płatność została poprawnie otrzymana. W międzyczasie możesz dodać pomiary potrzebne do procesu projektowego.",
+        lastName: "Nazwisko",
+        netAmount: "Kwota netto",
+        orderAgreement: "warunki zamówienia",
+        orderDetails: "Szczegóły zamówienia",
+        orderDetailsDescription:
+          "Użyjemy tych danych, aby kontaktować się z Tobą w sprawie zamówienia.",
+        orderSummary: "Podsumowanie zamówienia",
+        orderTitle: "Tytuł zamówienia",
+        payDeposit: "Zapłać depozyt",
+        paymentDate: "Data płatności",
+        paymentMethod: "Metoda płatności",
+        paymentOptions: "Opcje płatności",
+        phoneNumber: "Numer telefonu",
+        preparingPayment: "Przygotowywanie płatności...",
+        received: "Otrzymano",
+        receivedDescription:
+          "Depozyt został potwierdzony. Zamówienie jest zabezpieczone i przejdzie przez kolejne etapy realizacji.",
+        sectionPill: "Depozyt",
+        swift: "SWIFT / BIC",
+        total: "Razem",
+        transferTitle: "Tytuł przelewu",
+        waitingForDeposit: "Oczekiwanie na depozyt",
+        customBuildFallback: "Rower Kanna Bikes na zamówienie",
+      },
     },
     checkout: {
       accountSignedInAs: "Zalogowano jako",

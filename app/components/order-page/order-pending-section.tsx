@@ -511,14 +511,14 @@ export function OrderProductionPreviewSection({
   const totalAmountBeforeDeposit = finalAmountValue + depositAmountValue;
   const totalWithShipping = finalAmountValue + shippingCost;
   const formattedPaymentDate = formatPaymentDate(finalPaymentPaidAt);
-  const balanceTaxSummary = getInclusiveTaxBreakdown(finalAmountValue);
+  const balanceTaxSummary = getInclusiveTaxBreakdown(finalAmountValue, locale);
   const shippingTaxSummary =
     effectiveShippingState?.shippingCost !== null &&
     effectiveShippingState?.shippingCost !== undefined
-      ? getInclusiveTaxBreakdown(effectiveShippingState.shippingCost)
+      ? getInclusiveTaxBreakdown(effectiveShippingState.shippingCost, locale)
       : null;
   const totalTaxSummary = hasShippingQuote
-    ? getInclusiveTaxBreakdown(totalWithShipping)
+    ? getInclusiveTaxBreakdown(totalWithShipping, locale)
     : null;
   const effectiveProductionStage =
     currentStage === "final_payment_in_review" &&

@@ -1,6 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
-import { useLocale } from "~/components/locale-provider";
+import { Button } from "~/components/button";
+import { CustomerSignInForm } from "~/components/customer-sign-in-form";
+import { useLocale, useMessages } from "~/components/locale-provider";
 import { InputField } from "~/components/form-field";
 import { PageShell } from "~/components/page-container";
 import { SectionPill } from "~/components/section-pill";
@@ -18,15 +20,20 @@ import {
   AnimatedOrderSection,
   ORDER_LAYOUT_TRANSITION,
 } from "~/components/order-page/order-motion";
+import { getGoogleAuthUrl } from "~/lib/auth";
+import {
+  fetchCustomerSession,
+  type CustomerSession,
+} from "~/lib/customer-account";
 import {
   approveDesign,
   claimOrderPortal,
+  claimOrderPortalFromAccount,
+  createOrderPortalSessionFromAccount,
   clearStoredPortalSession,
   fetchOrderPortalBuild,
   getStoredPortalSession,
-  loginOrderPortal,
   OrderPortalApiError,
-  requestOrderPortalPasswordReset,
   requestPaymentLink,
   requestShippingQuote,
   setStoredPortalSession,
@@ -41,7 +48,7 @@ import {
   type OrderStage,
   type StoredDepositPayment,
 } from "~/lib/mock-order";
-import { localizePath } from "~/lib/i18n";
+import { localizePath, type Locale } from "~/lib/i18n";
 import { formatOrderMoney } from "~/lib/order-tax";
 import { SITE_NAME } from "~/root";
 
@@ -72,27 +79,12 @@ function normalizeMeasurementValues(
   };
 }
 
-function validatePortalPasswordSetup(password: string, repeatPassword: string) {
-  const errors: {
-    password?: string;
-    repeatPassword?: string;
-  } = {};
-
-  if (password.trim().length < 8) {
-    errors.password = "Enter a password with at least 8 characters.";
-  }
-
-  if (repeatPassword.trim().length === 0) {
-    errors.repeatPassword = "Repeat your password.";
-  } else if (password !== repeatPassword) {
-    errors.repeatPassword = "Passwords do not match.";
-  }
-
-  return errors;
-}
-
 function getSessionStoragePaymentKey(orderNumber: string) {
   return `kanna-last-deposit-payment:${orderNumber}`;
+}
+
+function getPendingDepositPaymentKey(orderNumber: string) {
+  return `kanna-pending-deposit-payment:${orderNumber}`;
 }
 
 function getStoredLastDepositPayment(
@@ -140,6 +132,181 @@ function setStoredLastDepositPayment(
   );
 }
 
+function getPendingDepositPaymentMethod(orderNumber: string) {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const stored = window.sessionStorage.getItem(
+    getPendingDepositPaymentKey(orderNumber),
+  );
+
+  return stored === "stripe" || stored === "classic_transfer" ? stored : null;
+}
+
+function setPendingDepositPaymentMethod(
+  orderNumber: string,
+  paymentMethod: DepositPaymentMethod,
+) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.sessionStorage.setItem(
+    getPendingDepositPaymentKey(orderNumber),
+    paymentMethod,
+  );
+}
+
+function clearPendingDepositPaymentMethod(orderNumber: string) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.sessionStorage.removeItem(getPendingDepositPaymentKey(orderNumber));
+}
+
+type OrderAccountAccessProps = {
+  customer: OrderPortalPayload["customer"] | null;
+  errorMessage: string | null;
+  isLoadingSession: boolean;
+  isSubmittingActivation: boolean;
+  locale: Locale;
+  onSignInSuccess: (session: CustomerSession) => void | Promise<void>;
+  onActivate: (payload: { password: string; confirmPassword: string }) => void;
+  password: string;
+  passwordConfirm: string;
+  redirectTo: string;
+  setPassword: (value: string) => void;
+  setPasswordConfirm: (value: string) => void;
+};
+
+function OrderAccountAccess({
+  customer,
+  errorMessage,
+  isLoadingSession,
+  isSubmittingActivation,
+  locale,
+  onSignInSuccess,
+  onActivate,
+  password,
+  passwordConfirm,
+  redirectTo,
+  setPassword,
+  setPasswordConfirm,
+}: OrderAccountAccessProps) {
+  const messages = useMessages();
+  const accountMessages = messages.account;
+  const orderMessages = messages.orderPortal;
+  const accountActivated = customer?.accountActivated ?? true;
+  const googleAuthUrl = useMemo(
+    () =>
+      getGoogleAuthUrl({
+        intent: accountActivated ? "sign-in" : "sign-up",
+        locale,
+        redirectTo,
+      }),
+    [accountActivated, locale, redirectTo],
+  );
+  const effectiveTitle = accountActivated
+    ? orderMessages.continueWithAccount
+    : orderMessages.activateAccount;
+
+  return (
+    <div>
+      <h2 className="mt-2 text-xl font-semibold text-gray-900">
+        {effectiveTitle}
+      </h2>
+
+      {isLoadingSession ? (
+        <p className="mt-5 text-sm text-gray-600">
+          {orderMessages.checkingAccount}
+        </p>
+      ) : accountActivated ? (
+        <div className="mt-5 max-w-2xl">
+          <CustomerSignInForm
+            initialLoginValue={customer?.email ?? ""}
+            locale={locale}
+            showSignUpPrompt={false}
+            onSuccess={onSignInSuccess}
+            redirectTo={redirectTo}
+          />
+          {errorMessage ? (
+            <p className="mt-4 text-sm text-red-600">{errorMessage}</p>
+          ) : null}
+        </div>
+      ) : (
+        <div className="mt-5 max-w-2xl">
+          <p className="text-sm leading-6 text-gray-600">
+            {orderMessages.accountActivationHint}{" "}
+            <a
+              href={googleAuthUrl ?? "#"}
+              className="font-semibold underline underline-offset-2 transition hover:text-black"
+            >
+              {accountMessages.continueWithGoogle}
+            </a>
+          </p>
+
+          <div className="mt-5 grid gap-4 sm:grid-cols-2">
+            <label className="block">
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
+                {accountMessages.passwordLabel}
+              </span>
+              <InputField
+                autoComplete="new-password"
+                minLength={8}
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.currentTarget.value)}
+              />
+            </label>
+            <label className="block">
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
+                {accountMessages.confirmPasswordLabel}
+              </span>
+              <InputField
+                autoComplete="new-password"
+                minLength={8}
+                type="password"
+                value={passwordConfirm}
+                onChange={(event) =>
+                  setPasswordConfirm(event.currentTarget.value)
+                }
+              />
+            </label>
+          </div>
+
+          <p className="mt-3 text-xs leading-5 text-gray-600">
+            {orderMessages.passwordActivationNotice}
+          </p>
+
+          {errorMessage ? (
+            <p className="mt-4 text-sm text-red-600">{errorMessage}</p>
+          ) : null}
+
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Button
+              type="button"
+              size="sm"
+              disabled={isSubmittingActivation}
+              onClick={() =>
+                onActivate({
+                  confirmPassword: passwordConfirm,
+                  password,
+                })
+              }
+            >
+              {isSubmittingActivation
+                ? orderMessages.activatingAccount
+                : orderMessages.activateAccount}
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function OrderPage({
   claimToken,
   orderNumber,
@@ -148,6 +315,8 @@ export function OrderPage({
   orderNumber: string;
 }) {
   const locale = useLocale();
+  const messages = useMessages();
+  const orderMessages = messages.orderPortal;
   const productionSectionRef = useRef<HTMLDivElement | null>(null);
   const shouldScrollToProductionRef = useRef(false);
   const [agreementAccepted, setAgreementAccepted] = useState(false);
@@ -165,11 +334,22 @@ export function OrderPage({
   const [isSubmittingFinalPayment, setIsSubmittingFinalPayment] =
     useState(false);
   const [isApprovingDesign, setIsApprovingDesign] = useState(false);
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isLoadingCustomerSession, setIsLoadingCustomerSession] =
+    useState(true);
+  const [isResolvingAccountAccess, setIsResolvingAccountAccess] =
+    useState(false);
+  const [isSubmittingAccountActivation, setIsSubmittingAccountActivation] =
+    useState(false);
   const [measurementArrowsSvgMarkup, setMeasurementArrowsSvgMarkup] =
     useState("");
-  const [loginError, setLoginError] = useState<string | null>(null);
-  const [loginPassword, setLoginPassword] = useState("");
+  const [accountAccessError, setAccountAccessError] = useState<string | null>(
+    null,
+  );
+  const [accountPassword, setAccountPassword] = useState("");
+  const [accountPasswordConfirm, setAccountPasswordConfirm] = useState("");
+  const [customerSession, setCustomerSession] = useState<CustomerSession | null>(
+    null,
+  );
   const [orderError, setOrderError] = useState<string | null>(null);
   const [depositClaimError, setDepositClaimError] = useState<string | null>(
     null,
@@ -182,14 +362,16 @@ export function OrderPage({
     getStoredPortalSession(orderNumber),
   );
   const [isLoadingBuild, setIsLoadingBuild] = useState(true);
-  const [isSendingPasswordReset, setIsSendingPasswordReset] = useState(false);
-  const [isClaimingAccess, setIsClaimingAccess] = useState(false);
   const [depositPayment, setDepositPayment] =
     useState<StoredDepositPayment | null>(() =>
       getStoredLastDepositPayment(orderNumber),
     );
-  const [passwordResetNotice, setPasswordResetNotice] = useState<string | null>(
-    null,
+  const [pendingDepositPaymentMethod, setPendingDepositPaymentMethodState] =
+    useState<DepositPaymentMethod | null>(() =>
+      getPendingDepositPaymentMethod(orderNumber),
+    );
+  const autoAccessAttemptedRef = useRef<Set<string>>(
+    new Set<string>(),
   );
   const [bikeSpecification, setBikeSpecification] = useState<
     Record<string, string>
@@ -207,13 +389,6 @@ export function OrderPage({
     E: "",
     F: "",
   });
-  const [claimPassword, setClaimPassword] = useState("");
-  const [claimRepeatPassword, setClaimRepeatPassword] = useState("");
-  const [claimPasswordTouched, setClaimPasswordTouched] = useState(false);
-  const [claimRepeatPasswordTouched, setClaimRepeatPasswordTouched] =
-    useState(false);
-  const [showClaimPasswordValidation, setShowClaimPasswordValidation] =
-    useState(false);
 
   const activateMeasurement = (key: MeasurementKey) => {
     setActiveMeasurement(key);
@@ -257,26 +432,48 @@ export function OrderPage({
   const headerDisplayStatus =
     portalBuild?.displayStatus ?? getWooDisplayStatus(orderStage);
   const showHeaderStatus = portalBuild?.accessState === "authenticated";
-  const requiresPasswordReset =
-    portalBuild?.accessState === "claim_required" && portalBuild.portalClaimed;
-  const claimPasswordErrors = validatePortalPasswordSetup(
-    claimPassword,
-    claimRepeatPassword,
-  );
-  const claimPasswordFieldError =
-    (showClaimPasswordValidation || claimPasswordTouched
-      ? claimPasswordErrors.password
-      : undefined) ??
-    depositClaimError ??
-    undefined;
-  const claimRepeatPasswordFieldError =
-    showClaimPasswordValidation || claimRepeatPasswordTouched
-      ? claimPasswordErrors.repeatPassword
-      : undefined;
+  const orderPath = localizePath(`/order/${orderNumber}`, locale);
+  const orderRedirectPath = claimToken
+    ? `${orderPath}?claim_token=${encodeURIComponent(claimToken)}`
+    : orderPath;
 
   useEffect(() => {
-    document.title = `${SITE_NAME} – Order ${orderNumber}`;
+    document.title = `${SITE_NAME} – ${messages.meta.order.title} ${orderNumber}`;
+  }, [messages.meta.order.title, orderNumber]);
+
+  useEffect(() => {
+    autoAccessAttemptedRef.current = new Set<string>();
   }, [orderNumber]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadCustomerSession = async () => {
+      setIsLoadingCustomerSession(true);
+
+      try {
+        const session = await fetchCustomerSession(locale);
+
+        if (!cancelled) {
+          setCustomerSession(session);
+        }
+      } catch {
+        if (!cancelled) {
+          setCustomerSession(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoadingCustomerSession(false);
+        }
+      }
+    };
+
+    void loadCustomerSession();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [locale]);
 
   useEffect(() => {
     let cancelled = false;
@@ -377,7 +574,7 @@ export function OrderPage({
 
         if (!cancelled) {
           setRequiresLogin(false);
-          setLoginError(null);
+          setAccountAccessError(null);
           setPortalBuild(build);
         }
       } catch (error) {
@@ -407,7 +604,7 @@ export function OrderPage({
           setOrderError(
             error instanceof Error
               ? error.message
-              : "We could not load this order right now.",
+              : orderMessages.loadError,
           );
         }
       } finally {
@@ -424,6 +621,171 @@ export function OrderPage({
     };
   }, [claimToken, orderNumber, sessionToken]);
 
+  const applyPortalSession = (
+    payload: { build: OrderPortalPayload; sessionToken: string },
+    options?: { clearClaimToken?: boolean },
+  ) => {
+    setSessionToken(payload.sessionToken);
+    setStoredPortalSession(orderNumber, payload.sessionToken);
+    setPortalBuild(payload.build);
+    setRequiresLogin(false);
+    setDepositClaimError(null);
+    setAccountAccessError(null);
+
+    if (options?.clearClaimToken) {
+      window.history.replaceState({}, document.title, orderPath);
+    }
+  };
+
+  const clearPendingDepositIntent = () => {
+    clearPendingDepositPaymentMethod(orderNumber);
+    setPendingDepositPaymentMethodState(null);
+  };
+
+  const storePendingDepositIntent = (paymentMethod: DepositPaymentMethod) => {
+    setPendingDepositPaymentMethod(orderNumber, paymentMethod);
+    setPendingDepositPaymentMethodState(paymentMethod);
+  };
+
+  const continueDepositPayment = async ({
+    build,
+    paymentMethod,
+    portalSessionToken,
+  }: {
+    build: OrderPortalPayload;
+    paymentMethod: DepositPaymentMethod;
+    portalSessionToken: string;
+  }) => {
+    const response = await requestPaymentLink({
+      paymentKind: "deposit",
+      paymentMethod,
+      publicOrderNumber: orderNumber,
+      sessionToken: portalSessionToken,
+    });
+
+    const nextPayment: StoredDepositPayment = {
+      amount: build.deposit.amount,
+      paidAt: new Date().toISOString(),
+      paymentMethod,
+    };
+
+    setPortalBuild(response.build);
+    setDepositPayment(nextPayment);
+    setStoredLastDepositPayment(orderNumber, nextPayment);
+    clearPendingDepositIntent();
+    window.location.assign(response.paymentUrl);
+  };
+
+  const bridgeCustomerSessionToOrder = async ({
+    clearClaimToken = false,
+    mode,
+    session,
+  }: {
+    clearClaimToken?: boolean;
+    mode: "claim" | "session";
+    session: CustomerSession;
+  }) => {
+    if (!session.authenticated || !session.csrfToken) {
+      throw new Error(orderMessages.signInRequired);
+    }
+
+    setIsResolvingAccountAccess(true);
+
+    try {
+      const payload =
+        mode === "claim" && claimToken
+          ? await claimOrderPortalFromAccount({
+              claimToken,
+              csrfToken: session.csrfToken,
+              publicOrderNumber: orderNumber,
+            })
+          : await createOrderPortalSessionFromAccount({
+              csrfToken: session.csrfToken,
+              publicOrderNumber: orderNumber,
+            });
+
+      applyPortalSession(payload, { clearClaimToken });
+
+      if (
+        pendingDepositPaymentMethod &&
+        payload.build.stage === "waiting_for_deposit"
+      ) {
+        await continueDepositPayment({
+          build: payload.build,
+          paymentMethod: pendingDepositPaymentMethod,
+          portalSessionToken: payload.sessionToken,
+        });
+      } else if (pendingDepositPaymentMethod) {
+        clearPendingDepositIntent();
+      }
+
+      return payload;
+    } finally {
+      setIsResolvingAccountAccess(false);
+    }
+  };
+
+  useEffect(() => {
+    if (
+      !customerSession?.authenticated ||
+      !customerSession.csrfToken ||
+      !portalBuild ||
+      portalBuild.accessState !== "claim_required" ||
+      !claimToken
+    ) {
+      return;
+    }
+
+    const attemptKey = `claim:${orderNumber}:${customerSession.user?.id ?? 0}:${claimToken}`;
+
+    if (autoAccessAttemptedRef.current.has(attemptKey)) {
+      return;
+    }
+
+    autoAccessAttemptedRef.current.add(attemptKey);
+
+    void bridgeCustomerSessionToOrder({
+      clearClaimToken: true,
+      mode: "claim",
+      session: customerSession,
+    }).catch((error) => {
+      setDepositClaimError(
+        error instanceof Error
+          ? error.message
+          : orderMessages.connectAccountError,
+      );
+    });
+  }, [claimToken, customerSession, orderMessages.connectAccountError, orderNumber, portalBuild]);
+
+  useEffect(() => {
+    if (
+      !requiresLogin ||
+      !customerSession?.authenticated ||
+      !customerSession.csrfToken
+    ) {
+      return;
+    }
+
+    const attemptKey = `session:${orderNumber}:${customerSession.user?.id ?? 0}`;
+
+    if (autoAccessAttemptedRef.current.has(attemptKey)) {
+      return;
+    }
+
+    autoAccessAttemptedRef.current.add(attemptKey);
+
+    void bridgeCustomerSessionToOrder({
+      mode: "session",
+      session: customerSession,
+    }).catch((error) => {
+      setAccountAccessError(
+        error instanceof Error
+          ? error.message
+          : orderMessages.openSignedInAccountError,
+      );
+    });
+  }, [customerSession, orderMessages.openSignedInAccountError, orderNumber, requiresLogin]);
+
   const handleMeasurementChange = (key: string, value: string) => {
     activateMeasurement(key as MeasurementKey);
     setValues((prev) => ({ ...prev, [key]: value }));
@@ -436,10 +798,8 @@ export function OrderPage({
   };
 
   const handlePayDeposit = async ({
-    password,
     paymentMethod,
   }: {
-    password: string;
     paymentMethod: DepositPaymentMethod;
   }) => {
     if (!portalBuild) {
@@ -450,86 +810,58 @@ export function OrderPage({
     setIsProcessingPayment(true);
     setOrderError(null);
 
-    let activeSessionToken = sessionToken;
-    let currentBuild = portalBuild;
+    try {
+      if (portalBuild.accessState === "claim_required") {
+        if (!agreementAccepted) {
+          throw new Error(orderMessages.depositAgreementRequired);
+        }
 
-    if (portalBuild.accessState === "claim_required") {
-      try {
-        const claimed = await claimPortalAccess(password);
-        activeSessionToken = claimed.sessionToken;
-        currentBuild = claimed.build;
-      } catch (error) {
-        setDepositClaimError(
-          error instanceof Error
-            ? error.message
-            : "We could not verify your password.",
-        );
-        setIsProcessingPayment(false);
+        storePendingDepositIntent(paymentMethod);
+
+        if (!customerSession?.authenticated || !customerSession.csrfToken) {
+          setDepositClaimError(
+            orderMessages.depositSignInHint,
+          );
+          return;
+        }
+
+        const claimed = await bridgeCustomerSessionToOrder({
+          clearClaimToken: true,
+          mode: "claim",
+          session: customerSession,
+        });
+
+        await continueDepositPayment({
+          build: claimed.build,
+          paymentMethod,
+          portalSessionToken: claimed.sessionToken,
+        });
         return;
       }
-    }
 
-    try {
-      if (!activeSessionToken) {
-        throw new Error("A valid bike configurator session is required.");
+      if (!sessionToken) {
+        throw new Error(orderMessages.missingSession);
       }
 
-      const response = await requestPaymentLink({
-        paymentKind: "deposit",
+      await continueDepositPayment({
+        build: portalBuild,
         paymentMethod,
-        publicOrderNumber: orderNumber,
-        sessionToken: activeSessionToken,
+        portalSessionToken: sessionToken,
       });
-
-      const nextPayment: StoredDepositPayment = {
-        amount: currentBuild.deposit.amount,
-        paidAt: new Date().toISOString(),
-        paymentMethod,
-      };
-
-      setPortalBuild(response.build);
-      setDepositPayment(nextPayment);
-      setStoredLastDepositPayment(orderNumber, nextPayment);
-      window.location.assign(response.paymentUrl);
     } catch (error) {
       setOrderError(
         error instanceof Error
           ? error.message
-          : "We could not prepare the deposit payment.",
+          : orderMessages.prepareDepositError,
       );
     } finally {
       setIsProcessingPayment(false);
     }
   };
 
-  const claimPortalAccess = async (password: string) => {
-    if (!claimToken) {
-      throw new Error("The claim token is missing.");
-    }
-
-    const claimed = await claimOrderPortal({
-      claimToken,
-      password,
-      publicOrderNumber: orderNumber,
-    });
-
-    setSessionToken(claimed.sessionToken);
-    setStoredPortalSession(orderNumber, claimed.sessionToken);
-    setPortalBuild(claimed.build);
-    setRequiresLogin(false);
-    setDepositClaimError(null);
-    window.history.replaceState(
-      {},
-      document.title,
-      localizePath(`/order/${orderNumber}`, locale),
-    );
-
-    return claimed;
-  };
-
   const handleSubmitMeasurements = async () => {
     if (!sessionToken) {
-      setOrderError("A valid bike configurator session is required.");
+      setOrderError(orderMessages.missingSession);
       return;
     }
 
@@ -549,7 +881,7 @@ export function OrderPage({
       setOrderError(
         error instanceof Error
           ? error.message
-          : "We could not submit the measurements.",
+          : orderMessages.submitMeasurementsError,
       );
     } finally {
       setIsSubmittingMeasurements(false);
@@ -562,7 +894,7 @@ export function OrderPage({
 
   const handleSubmitSpecification = async () => {
     if (!sessionToken || !specificationMode) {
-      setOrderError("A valid bike configurator session is required.");
+      setOrderError(orderMessages.missingSession);
       return;
     }
 
@@ -583,7 +915,7 @@ export function OrderPage({
       setOrderError(
         error instanceof Error
           ? error.message
-          : "We could not submit the bike specification.",
+          : orderMessages.submitSpecificationError,
       );
     } finally {
       setIsSubmittingSpecification(false);
@@ -592,7 +924,7 @@ export function OrderPage({
 
   const handleApproveDesign = async () => {
     if (!sessionToken) {
-      setOrderError("A valid bike configurator session is required.");
+      setOrderError(orderMessages.missingSession);
       return;
     }
 
@@ -610,7 +942,7 @@ export function OrderPage({
       setOrderError(
         error instanceof Error
           ? error.message
-          : "We could not approve the design.",
+          : orderMessages.approveDesignError,
       );
     } finally {
       setIsApprovingDesign(false);
@@ -622,7 +954,7 @@ export function OrderPage({
     option: "courier" | "pickup";
   }) => {
     if (!sessionToken) {
-      throw new Error("A valid bike configurator session is required.");
+      throw new Error(orderMessages.missingSession);
     }
 
     const response = await requestShippingQuote({
@@ -649,7 +981,7 @@ export function OrderPage({
     option: "courier" | "pickup";
   }) => {
     if (!sessionToken) {
-      setOrderError("A valid bike configurator session is required.");
+      setOrderError(orderMessages.missingSession);
       return;
     }
 
@@ -670,7 +1002,7 @@ export function OrderPage({
       setOrderError(
         error instanceof Error
           ? error.message
-          : "We could not prepare the final payment.",
+          : orderMessages.prepareFinalPaymentError,
       );
     } finally {
       setIsSubmittingFinalPayment(false);
@@ -683,87 +1015,112 @@ export function OrderPage({
     setSpecificationMode(mode);
   };
 
-  const handlePortalLogin = async () => {
-    if (loginPassword.trim().length < 8) {
-      setLoginError("Enter the password you created for this order.");
-      return;
-    }
-
-    setIsLoggingIn(true);
-    setLoginError(null);
-    setOrderError(null);
-
-    try {
-      const loggedIn = await loginOrderPortal({
-        password: loginPassword,
-        publicOrderNumber: orderNumber,
-      });
-
-      setSessionToken(loggedIn.sessionToken);
-      setStoredPortalSession(orderNumber, loggedIn.sessionToken);
-      setPortalBuild(loggedIn.build);
-      setRequiresLogin(false);
-      setLoginPassword("");
-    } catch (error) {
-      setLoginError(
-        error instanceof Error
-          ? error.message
-          : "We could not unlock this order right now.",
-      );
-    } finally {
-      setIsLoggingIn(false);
-    }
-  };
-
-  const handleForgotPassword = async () => {
-    setIsSendingPasswordReset(true);
-    setLoginError(null);
-    setPasswordResetNotice(null);
-
-    try {
-      const response = await requestOrderPortalPasswordReset({
-        publicOrderNumber: orderNumber,
-      });
-      setPasswordResetNotice(response.message);
-    } catch (error) {
-      setLoginError(
-        error instanceof Error
-          ? error.message
-          : "We could not send a password reset link right now.",
-      );
-    } finally {
-      setIsSendingPasswordReset(false);
-    }
-  };
-
-  const handleClaimAccess = async () => {
-    setShowClaimPasswordValidation(true);
-
-    if (Object.keys(claimPasswordErrors).length > 0) {
-      return;
-    }
-
-    setIsClaimingAccess(true);
+  const handleOrderAccountSession = async (session: CustomerSession) => {
+    setCustomerSession(session);
+    setAccountAccessError(null);
     setDepositClaimError(null);
     setOrderError(null);
 
     try {
-      await claimPortalAccess(claimPassword);
-      setClaimPassword("");
-      setClaimRepeatPassword("");
-      setClaimPasswordTouched(false);
-      setClaimRepeatPasswordTouched(false);
-      setShowClaimPasswordValidation(false);
+      if (portalBuild?.accessState === "claim_required" && claimToken) {
+        await bridgeCustomerSessionToOrder({
+          clearClaimToken: true,
+          mode: "claim",
+          session,
+        });
+        return;
+      }
+
+      if (requiresLogin) {
+        await bridgeCustomerSessionToOrder({
+          mode: "session",
+          session,
+        });
+      }
     } catch (error) {
-      setDepositClaimError(
+      setAccountAccessError(
         error instanceof Error
           ? error.message
-          : "We could not reset your password right now.",
+          : orderMessages.connectAccountError,
       );
-    } finally {
-      setIsClaimingAccess(false);
     }
   };
+
+  const handleOrderAccountActivation = async ({
+    confirmPassword,
+    password,
+  }: {
+    confirmPassword: string;
+    password: string;
+  }) => {
+    if (!portalBuild) {
+      return;
+    }
+
+    setAccountAccessError(null);
+
+    if (!claimToken) {
+      setAccountAccessError(orderMessages.invalidActivationLink);
+      return;
+    }
+
+    if (password.length < 8) {
+      setAccountAccessError(messages.account.passwordMinLength);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setAccountAccessError(messages.account.passwordMismatch);
+      return;
+    }
+
+    setIsSubmittingAccountActivation(true);
+
+    try {
+      const claimed = await claimOrderPortal({
+        claimToken,
+        password,
+        publicOrderNumber: orderNumber,
+      });
+
+      setAccountPassword("");
+      setAccountPasswordConfirm("");
+      applyPortalSession(claimed, { clearClaimToken: true });
+
+      if (pendingDepositPaymentMethod) {
+        await continueDepositPayment({
+          build: claimed.build,
+          paymentMethod: pendingDepositPaymentMethod,
+          portalSessionToken: claimed.sessionToken,
+        });
+      }
+    } catch (error) {
+      setAccountAccessError(
+        error instanceof Error
+          ? error.message
+          : messages.account.signUpError,
+      );
+    } finally {
+      setIsSubmittingAccountActivation(false);
+    }
+  };
+
+  const orderAccessContent = (
+    <OrderAccountAccess
+      customer={portalBuild?.customer ?? null}
+      errorMessage={accountAccessError}
+      isLoadingSession={isLoadingCustomerSession || isResolvingAccountAccess}
+      isSubmittingActivation={isSubmittingAccountActivation}
+      locale={locale}
+      onSignInSuccess={handleOrderAccountSession}
+      onActivate={handleOrderAccountActivation}
+      password={accountPassword}
+      passwordConfirm={accountPasswordConfirm}
+      redirectTo={orderRedirectPath}
+      setPassword={setAccountPassword}
+      setPasswordConfirm={setAccountPasswordConfirm}
+    />
+  );
 
   return (
     <PageShell>
@@ -776,7 +1133,7 @@ export function OrderPage({
           >
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>
-                <SectionPill>Order</SectionPill>
+                <SectionPill>{messages.meta.order.title}</SectionPill>
                 <h1 className="page-heading mt-4 text-[2.35rem] leading-[0.88] text-[var(--kanna-ink)] md:text-[3.8rem]">
                   {`${orderNumber}`}
                 </h1>
@@ -807,7 +1164,7 @@ export function OrderPage({
                 className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm"
               >
                 <p className="text-sm text-gray-600">
-                  Loading your bike configurator...
+                  {orderMessages.loadingConfigurator}
                 </p>
               </AnimatedOrderSection>
             ) : null}
@@ -820,133 +1177,14 @@ export function OrderPage({
                 className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm"
               >
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-500">
-                  Protected order
+                  {orderMessages.protectedOrder}
                 </p>
-                <h2 className="mt-2 text-xl font-semibold text-gray-900">
-                  Enter your order password
-                </h2>
-                <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">
-                  This order page is protected with the password created during
-                  the deposit step.
-                </p>
-                <div className="mt-5 max-w-md">
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-gray-700">
-                      Password
-                    </span>
-                    <InputField
-                      type="password"
-                      value={loginPassword}
-                      onChange={(event) => setLoginPassword(event.target.value)}
-                      placeholder="Enter your order password"
-                      hasError={Boolean(loginError)}
-                      className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
-                    />
-                  </label>
-                  {loginError ? (
-                    <p className="mt-3 text-sm text-red-600">{loginError}</p>
-                  ) : null}
-                  {passwordResetNotice ? (
-                    <p className="mt-3 text-sm text-emerald-700">
-                      {passwordResetNotice}
-                    </p>
-                  ) : null}
-                  <button
-                    type="button"
-                    onClick={handlePortalLogin}
-                    disabled={isLoggingIn}
-                    className="mt-4 inline-flex items-center justify-center rounded-md bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:bg-stone-300"
-                  >
-                    {isLoggingIn ? "Unlocking..." : "Access"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleForgotPassword}
-                    disabled={isSendingPasswordReset}
-                    className="mt-4 ml-4 inline-flex items-center justify-center text-sm font-medium text-gray-700 underline decoration-gray-300 underline-offset-4 transition hover:text-gray-900 disabled:cursor-not-allowed disabled:text-gray-400"
-                  >
-                    {isSendingPasswordReset
-                      ? "Sending reset link..."
-                      : "Forgot password?"}
-                  </button>
-                </div>
+                {orderAccessContent}
               </AnimatedOrderSection>
             ) : null}
           </AnimatePresence>
 
-          <AnimatePresence initial={false} mode="popLayout">
-            {!isLoadingBuild && requiresPasswordReset ? (
-              <AnimatedOrderSection
-                key="order-password-reset"
-                className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm"
-              >
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-500">
-                  Reset password
-                </p>
-                <h2 className="mt-2 text-xl font-semibold text-gray-900">
-                  Create a new order password
-                </h2>
-                <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">
-                  Use this secure link to set a new password and access your
-                  order page again.
-                </p>
-                <div className="mt-5 max-w-md space-y-4">
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-gray-700">
-                      New password
-                    </span>
-                    <InputField
-                      type="password"
-                      value={claimPassword}
-                      onBlur={() => setClaimPasswordTouched(true)}
-                      onChange={(event) => setClaimPassword(event.target.value)}
-                      placeholder="Enter a new password"
-                      hasError={Boolean(claimPasswordFieldError)}
-                      className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
-                    />
-                    {claimPasswordFieldError ? (
-                      <p className="mt-2 text-sm text-red-600">
-                        {claimPasswordFieldError}
-                      </p>
-                    ) : null}
-                  </label>
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-gray-700">
-                      Repeat new password
-                    </span>
-                    <InputField
-                      type="password"
-                      value={claimRepeatPassword}
-                      onBlur={() => setClaimRepeatPasswordTouched(true)}
-                      onChange={(event) =>
-                        setClaimRepeatPassword(event.target.value)
-                      }
-                      placeholder="Repeat your new password"
-                      hasError={Boolean(claimRepeatPasswordFieldError)}
-                      className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
-                    />
-                    {claimRepeatPasswordFieldError ? (
-                      <p className="mt-2 text-sm text-red-600">
-                        {claimRepeatPasswordFieldError}
-                      </p>
-                    ) : null}
-                  </label>
-                  <button
-                    type="button"
-                    onClick={handleClaimAccess}
-                    disabled={isClaimingAccess}
-                    className="inline-flex items-center justify-center rounded-md bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:bg-stone-300"
-                  >
-                    {isClaimingAccess
-                      ? "Saving..."
-                      : "Save password and access"}
-                  </button>
-                </div>
-              </AnimatedOrderSection>
-            ) : null}
-          </AnimatePresence>
-
-          {portalBuild && !requiresPasswordReset ? (
+          {portalBuild ? (
             <>
               <OrderDepositSection
                 agreementAccepted={agreementAccepted}
@@ -966,9 +1204,9 @@ export function OrderPage({
                 isDepositConfirmed={isDepositConfirmed}
                 isProcessingPayment={isProcessingPayment}
                 onAgreementChange={setAgreementAccepted}
-                onClaimErrorChange={setDepositClaimError}
                 orderNumber={orderNumber}
                 onPayDeposit={handlePayDeposit}
+                orderAccessContent={orderAccessContent}
                 requiresClaim={portalBuild.accessState === "claim_required"}
               />
 
@@ -999,9 +1237,9 @@ export function OrderPage({
                 ) : (
                   <OrderPendingSection
                     key="order-measurements-pending"
-                    title="Next: measurements"
+                    title={orderMessages.measurementPreviewTitle}
                     titleStyle="eyebrow"
-                    description="We will ask you to provide the necessary measurements to start the design process."
+                    description={orderMessages.measurementPreviewDescription}
                   />
                 )}
               </AnimatePresence>

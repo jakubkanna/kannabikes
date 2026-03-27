@@ -195,6 +195,7 @@ export async function registerCustomerAccount(payload: CustomerRegistrationPaylo
   return customerAccountRequest<{
     account_paths: CustomerAccountPaths;
     authenticated: boolean;
+    csrfToken: string;
     google_connected: boolean;
     success: boolean;
     user: CustomerUser;

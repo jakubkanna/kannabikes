@@ -68,7 +68,7 @@ export default function PreOrderPage() {
         <div className="mt-12 flex flex-wrap gap-4">
           <LocalizedLink
             to="/contact"
-            className="inline-flex rounded-full bg-[var(--kanna-ink)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-black"
+            className="inline-flex min-h-12 items-center justify-center rounded-none bg-[var(--kanna-ink)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-black"
           >
             {messages.pages.preOrder.contact}
           </LocalizedLink>

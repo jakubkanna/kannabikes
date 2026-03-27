@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { Button } from "~/components/button";
 import { InputField } from "~/components/form-field";
 import { GoogleAuthButton } from "~/components/google-auth-button";
@@ -10,31 +10,39 @@ import type { Locale } from "~/lib/i18n";
 
 type CustomerSignInFormProps = {
   description?: ReactNode;
+  initialLoginValue?: string;
   locale: Locale;
   onRequestSignUp?: () => void;
   onSuccess?: (session: CustomerSession) => void | Promise<void>;
   redirectTo?: string | null;
   secondaryDescription?: ReactNode;
+  showSignUpPrompt?: boolean;
   title?: ReactNode;
   variant?: "inline" | "page";
 };
 
 export function CustomerSignInForm({
   description,
+  initialLoginValue = "",
   locale,
   onRequestSignUp,
   onSuccess,
   redirectTo,
   secondaryDescription,
+  showSignUpPrompt = true,
   title,
   variant = "inline",
 }: CustomerSignInFormProps) {
   const messages = useMessages();
-  const [loginValue, setLoginValue] = useState("");
+  const [loginValue, setLoginValue] = useState(initialLoginValue);
   const [passwordValue, setPasswordValue] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const isPageVariant = variant === "page";
+
+  useEffect(() => {
+    setLoginValue(initialLoginValue);
+  }, [initialLoginValue]);
 
   const forgotPasswordPath = useMemo(
     () =>
@@ -203,25 +211,27 @@ export function CustomerSignInForm({
           {messages.account.continueWithGoogle}
         </GoogleAuthButton>
 
-        <p className={isPageVariant ? "mt-10 text-sm text-[var(--kanna-ink)]" : "text-sm text-[var(--kanna-ink)]"}>
-          {messages.account.joinPrompt}{" "}
-          {onRequestSignUp ? (
-            <button
-              type="button"
-              onClick={onRequestSignUp}
-              className="font-semibold underline underline-offset-2 transition hover:text-black"
-            >
-              {messages.account.signUpTitle}
-            </button>
-          ) : (
-            <LocalizedLink
-              to={signUpPath}
-              className="font-semibold underline underline-offset-2 transition hover:text-black"
-            >
-              {messages.account.signUpTitle}
-            </LocalizedLink>
-          )}
-        </p>
+        {showSignUpPrompt ? (
+          <p className={isPageVariant ? "mt-10 text-sm text-[var(--kanna-ink)]" : "text-sm text-[var(--kanna-ink)]"}>
+            {messages.account.joinPrompt}{" "}
+            {onRequestSignUp ? (
+              <button
+                type="button"
+                onClick={onRequestSignUp}
+                className="font-semibold underline underline-offset-2 transition hover:text-black"
+              >
+                {messages.account.signUpTitle}
+              </button>
+            ) : (
+              <LocalizedLink
+                to={signUpPath}
+                className="font-semibold underline underline-offset-2 transition hover:text-black"
+              >
+                {messages.account.signUpTitle}
+              </LocalizedLink>
+            )}
+          </p>
+        ) : null}
       </div>
     </>
   );

@@ -30,8 +30,11 @@ export type OrderPortalPayload = {
   accessState: PortalAccessState;
   availablePaymentMethods: DepositPaymentMethod[];
   customer: {
+    accountActivated: boolean;
     email: string;
+    firstName: string;
     fullName: string;
+    lastName: string;
     orderTitle: string;
     phoneNumber: string;
   };
@@ -96,11 +99,6 @@ export type OrderPortalPayload = {
 type ClaimPortalResponse = {
   build: OrderPortalPayload;
   sessionToken: string;
-};
-
-type ForgotPasswordResponse = {
-  message: string;
-  success: boolean;
 };
 
 export class OrderPortalApiError extends Error {
@@ -246,6 +244,31 @@ export async function claimOrderPortal({
   return parseResponse<ClaimPortalResponse>(response);
 }
 
+export async function claimOrderPortalFromAccount({
+  claimToken,
+  csrfToken,
+  publicOrderNumber,
+}: {
+  claimToken: string;
+  csrfToken: string;
+  publicOrderNumber: string;
+}) {
+  const response = await fetch(`${getApiBase()}/portal/claim-account`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Kanna-CSRF": csrfToken,
+    },
+    body: JSON.stringify({
+      claim_token: claimToken,
+      public_order_number: publicOrderNumber,
+    }),
+  });
+
+  return parseResponse<ClaimPortalResponse>(response);
+}
+
 export async function loginOrderPortal({
   password,
   publicOrderNumber,
@@ -267,22 +290,26 @@ export async function loginOrderPortal({
   return parseResponse<ClaimPortalResponse>(response);
 }
 
-export async function requestOrderPortalPasswordReset({
+export async function createOrderPortalSessionFromAccount({
+  csrfToken,
   publicOrderNumber,
 }: {
+  csrfToken: string;
   publicOrderNumber: string;
 }) {
-  const response = await fetch(`${getApiBase()}/portal/forgot-password`, {
+  const response = await fetch(`${getApiBase()}/portal/session-from-account`, {
     method: "POST",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
+      "X-Kanna-CSRF": csrfToken,
     },
     body: JSON.stringify({
       public_order_number: publicOrderNumber,
     }),
   });
 
-  return parseResponse<ForgotPasswordResponse>(response);
+  return parseResponse<ClaimPortalResponse>(response);
 }
 
 async function authenticatedPortalRequest<T>({

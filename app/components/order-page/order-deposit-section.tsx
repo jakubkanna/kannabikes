@@ -1,13 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { DetailPanel } from "~/components/commerce/detail-panel";
 import {
   BankTransferIcon,
   PaymentOption,
   StripeCardIcon,
 } from "~/components/commerce/payment-option";
-import { InputField, LockedField } from "~/components/form-field";
+import { LockedField } from "~/components/form-field";
 import { LocalizedLink } from "~/components/localized-link";
-import { useLocale } from "~/components/locale-provider";
+import { useLocale, useMessages } from "~/components/locale-provider";
+import { getIntlLocale } from "~/lib/i18n";
 import type {
   DepositPaymentMethod,
   OrderStage,
@@ -18,24 +19,6 @@ import { SectionPill } from "~/components/section-pill";
 import { AnimatedOrderSection } from "./order-motion";
 
 const DEPOSIT_SUCCESS_HIGHLIGHT_DELAY_MS = 4000;
-function validatePasswords(password: string, repeatPassword: string) {
-  const errors: {
-    password?: string;
-    repeatPassword?: string;
-  } = {};
-
-  if (password.trim().length < 8) {
-    errors.password = "Enter a password with at least 8 characters.";
-  }
-
-  if (repeatPassword.trim().length === 0) {
-    errors.repeatPassword = "Repeat your password.";
-  } else if (password !== repeatPassword) {
-    errors.repeatPassword = "Passwords do not match.";
-  }
-
-  return errors;
-}
 
 export function OrderDepositSection({
   agreementAccepted,
@@ -51,9 +34,9 @@ export function OrderDepositSection({
   isDepositConfirmed,
   isProcessingPayment,
   onAgreementChange,
-  onClaimErrorChange,
   orderNumber,
   onPayDeposit,
+  orderAccessContent,
   requiresClaim,
 }: {
   agreementAccepted: boolean;
@@ -61,7 +44,9 @@ export function OrderDepositSection({
   claimError: string | null;
   customerDetails: {
     email: string;
+    firstName: string;
     fullName: string;
+    lastName: string;
     orderTitle: string;
     phoneNumber: string;
   };
@@ -74,39 +59,21 @@ export function OrderDepositSection({
   isDepositConfirmed: boolean;
   isProcessingPayment: boolean;
   onAgreementChange: (value: boolean) => void;
-  onClaimErrorChange: (value: string | null) => void;
   orderNumber: string;
-  onPayDeposit: (payload: {
-    password: string;
-    paymentMethod: DepositPaymentMethod;
-  }) => void;
+  onPayDeposit: (payload: { paymentMethod: DepositPaymentMethod }) => void;
+  orderAccessContent?: ReactNode;
   requiresClaim: boolean;
 }) {
   const locale = useLocale();
+  const messages = useMessages();
+  const depositMessages = messages.orderPortal.deposit;
   const depositPaid = currentStage !== "waiting_for_deposit";
   const [hasSuccessHighlight, setHasSuccessHighlight] = useState(false);
   const [isReceivedExpanded, setIsReceivedExpanded] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<DepositPaymentMethod>(
     availablePaymentMethods[0] ?? "stripe",
   );
-  const [password, setPassword] = useState("");
-  const [repeatPassword, setRepeatPassword] = useState("");
-  const [passwordTouched, setPasswordTouched] = useState(false);
-  const [repeatPasswordTouched, setRepeatPasswordTouched] = useState(false);
-  const [showPasswordValidation, setShowPasswordValidation] = useState(false);
-  const passwordErrors = validatePasswords(password, repeatPassword);
-  const hasPasswordErrors = Object.keys(passwordErrors).length > 0;
-  const passwordFieldError =
-    (showPasswordValidation || passwordTouched
-      ? passwordErrors.password
-      : undefined) ??
-    claimError ??
-    undefined;
-  const repeatPasswordFieldError =
-    showPasswordValidation || repeatPasswordTouched
-      ? passwordErrors.repeatPassword
-      : undefined;
-  const depositTaxSummary = getInclusiveTaxBreakdown(depositAmountValue);
+  const depositTaxSummary = getInclusiveTaxBreakdown(depositAmountValue, locale);
   const hasDepositReachedPaidState =
     isDepositConfirmed ||
     depositOrderStatus === "processing" ||
@@ -135,14 +102,7 @@ export function OrderDepositSection({
   }, [depositPayment, hasDepositReachedPaidState]);
 
   const handlePayDeposit = () => {
-    setShowPasswordValidation(true);
-
-    if (requiresClaim && hasPasswordErrors) {
-      return;
-    }
-
     onPayDeposit({
-      password,
       paymentMethod,
     });
   };
@@ -163,11 +123,11 @@ export function OrderDepositSection({
           <div className="flex flex-col gap-3">
             <div className="min-w-0">
               <SectionPill tone={useSuccessColors ? "success" : "light"}>
-                Deposit
+                {depositMessages.sectionPill}
               </SectionPill>
               <div className="mt-1">
                 <h2 className="text-xl font-semibold text-gray-900">
-                  In review
+                  {depositMessages.inReview}
                 </h2>
               </div>
               <p
@@ -175,32 +135,30 @@ export function OrderDepositSection({
                   useSuccessColors ? "text-gray-700" : "text-gray-600"
                 }`}
               >
-                We are reviewing your deposit and confirming that the payment
-                has been received correctly. In the meantime, you can add the
-                measurements required for the design process below.
+                {depositMessages.inReviewDescription}
               </p>
 
               {depositPayment?.paymentMethod === "classic_transfer" ? (
                 <div className="mt-4 rounded-lg border border-stone-200 bg-stone-50 p-4">
                   <p className="text-sm font-semibold text-gray-900">
-                    Bank transfer details
+                    {depositMessages.bankTransferDetails}
                   </p>
                   <div className="mt-3 grid gap-3 text-sm text-gray-700 sm:grid-cols-2">
                     <div>
                       <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
-                        Account holder
+                        {depositMessages.accountHolder}
                       </span>
                       <p className="mt-1">Kanna Bikes Sp. z o.o.</p>
                     </div>
                     <div>
                       <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
-                        Amount
+                        {depositMessages.amount}
                       </span>
                       <p className="mt-1">{depositPayment.amount}</p>
                     </div>
                     <div>
                       <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
-                        IBAN
+                        {depositMessages.iban}
                       </span>
                       <p className="mt-1 font-medium text-gray-900">
                         PL12 3456 7890 1234 5678 9012 3456
@@ -208,16 +166,18 @@ export function OrderDepositSection({
                     </div>
                     <div>
                       <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
-                        SWIFT / BIC
+                        {depositMessages.swift}
                       </span>
                       <p className="mt-1 font-medium text-gray-900">PKOPPLPW</p>
                     </div>
                     <div className="sm:col-span-2">
                       <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
-                        Transfer title
+                        {depositMessages.transferTitle}
                       </span>
                       <p className="mt-1 font-medium text-gray-900">
-                        {`Deposit payment for order ${orderNumber}`}
+                        {locale === "pl"
+                          ? `Płatność depozytu za zamówienie ${orderNumber}`
+                          : `Deposit payment for order ${orderNumber}`}
                       </p>
                     </div>
                   </div>
@@ -235,11 +195,11 @@ export function OrderDepositSection({
             >
               <div className="min-w-0">
                 <SectionPill tone={useSuccessColors ? "success" : "light"}>
-                  Deposit
+                  {depositMessages.sectionPill}
                 </SectionPill>
                 <div className="mt-1">
                   <h2 className="text-xl font-semibold text-gray-900">
-                    Received
+                    {depositMessages.received}
                   </h2>
                 </div>
                 <p
@@ -247,8 +207,7 @@ export function OrderDepositSection({
                     useSuccessColors ? "text-gray-700" : "text-gray-600"
                   }`}
                 >
-                  Deposit has been confirmed. The order is secured and will
-                  continue through the remaining build stages.
+                  {depositMessages.receivedDescription}
                 </p>
               </div>
               <span
@@ -285,10 +244,10 @@ export function OrderDepositSection({
                   {depositPayment.paidAt ? (
                     <div>
                       <span className="mb-2 block text-sm font-semibold text-gray-700">
-                        Payment date
+                        {depositMessages.paymentDate}
                       </span>
                       <p className="text-sm text-gray-900">
-                        {new Intl.DateTimeFormat("en-GB", {
+                        {new Intl.DateTimeFormat(getIntlLocale(locale), {
                           day: "2-digit",
                           month: "short",
                           year: "numeric",
@@ -298,7 +257,7 @@ export function OrderDepositSection({
                   ) : null}
                   <div>
                     <span className="mb-2 block text-sm font-semibold text-gray-700">
-                      Amount
+                      {depositMessages.amount}
                     </span>
                     <p className="text-sm text-gray-900">
                       {depositPayment.amount}
@@ -317,24 +276,23 @@ export function OrderDepositSection({
     <AnimatedOrderSection className="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-white p-4 shadow-sm md:max-h-[80vh] md:overflow-y-auto md:p-6">
       <div className="grid gap-6 md:grid-cols-[minmax(0,1.8fr)_minmax(320px,0.95fr)] md:items-start">
         <div className="rounded-xl border border-stone-200 bg-white p-5">
-          <SectionPill>Deposit</SectionPill>
+          <SectionPill>{depositMessages.sectionPill}</SectionPill>
           <h2 className="mt-2 text-2xl font-semibold text-gray-900">
-            Waiting for deposit
+            {depositMessages.waitingForDeposit}
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-700">
-            Book your place in the custom build queue. Once we receive the
-            deposit, we will begin designing your dream bike.
+            {depositMessages.description}
           </p>
 
           <DetailPanel
             className="mt-6"
-            title="Order details"
-            description="We will use this data to contact you about your order."
+            title={depositMessages.orderDetails}
+            description={depositMessages.orderDetailsDescription}
           >
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <span className="mb-2 block text-sm font-semibold text-gray-700">
-                  Order title
+                  {depositMessages.orderTitle}
                 </span>
                 <LockedField
                   value={customerDetails.orderTitle}
@@ -342,93 +300,67 @@ export function OrderDepositSection({
                 />
               </div>
 
-              <div className="sm:col-span-2">
-                <span className="mb-2 block text-sm font-semibold text-gray-700">
-                  Full name
-                </span>
-                <LockedField
-                  value={customerDetails.fullName}
-                  className="px-3 py-2"
-                />
-              </div>
+              {!requiresClaim ? (
+                <>
+                  <div>
+                    <span className="mb-2 block text-sm font-semibold text-gray-700">
+                      {depositMessages.firstName}
+                    </span>
+                    <LockedField
+                      value={customerDetails.firstName}
+                      className="px-3 py-2"
+                    />
+                  </div>
 
-              <div>
-                <span className="mb-2 block text-sm font-semibold text-gray-700">
-                  Email
-                </span>
-                <LockedField
-                  value={customerDetails.email}
-                  className="px-3 py-2"
-                />
-              </div>
+                  <div>
+                    <span className="mb-2 block text-sm font-semibold text-gray-700">
+                      {depositMessages.lastName}
+                    </span>
+                    <LockedField
+                      value={customerDetails.lastName}
+                      className="px-3 py-2"
+                    />
+                  </div>
 
-              <div>
-                <span className="mb-2 block text-sm font-semibold text-gray-700">
-                  Phone number
-                </span>
-                <LockedField
-                  value={customerDetails.phoneNumber}
-                  className="px-3 py-2"
-                />
-              </div>
+                  <div>
+                    <span className="mb-2 block text-sm font-semibold text-gray-700">
+                      {depositMessages.email}
+                    </span>
+                    <LockedField
+                      value={customerDetails.email}
+                      className="px-3 py-2"
+                    />
+                  </div>
+
+                  <div>
+                    <span className="mb-2 block text-sm font-semibold text-gray-700">
+                      {depositMessages.phoneNumber}
+                    </span>
+                    <LockedField
+                      value={customerDetails.phoneNumber}
+                      className="px-3 py-2"
+                    />
+                  </div>
+                </>
+              ) : null}
 
               {requiresClaim ? (
                 <>
-                  <label className="sm:col-span-2">
-                    <span className="mb-2 block text-sm font-semibold text-gray-700">
-                      Create password
-                    </span>
-                    <InputField
-                      type="password"
-                      value={password}
-                      onChange={(event) => {
-                        setPassword(event.target.value);
-                        onClaimErrorChange(null);
-                      }}
-                      onBlur={() => setPasswordTouched(true)}
-                      hasError={Boolean(passwordFieldError)}
-                      className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
-                    />
-                    {passwordFieldError ? (
-                      <p className="mt-2 text-sm text-red-600">
-                        {passwordFieldError}
-                      </p>
+                  <div className="sm:col-span-2 rounded-xl border border-stone-200 bg-stone-50 p-4">
+                    {claimError ? (
+                      <p className="text-sm text-red-600">{claimError}</p>
                     ) : null}
-                  </label>
-
-                  <label className="sm:col-span-2">
-                    <span className="mb-2 block text-sm font-semibold text-gray-700">
-                      Repeat password
-                    </span>
-                    <InputField
-                      type="password"
-                      value={repeatPassword}
-                      onChange={(event) => {
-                        setRepeatPassword(event.target.value);
-                        onClaimErrorChange(null);
-                      }}
-                      onBlur={() => setRepeatPasswordTouched(true)}
-                      hasError={Boolean(repeatPasswordFieldError)}
-                      className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
-                    />
-                    {repeatPasswordFieldError ? (
-                      <p className="mt-2 text-sm text-red-600">
-                        {repeatPasswordFieldError}
-                      </p>
+                    {orderAccessContent ? (
+                      <div>{orderAccessContent}</div>
                     ) : null}
-                  </label>
-
-                  <p className="sm:col-span-2 text-xs leading-6 text-gray-600">
-                    Save it securely. You will need this password to track your
-                    order status.
-                  </p>
+                  </div>
                 </>
               ) : null}
             </div>
 
             <div className="mt-6 border-t border-stone-200 pt-5">
               <p className="text-sm font-semibold text-gray-900">
-                Payment options
+                {depositMessages.paymentOptions}
               </p>
               <div className="mt-3 grid gap-2">
                 {availablePaymentMethods.map((method) => (
@@ -445,7 +377,7 @@ export function OrderDepositSection({
                     onSelect={() => setPaymentMethod(method)}
                     title={
                       method === "classic_transfer"
-                        ? "Classic bank transfer"
+                        ? depositMessages.classicBankTransfer
                         : "Stripe"
                     }
                     helper=""
@@ -459,21 +391,21 @@ export function OrderDepositSection({
         <div className="md:sticky md:top-4">
           <div className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
             <p className="text-sm font-semibold uppercase tracking-[0.12em] text-gray-500">
-              Order summary
+              {depositMessages.orderSummary}
             </p>
             <div className="mt-4 rounded-xl border border-stone-200 bg-stone-50 p-4">
               <div>
                 <p className="text-sm font-semibold text-gray-900">
-                  {customerDetails.orderTitle || "Custom Kanna Bike Build"}
+                  {customerDetails.orderTitle || depositMessages.customBuildFallback}
                 </p>
                 <p className="mt-1 text-xs text-gray-500">
-                  Deposit amount due now
+                  {depositMessages.amountDueNow}
                 </p>
               </div>
 
               <div className="mt-4 border-t border-stone-200 pt-4 text-sm text-gray-600">
                 <div className="mt-2 flex items-center justify-between gap-4">
-                  <span>Net amount</span>
+                  <span>{depositMessages.netAmount}</span>
                   <span className="font-medium text-gray-900">
                     {formatOrderMoney(
                       depositTaxSummary.netAmount,
@@ -493,15 +425,15 @@ export function OrderDepositSection({
                   </span>
                 </div>
                 <div className="mt-2 flex items-center justify-between gap-4">
-                  <span>Payment method</span>
+                  <span>{depositMessages.paymentMethod}</span>
                   <span className="font-medium text-gray-900">
                     {paymentMethod === "classic_transfer"
-                      ? "Classic transfer"
+                      ? depositMessages.classicTransfer
                       : "Stripe"}
                   </span>
                 </div>
                 <div className="mt-3 flex items-center justify-between gap-4 border-t border-stone-200 pt-3 text-base font-semibold text-gray-900">
-                  <span>Total</span>
+                  <span>{depositMessages.total}</span>
                   <span>{depositAmountLabel}</span>
                 </div>
               </div>
@@ -515,16 +447,18 @@ export function OrderDepositSection({
                 className="mt-0.5"
               />
               <span>
-                I accept the{" "}
+                {depositMessages.depositAgreement.split(
+                  depositMessages.orderAgreement,
+                )[0]}
                 <LocalizedLink
                   to="/privacy-terms"
                   className="font-medium text-gray-900 underline underline-offset-2"
                 >
-                  order agreement
+                  {depositMessages.orderAgreement}
                 </LocalizedLink>
-                , deposit terms, and processing of my order data for this bike
-                build. I understand that, once the bike enters production, the
-                deposit becomes non-refundable.
+                {depositMessages.depositAgreement.split(
+                  depositMessages.orderAgreement,
+                )[1] ?? ""}
               </span>
             </label>
 
@@ -534,7 +468,9 @@ export function OrderDepositSection({
               disabled={!agreementAccepted || isProcessingPayment}
               className="mt-4 inline-flex w-full items-center justify-center rounded-md bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:bg-stone-300"
             >
-              {isProcessingPayment ? "Preparing payment..." : "Pay Deposit"}
+              {isProcessingPayment
+                ? depositMessages.preparingPayment
+                : depositMessages.payDeposit}
             </button>
           </div>
         </div>
