@@ -156,9 +156,9 @@ export function SiteFooter() {
                   <LocalizedLink to="/blog" className={linkClassName}>
                     {messages.footer.blog}
                   </LocalizedLink>
-                  <a href="#" className={linkClassName}>
-                    {messages.footer.studio}
-                  </a>
+                  <LocalizedLink to="/contact" className={linkClassName}>
+                    {messages.footer.showroom}
+                  </LocalizedLink>
                 </div>
               </div>
               <div className="text-right">
@@ -169,12 +169,12 @@ export function SiteFooter() {
                   <LocalizedLink to="/contact" className={linkClassName}>
                     {messages.footer.contact}
                   </LocalizedLink>
-                  <a href="#" className={linkClassName}>
+                  <LocalizedLink to="/delivery" className={linkClassName}>
                     {messages.footer.delivery}
-                  </a>
-                  <a href="#" className={linkClassName}>
+                  </LocalizedLink>
+                  <LocalizedLink to="/warranty" className={linkClassName}>
                     {messages.footer.warranty}
-                  </a>
+                  </LocalizedLink>
                 </div>
               </div>
             </div>

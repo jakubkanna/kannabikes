@@ -4,6 +4,7 @@ import {
   SelectField,
   TextareaField,
 } from "~/components/form-field";
+import { useLocale } from "~/components/locale-provider";
 import { SectionPill } from "~/components/section-pill";
 import { AnimatedOrderSection } from "./order-motion";
 import { OrderSubmittedSummarySection } from "./order-submitted-summary-section";
@@ -205,6 +206,175 @@ const PAINTJOB_COLOR_OPTIONS = [
   },
 ] as const;
 
+function translateBikeDesignText(locale: "en" | "pl", value: string) {
+  if (locale === "en") {
+    return value;
+  }
+
+  return (
+    {
+      Approved: "Zatwierdzono",
+      Received: "Otrzymano",
+      Specification: "Specyfikacja",
+      "Your bike specification has been submitted and recorded for the next design and production steps.":
+        "Specyfikacja roweru została zapisana i przekazana do kolejnych etapów projektowania oraz produkcji.",
+      "Bike drawing": "Rysunek roweru",
+      "We are verifying your payment": "Weryfikujemy Twoją płatność",
+      "We are designing your bicycle": "Projektujemy Twój rower",
+      "Your specification has been received. Once the deposit is verified, we will move your bike into the design stage.":
+        "Twoja specyfikacja została zapisana. Gdy zaliczka zostanie zweryfikowana, przejdziemy do etapu projektowania roweru.",
+      "Your measurements and specification have been received, and we are now working on the design of your bicycle. Once it is ready, you will be asked for approval.":
+        "Otrzymaliśmy Twoje pomiary i specyfikację, a teraz pracujemy nad projektem roweru. Gdy będzie gotowy, poprosimy Cię o zatwierdzenie.",
+      Riding: "Styl jazdy",
+      "Additional notes": "Dodatkowe uwagi",
+      Paintjob: "Malowanie",
+      Variant: "Wariant",
+      Colors: "Kolory",
+      "Other color": "Inny kolor",
+      Style: "Styl",
+      "Attach image": "Dodaj obraz",
+      Components: "Komponenty",
+      "Build type": "Typ projektu",
+      "Designer-led specification": "Specyfikacja prowadzona przez projektanta",
+      "Frame only": "Sam frameset",
+      "Self-defined specification": "Specyfikacja zdefiniowana samodzielnie",
+      Budget: "Budżet",
+      Notes: "Uwagi",
+      "This order will continue as a frame-only project. The designer will prepare the frame direction based on your submitted measurements and project goals.":
+        "To zamówienie będzie kontynuowane jako projekt samego framesetu. Projektant przygotuje kierunek projektu ramy na podstawie Twoich pomiarów i założeń.",
+      Geometry: "Geometria",
+      "From the artist": "Od projektanta",
+      "The geometry and component direction are prepared based on your submitted measurements and project goals. Please review the setup below and approve it if everything looks right.":
+        "Geometria i kierunek doboru komponentów zostały przygotowane na podstawie przesłanych pomiarów oraz założeń projektu. Sprawdź poniższą konfigurację i zatwierdź ją, jeśli wszystko się zgadza.",
+      "Amount left to pay": "Kwota pozostała do zapłaty",
+      "Final amount after deducting the deposit already paid.":
+        "Kwota końcowa po odliczeniu już opłaconej zaliczki.",
+      "Design waiting for approval": "Projekt oczekuje na zatwierdzenie",
+      "Review the proposed bike setup below. Once approved, the order can move into production.":
+        "Sprawdź poniżej proponowaną konfigurację roweru. Po zatwierdzeniu zamówienie będzie mogło przejść do produkcji.",
+      "Bike design preview": "Podgląd projektu roweru",
+      "Build data": "Dane projektu",
+      "Review the selected configuration, riding direction, and finish details before approving the project.":
+        "Przed zatwierdzeniem projektu sprawdź wybraną konfigurację, kierunek jazdy i szczegóły wykończenia.",
+      "This geometry proposal is prepared specifically for this order and should be reviewed together with the design image.":
+        "Ta propozycja geometrii została przygotowana specjalnie dla tego zamówienia i powinna być oceniona razem z wizualizacją projektu.",
+      "Approving design...": "Zatwierdzanie projektu...",
+      "Approve design": "Zatwierdź projekt",
+      "Define the bike specification": "Określ specyfikację roweru",
+      "During the design stage we collect the preferred parts and build direction for the bike based on initial conversation.":
+        "Na etapie projektowym zbieramy preferowane części oraz kierunek budowy roweru na podstawie wstępnej rozmowy.",
+      "Let the designer define the specification":
+        "Pozwól projektantowi określić specyfikację",
+      "You provide direction and the designer prepares the component specification for you.":
+        "Określasz kierunek projektu, a projektant przygotowuje dla Ciebie specyfikację komponentów.",
+      "No limit": "Bez limitu",
+      "I want to define the specification":
+        "Chcę samodzielnie określić specyfikację",
+      "Fill in the preferred parts and component choices yourself.":
+        "Samodzielnie uzupełnij preferowane części i wybory komponentów.",
+      "Continue this order as a frame-only project without a full bike component specification.":
+        "Kontynuuj to zamówienie jako projekt samego framesetu bez pełnej specyfikacji komponentów roweru.",
+      "Select transmission": "Wybierz napęd",
+      "Select wheel size": "Wybierz rozmiar koła",
+      "Submitting direction...": "Wysyłanie założeń...",
+      Submit: "Wyślij",
+      "Confirm frame-only project": "Potwierdź projekt framesetu",
+      "Submitting specification...": "Wysyłanie specyfikacji...",
+      "Submit specification": "Prześlij specyfikację",
+      Frameset: "Frameset",
+      "Front wheel": "Przednie koło",
+      "Back wheel": "Tylne koło",
+      Brakes: "Hamulce",
+      Other: "Inne",
+      Drivetrain: "Napęd",
+      Fork: "Widelec",
+      Headset: "Stery",
+      Cockpit: "Kokpit",
+      Size: "Rozmiar",
+      "Front rim": "Przednia obręcz",
+      "Front hub": "Przednia piasta",
+      "Front tire": "Przednia opona",
+      "Rear rim": "Tylna obręcz",
+      "Rear hub": "Tylna piasta",
+      "Rear tire": "Tylna opona",
+      "Front brake": "Przedni hamulec",
+      "Rear brake": "Tylny hamulec",
+      Rotors: "Tarcze",
+      Saddle: "Siodełko",
+      Seatpost: "Sztyca",
+      Pedals: "Pedały",
+      Accessories: "Akcesoria",
+      Transmission: "Przeniesienie napędu",
+      Gearbox: "Przekładnia",
+      "Hub transmission": "Napęd w piaście",
+      Derailleur: "Przerzutka",
+      Crankset: "Korba",
+      "Belt / chain": "Pasek / łańcuch",
+      "Rear cog": "Tylna zębatka",
+      Shifter: "Manetka",
+      Hub: "Piasta",
+      Chainring: "Tarcza",
+      Cog: "Zębatka",
+      Cassette: "Kaseta",
+      "Rear derailleur": "Tylna przerzutka",
+      Chain: "Łańcuch",
+      Shifters: "Manetki",
+      Stack: "Stack",
+      Reach: "Reach",
+      "Top tube": "Górna rura",
+      "Seat tube": "Rura podsiodłowa",
+      "Head tube": "Główka ramy",
+      "Head angle": "Kąt główki",
+      "Seat angle": "Kąt podsiodłowy",
+      Chainstay: "Tylny trójkąt",
+      "BB height": "Wysokość suportu",
+      "Riding style": "Styl jazdy",
+      "Riding destinations": "Miejsca jazdy",
+      Range: "Dystans",
+      "Preferred bike type": "Preferowany typ roweru",
+      "Frame material": "Materiał ramy",
+      easy: "spokojny",
+      aggressive: "agresywny",
+      mixed: "mieszany",
+      mountains: "góry",
+      "flat terrain": "płaski teren",
+      city: "miasto",
+      short: "krótki",
+      mid: "średni",
+      long: "długi",
+      mtb: "mtb",
+      gravel: "gravel",
+      road: "szosa",
+      track: "tor",
+      other: "inne",
+      steel: "stal",
+      titanium: "tytan",
+      "Add any additional riding notes":
+        "Dodaj dodatkowe uwagi dotyczące jazdy",
+      "I want to rely fully on the artist":
+        "Chcę w pełni zaufać projektantowi",
+      "I have a design in mind": "Mam własny pomysł na projekt",
+      Black: "Czarny",
+      White: "Biały",
+      Red: "Czerwony",
+      Blue: "Niebieski",
+      Green: "Zielony",
+      Yellow: "Żółty",
+      Orange: "Pomarańczowy",
+      Purple: "Fioletowy",
+      Pink: "Różowy",
+      Silver: "Srebrny",
+      "raw material": "surowy materiał",
+      coating: "powłoka",
+      graphics: "grafika",
+      gradients: "gradienty",
+      "Give some tips to the artist":
+        "Dodaj wskazówki dla projektanta",
+      "Paint reference image": "Obraz referencyjny malowania",
+    } as Record<string, string>
+  )[value] ?? value;
+}
+
 function getDrivetrainType(value: string | undefined): DrivetrainType | null {
   return DRIVETRAIN_TYPE_OPTIONS.some((option) => option.value === value)
     ? (value as DrivetrainType)
@@ -283,6 +453,8 @@ export function OrderBikeDesignSection({
   onSubmit,
   onValueChange,
 }: BikeDesignSectionProps) {
+  const locale = useLocale();
+  const t = (value: string) => translateBikeDesignText(locale, value);
   const isWaitingForDesign = currentStage === "waiting_for_design";
   const isWaitingForApproval = currentStage === "waiting_for_design_approval";
   const hasDepositReachedPaidState =
@@ -378,13 +550,13 @@ export function OrderBikeDesignSection({
   const renderRidingSection = () => (
     <div className="rounded-lg border border-stone-200 bg-white p-4">
       <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
-        Riding
+        {t("Riding")}
       </h3>
       <div className="mt-4 space-y-5">
         {RIDING_FIELDS.map((field) => (
           <div key={field.key}>
             <span className="mb-2 block text-sm font-semibold text-gray-700">
-              {field.title}
+              {t(field.title)}
             </span>
             <div className="flex flex-wrap gap-2">
               {field.options.map((option) => {
@@ -401,7 +573,7 @@ export function OrderBikeDesignSection({
                         : "border-stone-300 bg-white text-gray-700 hover:border-stone-400"
                     }`}
                   >
-                    {option}
+                    {t(option)}
                   </button>
                 );
               })}
@@ -411,14 +583,14 @@ export function OrderBikeDesignSection({
 
         <label className="block">
           <span className="mb-2 block text-sm font-semibold text-gray-700">
-            Additional notes
+            {t("Additional notes")}
           </span>
           <TextareaField
             value={values[RIDING_NOTES_KEY] ?? ""}
             onChange={(event) =>
               onValueChange(RIDING_NOTES_KEY, event.target.value)
             }
-            placeholder="Add any additional riding notes"
+            placeholder={t("Add any additional riding notes")}
             rows={4}
             className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
           />
@@ -429,13 +601,13 @@ export function OrderBikeDesignSection({
   const renderRidingSummary = () => (
     <div className="rounded-lg border border-stone-200 bg-white p-4">
       <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
-        Riding
+        {t("Riding")}
       </h3>
       <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
         {RIDING_FIELDS.map((field) => (
           <div key={field.key}>
             <span className="mb-2 block text-sm font-semibold text-gray-700">
-              {field.title}
+              {t(field.title)}
             </span>
             <p className="text-sm capitalize text-gray-900">
               {values[field.key] || "-"}
@@ -444,7 +616,7 @@ export function OrderBikeDesignSection({
         ))}
         <div className="sm:col-span-2">
           <span className="mb-2 block text-sm font-semibold text-gray-700">
-            Additional notes
+            {t("Additional notes")}
           </span>
           <p className="text-sm text-gray-900">
             {values[RIDING_NOTES_KEY] || "-"}
@@ -456,12 +628,12 @@ export function OrderBikeDesignSection({
   const renderPaintjobSection = () => (
     <div className="rounded-lg border border-stone-200 bg-white p-4">
       <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
-        Paintjob
+        {t("Paintjob")}
       </h3>
       <div className="mt-4 space-y-5">
         <div>
           <span className="mb-2 block text-sm font-semibold text-gray-700">
-            Variant
+            {t("Variant")}
           </span>
           <div className="grid gap-3">
             {PAINTJOB_ROUTE_OPTIONS.map((option) => {
@@ -478,7 +650,7 @@ export function OrderBikeDesignSection({
                       : "border-stone-200 bg-white text-gray-900 hover:border-stone-300"
                   }`}
                 >
-                  <span className="text-sm font-semibold">{option}</span>
+                  <span className="text-sm font-semibold">{t(option)}</span>
                 </button>
               );
             })}
@@ -489,7 +661,7 @@ export function OrderBikeDesignSection({
           <>
             <div>
               <span className="mb-2 block text-sm font-semibold text-gray-700">
-                Colors
+                {t("Colors")}
               </span>
               <div className="flex flex-wrap gap-3">
                 {PAINTJOB_COLOR_OPTIONS.map((option) => {
@@ -528,7 +700,7 @@ export function OrderBikeDesignSection({
                       <span
                         className={`h-4 w-4 rounded-full ${option.swatchClassName}`}
                       />
-                      <span>{option.label}</span>
+                      <span>{t(option.label)}</span>
                     </button>
                   );
                 })}
@@ -538,7 +710,7 @@ export function OrderBikeDesignSection({
             {hasOtherPaintColor ? (
               <label className="block">
                 <span className="mb-2 block text-sm font-semibold text-gray-700">
-                  Other color
+                  {t("Other color")}
                 </span>
                 <InputField
                   type="color"
@@ -553,7 +725,7 @@ export function OrderBikeDesignSection({
 
             <div>
               <span className="mb-2 block text-sm font-semibold text-gray-700">
-                Style
+                {t("Style")}
               </span>
               <div className="flex flex-wrap gap-2">
                 {PAINTJOB_STYLE_OPTIONS.map((option) => {
@@ -578,7 +750,7 @@ export function OrderBikeDesignSection({
                           : "border-stone-300 bg-white text-gray-700 hover:border-stone-400"
                       }`}
                     >
-                      {option}
+                      {t(option)}
                     </button>
                   );
                 })}
@@ -587,14 +759,14 @@ export function OrderBikeDesignSection({
 
             <label className="block">
               <span className="mb-2 block text-sm font-semibold text-gray-700">
-                Additional notes
+                {t("Additional notes")}
               </span>
               <TextareaField
                 value={values[PAINTJOB_NOTES_KEY] ?? ""}
                 onChange={(event) =>
                   onValueChange(PAINTJOB_NOTES_KEY, event.target.value)
                 }
-                placeholder="Give some tips to the artist"
+                placeholder={t("Give some tips to the artist")}
                 rows={4}
                 className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
               />
@@ -602,7 +774,7 @@ export function OrderBikeDesignSection({
 
             <label className="block">
               <span className="mb-2 block text-sm font-semibold text-gray-700">
-                Attach image
+                {t("Attach image")}
               </span>
               <InputField
                 type="file"
@@ -620,7 +792,7 @@ export function OrderBikeDesignSection({
                   <div className="w-full overflow-hidden rounded-lg border border-stone-200 bg-stone-50 sm:w-1/3">
                     <img
                       src={displayedPaintImageUrl}
-                      alt={uploadedPaintImageName || "Paint reference image"}
+                      alt={uploadedPaintImageName || t("Paint reference image")}
                       className="h-auto max-h-56 w-full object-contain"
                     />
                   </div>
@@ -635,12 +807,12 @@ export function OrderBikeDesignSection({
   const renderPaintjobSummary = () => (
     <div className="rounded-lg border border-stone-200 bg-white p-4">
       <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
-        Paintjob
+        {t("Paintjob")}
       </h3>
       <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
           <span className="mb-2 block text-sm font-semibold text-gray-700">
-            Variant
+            {t("Variant")}
           </span>
           <p className="text-sm text-gray-900">{paintjobRoute || "-"}</p>
         </div>
@@ -648,15 +820,15 @@ export function OrderBikeDesignSection({
           <>
             <div className="sm:col-span-2">
               <span className="mb-2 block text-sm font-semibold text-gray-700">
-                Colors
+                {t("Colors")}
               </span>
               <p className="text-sm capitalize text-gray-900">
                 {selectedPaintColors.length > 0
                   ? selectedPaintColors
                       .map((color) =>
                         color === "other" && customPaintColor
-                          ? `other (${customPaintColor})`
-                          : color,
+                          ? `${t("other")} (${customPaintColor})`
+                          : t(color),
                       )
                       .join(", ")
                   : "-"}
@@ -664,23 +836,23 @@ export function OrderBikeDesignSection({
             </div>
             <div>
               <span className="mb-2 block text-sm font-semibold text-gray-700">
-                Style
+                {t("Style")}
               </span>
               <p className="text-sm capitalize text-gray-900">
                 {selectedPaintStyles.length > 0
-                  ? selectedPaintStyles.join(", ")
+                  ? selectedPaintStyles.map((style) => t(style)).join(", ")
                   : "-"}
               </p>
             </div>
             <div>
               <span className="mb-2 block text-sm font-semibold text-gray-700">
-                Attach image
+                {t("Attach image")}
               </span>
               {displayedPaintImageUrl ? (
                 <div className="w-full overflow-hidden rounded-lg border border-stone-200 bg-stone-50 sm:w-1/3">
                   <img
                     src={displayedPaintImageUrl}
-                    alt={uploadedPaintImageName || "Paint reference image"}
+                    alt={uploadedPaintImageName || t("Paint reference image")}
                     className="h-auto max-h-56 w-full object-contain"
                   />
                 </div>
@@ -690,7 +862,7 @@ export function OrderBikeDesignSection({
             </div>
             <div className="sm:col-span-2">
               <span className="mb-2 block text-sm font-semibold text-gray-700">
-                Additional notes
+                {t("Additional notes")}
               </span>
               <p className="text-sm text-gray-900">
                 {values[PAINTJOB_NOTES_KEY] || "-"}
@@ -704,7 +876,7 @@ export function OrderBikeDesignSection({
   const renderComponentsSummary = () => (
     <div className="rounded-lg border border-stone-200 bg-white p-4">
       <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
-        Components
+        {t("Components")}
       </h3>
       <div className="mt-4 space-y-5">
         {componentSections.map((section, sectionIndex) => (
@@ -713,7 +885,7 @@ export function OrderBikeDesignSection({
             className={sectionIndex > 0 ? "border-t border-stone-200 pt-5" : ""}
           >
             <h4 className="text-sm font-semibold text-gray-900">
-              {section.title}
+              {t(section.title)}
             </h4>
             <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
               {section.fields.map((field) => {
@@ -722,11 +894,11 @@ export function OrderBikeDesignSection({
                 return (
                   <div key={field.key}>
                     <span className="mb-2 block text-sm font-semibold text-gray-700">
-                      {field.label}
+                      {t(field.label)}
                     </span>
                     <p className="text-sm text-gray-900">
                       {field.key === DRIVETRAIN_TYPE_KEY
-                        ? getDrivetrainTypeLabel(fieldValue) || "-"
+                        ? t(getDrivetrainTypeLabel(fieldValue) || "-")
                         : fieldValue || "-"}
                     </p>
                   </div>
@@ -742,14 +914,14 @@ export function OrderBikeDesignSection({
     <>
       <div className="rounded-lg border border-stone-200 bg-white p-4">
         <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
-          Build type
+          {t("Build type")}
         </h3>
         <p className="mt-3 text-sm text-gray-900">
           {specificationMode === "guided_by_designer"
-            ? "Designer-led specification"
+            ? t("Designer-led specification")
             : specificationMode === "frame_only"
-              ? "Frame only"
-              : "Self-defined specification"}
+              ? t("Frame only")
+              : t("Self-defined specification")}
         </p>
       </div>
 
@@ -760,7 +932,7 @@ export function OrderBikeDesignSection({
         <>
           <div className="mt-5 rounded-lg border border-stone-200 bg-white p-4">
             <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
-              Budget
+              {t("Budget")}
             </h3>
             <p className="mt-3 text-sm text-gray-900">
               {values[DESIGNER_LED_BUDGET_KEY] || "-"}
@@ -770,12 +942,12 @@ export function OrderBikeDesignSection({
       ) : specificationMode === "frame_only" ? (
         <div className="mt-5 rounded-lg border border-stone-200 bg-white p-4">
           <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
-            Notes
+            {t("Notes")}
           </h3>
           <p className="mt-3 text-sm leading-6 text-gray-600">
-            This order will continue as a frame-only project. The designer will
-            prepare the frame direction based on your submitted measurements and
-            project goals.
+            {t(
+              "This order will continue as a frame-only project. The designer will prepare the frame direction based on your submitted measurements and project goals.",
+            )}
           </p>
         </div>
       ) : (
@@ -789,13 +961,13 @@ export function OrderBikeDesignSection({
   const renderGeometrySummary = () => (
     <div className="rounded-lg border border-stone-200 bg-white p-4">
       <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
-        Geometry
+        {t("Geometry")}
       </h3>
       <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
         {GEOMETRY_FIELDS.map((field) => (
           <div key={field.key}>
             <span className="mb-2 block text-sm font-semibold text-gray-700">
-              {field.title}
+              {t(field.title)}
             </span>
             <p className="text-sm text-gray-900">
               {designValues[field.key] || values[field.key] || "-"}
@@ -808,23 +980,25 @@ export function OrderBikeDesignSection({
   const renderArtistMessage = () => (
     <div className="rounded-lg border border-stone-200 bg-white p-4">
       <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
-        From the artist
+        {t("From the artist")}
       </h3>
       <p className="mt-2 text-sm leading-6 text-gray-600">
         {artistNote ||
-          "The geometry and component direction are prepared based on your submitted measurements and project goals. Please review the setup below and approve it if everything looks right."}
+          t(
+            "The geometry and component direction are prepared based on your submitted measurements and project goals. Please review the setup below and approve it if everything looks right.",
+          )}
       </p>
       <p className="mt-4 text-sm font-semibold text-gray-900">Jakub Kanna</p>
     </div>
   );
-  const renderFinalPriceSummary = (title = "Amount left to pay") => (
+  const renderFinalPriceSummary = (title = t("Amount left to pay")) => (
     <div className="rounded-lg border border-stone-200 bg-white p-4">
       <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
         {title}
       </h3>
       <p className="mt-3 text-sm text-gray-900">{finalAmountLabel}</p>
       <p className="mt-2 text-sm leading-6 text-gray-600">
-        Final amount after deducting the deposit already paid.
+        {t("Final amount after deducting the deposit already paid.")}
       </p>
     </div>
   );
@@ -833,13 +1007,14 @@ export function OrderBikeDesignSection({
     return (
       <AnimatedOrderSection className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm md:p-6">
         <div className="mb-5 shrink-0">
-          <SectionPill>Specification</SectionPill>
+          <SectionPill>{t("Specification")}</SectionPill>
           <h2 className="mt-2 text-xl font-semibold text-gray-900">
-            Design waiting for approval
+            {t("Design waiting for approval")}
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">
-            Review the proposed bike setup below. Once approved, the order can
-            move into production.
+            {t(
+              "Review the proposed bike setup below. Once approved, the order can move into production.",
+            )}
           </p>
         </div>
 
@@ -857,11 +1032,12 @@ export function OrderBikeDesignSection({
               <div className="space-y-4 pb-2">
                 <div>
                   <h3 className="text-sm font-semibold text-gray-900">
-                    Build data
+                    {t("Build data")}
                   </h3>
                   <p className="mt-2 text-sm leading-6 text-gray-600">
-                    Review the selected configuration, riding direction, and
-                    finish details before approving the project.
+                    {t(
+                      "Review the selected configuration, riding direction, and finish details before approving the project.",
+                    )}
                   </p>
                 </div>
 
@@ -876,11 +1052,12 @@ export function OrderBikeDesignSection({
               <div className="space-y-4 md:flex-1 md:overflow-y-auto md:pr-1">
                 <div>
                   <h3 className="text-sm font-semibold text-gray-900">
-                    Geometry
+                    {t("Geometry")}
                   </h3>
                   <p className="mt-2 text-sm leading-6 text-gray-600">
-                    This geometry proposal is prepared specifically for this
-                    order and should be reviewed together with the design image.
+                    {t(
+                      "This geometry proposal is prepared specifically for this order and should be reviewed together with the design image.",
+                    )}
                   </p>
                 </div>
 
@@ -896,7 +1073,7 @@ export function OrderBikeDesignSection({
                   disabled={isApproving}
                   className="inline-flex w-full items-center justify-center rounded-md bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-black disabled:cursor-not-allowed disabled:bg-stone-300"
                 >
-                  {isApproving ? "Approving design..." : "Approve design"}
+                  {isApproving ? t("Approving design...") : t("Approve design")}
                 </button>
               </div>
             </aside>
@@ -910,7 +1087,7 @@ export function OrderBikeDesignSection({
                 disabled={isApproving}
                 className="inline-flex w-full items-center justify-center rounded-md bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-black disabled:cursor-not-allowed disabled:bg-stone-300"
               >
-                {isApproving ? "Approving design..." : "Approve design"}
+                {isApproving ? t("Approving design...") : t("Approve design")}
               </button>
             </div>
           </div>
@@ -924,10 +1101,12 @@ export function OrderBikeDesignSection({
       <OrderSubmittedSummarySection
         collapsible
         defaultExpanded={!shouldCollapseSubmittedSummary}
-        title="Specification"
-        heading={isApprovedDesign ? "Approved" : "Received"}
-        description="Your bike specification has been submitted and recorded for the next design and production steps."
-        imageAlt="Bike drawing"
+        title={t("Specification")}
+        heading={isApprovedDesign ? t("Approved") : t("Received")}
+        description={t(
+          "Your bike specification has been submitted and recorded for the next design and production steps.",
+        )}
+        imageAlt={t("Bike drawing")}
         imageContent={
           <>
             <div className="measurement-base-svg">
@@ -943,13 +1122,17 @@ export function OrderBikeDesignSection({
                 <div className="max-w-sm rounded-xl border border-stone-200 bg-white/95 px-5 py-4 text-center shadow-sm backdrop-blur-sm">
                   <p className="mt-2 text-lg font-semibold text-gray-900">
                     {isPaymentVerificationPending
-                      ? "We are verifying your payment"
-                      : "We are designing your bicycle"}
+                      ? t("We are verifying your payment")
+                      : t("We are designing your bicycle")}
                   </p>
                   <p className="mt-2 text-sm leading-6 text-gray-600">
                     {isPaymentVerificationPending
-                      ? "Your specification has been received. Once the deposit is verified, we will move your bike into the design stage."
-                      : "Your measurements and specification have been received, and we are now working on the design of your bicycle. Once it is ready, you will be asked for approval."}
+                      ? t(
+                          "Your specification has been received. Once the deposit is verified, we will move your bike into the design stage.",
+                        )
+                      : t(
+                          "Your measurements and specification have been received, and we are now working on the design of your bicycle. Once it is ready, you will be asked for approval.",
+                        )}
                   </p>
                 </div>
               </div>
@@ -983,13 +1166,14 @@ export function OrderBikeDesignSection({
   return (
     <AnimatedOrderSection className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm md:flex md:h-[80vh] md:flex-col md:overflow-hidden md:p-6">
       <div className="mb-5 shrink-0">
-        <SectionPill>Specification</SectionPill>
+        <SectionPill>{t("Specification")}</SectionPill>
         <h2 className="mt-2 text-xl font-semibold text-gray-900">
-          Define the bike specification
+          {t("Define the bike specification")}
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">
-          During the design stage we collect the preferred parts and build
-          direction for the bike based on initial conversation.
+          {t(
+            "During the design stage we collect the preferred parts and build direction for the bike based on initial conversation.",
+          )}
         </p>
       </div>
 
@@ -999,7 +1183,7 @@ export function OrderBikeDesignSection({
             <div className="space-y-4 pt-4 pb-4">
               <div className="rounded-lg border border-stone-200 bg-white p-3">
                 <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-600">
-                  Build type
+                  {t("Build type")}
                 </h3>
                 <div className="mt-3 grid gap-3">
                   <button
@@ -1012,7 +1196,7 @@ export function OrderBikeDesignSection({
                     }`}
                   >
                     <p className="text-sm font-semibold">
-                      Let the designer define the specification
+                      {t("Let the designer define the specification")}
                     </p>
                     <p
                       className={`mt-1 text-xs ${
@@ -1021,13 +1205,14 @@ export function OrderBikeDesignSection({
                           : "text-gray-500"
                       }`}
                     >
-                      You provide direction and the designer prepares the
-                      component specification for you.
+                      {t(
+                        "You provide direction and the designer prepares the component specification for you.",
+                      )}
                     </p>
                     {showGuidedMessage ? (
                       <label className="mt-4 block">
                         <span className="mb-2 block text-sm font-semibold text-gray-100">
-                          Budget
+                          {t("Budget")}
                         </span>
                         <div className="mt-3 flex items-center gap-2">
                           <InputField
@@ -1040,7 +1225,7 @@ export function OrderBikeDesignSection({
                                 event.target.value,
                               )
                             }
-                            placeholder="Budget"
+                            placeholder={t("Budget")}
                             className="w-[12ch]! border-white/70 bg-white px-3 py-2 text-[var(--kanna-ink)] placeholder:text-stone-400 focus:border-[var(--kanna-color)] focus:ring-2 focus:ring-white/35"
                           />
                           <button
@@ -1058,7 +1243,7 @@ export function OrderBikeDesignSection({
                                 : "border-white/70 bg-white text-[var(--kanna-ink)] hover:border-white"
                             }`}
                           >
-                            No limit
+                            {t("No limit")}
                           </button>
                         </div>
                       </label>
@@ -1075,7 +1260,7 @@ export function OrderBikeDesignSection({
                     }`}
                   >
                     <p className="text-sm font-semibold">
-                      I want to define the specification
+                      {t("I want to define the specification")}
                     </p>
                     <p
                       className={`mt-1 text-xs ${
@@ -1084,8 +1269,9 @@ export function OrderBikeDesignSection({
                           : "text-gray-500"
                       }`}
                     >
-                      Fill in the preferred parts and component choices
-                      yourself.
+                      {t(
+                        "Fill in the preferred parts and component choices yourself.",
+                      )}
                     </p>
                   </button>
 
@@ -1098,7 +1284,7 @@ export function OrderBikeDesignSection({
                         : "border-stone-200 bg-white text-gray-900 hover:border-stone-300"
                     }`}
                   >
-                    <p className="text-sm font-semibold">Frame only</p>
+                    <p className="text-sm font-semibold">{t("Frame only")}</p>
                     <p
                       className={`mt-1 text-xs ${
                         specificationMode === "frame_only"
@@ -1106,8 +1292,9 @@ export function OrderBikeDesignSection({
                           : "text-gray-500"
                       }`}
                     >
-                      Continue this order as a frame-only project without a full
-                      bike component specification.
+                      {t(
+                        "Continue this order as a frame-only project without a full bike component specification.",
+                      )}
                     </p>
                   </button>
                 </div>
@@ -1116,7 +1303,7 @@ export function OrderBikeDesignSection({
               {showSpecificationForm ? (
                 <div className="rounded-lg border border-stone-200 bg-white p-4">
                   <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
-                    Specification
+                    {t("Specification")}
                   </h3>
                   <div className="mt-4 space-y-4">
                     {componentSections.map((section) => {
@@ -1134,14 +1321,14 @@ export function OrderBikeDesignSection({
                           className="rounded-lg border border-stone-200 bg-stone-50 p-3"
                         >
                           <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-600">
-                            {section.title}
+                            {t(section.title)}
                           </h4>
                           <div className="mt-3 space-y-3">
                             {visibleFields.map((field) => {
                               return (
                                 <label key={field.key} className="block">
                                   <span className="mb-2 block text-sm font-semibold text-gray-700">
-                                    {field.label}
+                                    {t(field.label)}
                                   </span>
                                   {field.kind === "select" ? (
                                     <SelectField
@@ -1161,14 +1348,14 @@ export function OrderBikeDesignSection({
                                     >
                                       <option value="">
                                         {field.key === DRIVETRAIN_TYPE_KEY
-                                          ? "Select transmission"
-                                          : "Select wheel size"}
+                                          ? t("Select transmission")
+                                          : t("Select wheel size")}
                                       </option>
                                       {(field.options ?? []).map((option) => (
                                         <option key={option} value={option}>
                                           {field.key === DRIVETRAIN_TYPE_KEY
-                                            ? getDrivetrainTypeLabel(option)
-                                            : option}
+                                            ? t(getDrivetrainTypeLabel(option))
+                                            : t(option)}
                                         </option>
                                       ))}
                                     </SelectField>
@@ -1182,7 +1369,11 @@ export function OrderBikeDesignSection({
                                           event.target.value,
                                         )
                                       }
-                                      placeholder={`Specify ${field.label.toLowerCase()}`}
+                                      placeholder={
+                                        locale === "pl"
+                                          ? `Podaj ${t(field.label).toLowerCase()}`
+                                          : `Specify ${field.label.toLowerCase()}`
+                                      }
                                       className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                                     />
                                   )}
@@ -1216,7 +1407,7 @@ export function OrderBikeDesignSection({
                     disabled={isSubmitting}
                     className="inline-flex w-full items-center justify-center rounded-md bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:bg-stone-300"
                   >
-                    {isSubmitting ? "Submitting direction..." : "Submit"}
+                    {isSubmitting ? t("Submitting direction...") : t("Submit")}
                   </button>
                 ) : (
                   <div className="h-2 overflow-hidden rounded-full bg-stone-200">
@@ -1251,8 +1442,8 @@ export function OrderBikeDesignSection({
                     className="inline-flex w-full items-center justify-center rounded-md bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:bg-stone-300"
                   >
                     {isSubmitting
-                      ? "Submitting direction..."
-                      : "Confirm frame-only project"}
+                      ? t("Submitting direction...")
+                      : t("Confirm frame-only project")}
                   </button>
                 ) : (
                   <div className="h-2 overflow-hidden rounded-full bg-stone-200">
@@ -1286,8 +1477,8 @@ export function OrderBikeDesignSection({
                       className="inline-flex w-full items-center justify-center rounded-md bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:bg-stone-300"
                     >
                       {isSubmitting
-                        ? "Submitting specification..."
-                        : "Submit specification"}
+                        ? t("Submitting specification...")
+                        : t("Submit specification")}
                     </button>
                   ) : (
                     <div className="h-2 overflow-hidden rounded-full bg-stone-200">

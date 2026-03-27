@@ -166,6 +166,25 @@ function clearPendingDepositPaymentMethod(orderNumber: string) {
   window.sessionStorage.removeItem(getPendingDepositPaymentKey(orderNumber));
 }
 
+function doOrderEmailsMatch(
+  sessionEmail?: string | null,
+  orderEmail?: string | null,
+) {
+  const normalizedSessionEmail = (sessionEmail ?? "").trim().toLowerCase();
+  const normalizedOrderEmail = (orderEmail ?? "").trim().toLowerCase();
+
+  if (normalizedSessionEmail === "" || normalizedOrderEmail === "") {
+    return false;
+  }
+
+  return normalizedSessionEmail === normalizedOrderEmail;
+}
+
+function appendOrderAuthAttempt(path: string) {
+  const separator = path.includes("?") ? "&" : "?";
+  return `${path}${separator}order_auth_attempt=1`;
+}
+
 type OrderAccountAccessProps = {
   customer: OrderPortalPayload["customer"] | null;
   errorMessage: string | null;
@@ -199,14 +218,18 @@ function OrderAccountAccess({
   const accountMessages = messages.account;
   const orderMessages = messages.orderPortal;
   const accountActivated = customer?.accountActivated ?? true;
+  const googleRedirectTarget = useMemo(
+    () => appendOrderAuthAttempt(redirectTo),
+    [redirectTo],
+  );
   const googleAuthUrl = useMemo(
     () =>
       getGoogleAuthUrl({
         intent: accountActivated ? "sign-in" : "sign-up",
         locale,
-        redirectTo,
+        redirectTo: googleRedirectTarget,
       }),
-    [accountActivated, locale, redirectTo],
+    [accountActivated, googleRedirectTarget, locale],
   );
   const effectiveTitle = accountActivated
     ? orderMessages.continueWithAccount
@@ -225,6 +248,7 @@ function OrderAccountAccess({
       ) : accountActivated ? (
         <div className="mt-5 max-w-2xl">
           <CustomerSignInForm
+            googleRedirectTo={googleRedirectTarget}
             initialLoginValue={customer?.email ?? ""}
             locale={locale}
             showSignUpPrompt={false}
@@ -238,7 +262,14 @@ function OrderAccountAccess({
       ) : (
         <div className="mt-5 max-w-2xl">
           <p className="text-sm leading-6 text-gray-600">
-            {orderMessages.accountActivationHint}{" "}
+            {orderMessages.accountActivationHintBeforeEmail}{" "}
+            <span className="font-semibold text-[var(--kanna-ink)]">
+              ({customer?.email ?? ""})
+            </span>{" "}
+            {orderMessages.accountActivationHintAfterEmail}
+          </p>
+
+          <p className="mt-2 text-sm leading-6 text-gray-600">
             <a
               href={googleAuthUrl ?? "#"}
               className="font-semibold underline underline-offset-2 transition hover:text-black"
@@ -370,6 +401,7 @@ export function OrderPage({
     useState<DepositPaymentMethod | null>(() =>
       getPendingDepositPaymentMethod(orderNumber),
     );
+  const initialCustomerSessionEmailRef = useRef<string | null>(null);
   const autoAccessAttemptedRef = useRef<Set<string>>(
     new Set<string>(),
   );
@@ -436,6 +468,10 @@ export function OrderPage({
   const orderRedirectPath = claimToken
     ? `${orderPath}?claim_token=${encodeURIComponent(claimToken)}`
     : orderPath;
+  const hasOrderAuthAttempt =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("order_auth_attempt") ===
+      "1";
 
   useEffect(() => {
     document.title = `${SITE_NAME} – ${messages.meta.order.title} ${orderNumber}`;
@@ -474,6 +510,20 @@ export function OrderPage({
       cancelled = true;
     };
   }, [locale]);
+
+  useEffect(() => {
+    if (isLoadingCustomerSession) {
+      return;
+    }
+
+    const currentSessionEmail = customerSession?.authenticated
+      ? customerSession.user?.email?.trim().toLowerCase() ?? ""
+      : "";
+
+    if (initialCustomerSessionEmailRef.current === null) {
+      initialCustomerSessionEmailRef.current = currentSessionEmail;
+    }
+  }, [customerSession, isLoadingCustomerSession]);
 
   useEffect(() => {
     let cancelled = false;
@@ -727,12 +777,34 @@ export function OrderPage({
 
   useEffect(() => {
     if (
-      !customerSession?.authenticated ||
-      !customerSession.csrfToken ||
       !portalBuild ||
       portalBuild.accessState !== "claim_required" ||
       !claimToken
     ) {
+      return;
+    }
+
+    const currentSessionEmail = customerSession?.authenticated
+      ? customerSession.user?.email?.trim().toLowerCase() ?? ""
+      : "";
+    const initialSessionEmail = initialCustomerSessionEmailRef.current ?? "";
+    const sessionChangedAfterLoad =
+      currentSessionEmail !== "" && currentSessionEmail !== initialSessionEmail;
+    const emailsMatch = doOrderEmailsMatch(
+      customerSession?.user?.email,
+      portalBuild.customer.email,
+    );
+
+    if (!emailsMatch && (sessionChangedAfterLoad || hasOrderAuthAttempt)) {
+      setDepositClaimError(orderMessages.accountEmailMismatch);
+      return;
+    }
+
+    if (!customerSession?.authenticated || !customerSession.csrfToken) {
+      return;
+    }
+
+    if (!emailsMatch) {
       return;
     }
 
@@ -755,7 +827,15 @@ export function OrderPage({
           : orderMessages.connectAccountError,
       );
     });
-  }, [claimToken, customerSession, orderMessages.connectAccountError, orderNumber, portalBuild]);
+  }, [
+    claimToken,
+    customerSession,
+    hasOrderAuthAttempt,
+    orderMessages.accountEmailMismatch,
+    orderMessages.connectAccountError,
+    orderNumber,
+    portalBuild,
+  ]);
 
   useEffect(() => {
     if (

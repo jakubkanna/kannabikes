@@ -152,8 +152,10 @@ export const messages = {
       vat: "VAT",
     },
     orderPortal: {
-      accountActivationHint:
-        "Activate your Kanna Bikes account with email and password, or",
+      accountActivationHintBeforeEmail: "Activate your Kanna Bikes account",
+      accountActivationHintAfterEmail: "with a password.",
+      accountEmailMismatch:
+        "The signed-in email does not match the email used for this order. Sign in with the matching account and try again.",
       activateAccount: "Activate account",
       activatingAccount: "Activating account...",
       checkingAccount: "Checking your account...",
@@ -328,7 +330,7 @@ export const messages = {
     footer: {
       about: "About",
       addressLines: [
-        "Kanna Bikes Studio",
+        "Kanna Bikes Showroom",
         "Placeholder Street 12",
         "00-001 Warsaw",
         "Poland",
@@ -346,7 +348,7 @@ export const messages = {
       cookieSettings: "Cookie settings",
       privacyTerms: "Privacy & Terms",
       products: "Products",
-      studio: "Studio",
+      showroom: "Showroom",
       support: "Support",
       warranty: "Warranty",
       youtube: "YouTube",
@@ -400,6 +402,10 @@ export const messages = {
         description: "Contact Kanna Bikes about a custom build or inquiry.",
         title: "Contact",
       },
+      delivery: {
+        description: "Default delivery terms for Kanna Bikes orders.",
+        title: "Delivery",
+      },
       home: {
         description:
           "Handbuilt bicycles, components, and custom builds from Kanna Bikes.",
@@ -420,6 +426,10 @@ export const messages = {
       shop: {
         description: "Shop Kanna Bikes products and components.",
         title: "Shop",
+      },
+      warranty: {
+        description: "Default 5 year frame warranty terms for Kanna Bikes frames.",
+        title: "5 year frame warranty",
       },
     },
     nav: {
@@ -622,8 +632,10 @@ export const messages = {
       vat: "VAT",
     },
     orderPortal: {
-      accountActivationHint:
-        "Aktywuj konto Kanna Bikes przez e-mail i hasło albo",
+      accountActivationHintBeforeEmail: "Aktywuj konto Kanna Bikes",
+      accountActivationHintAfterEmail: "hasłem.",
+      accountEmailMismatch:
+        "Zalogowany adres e-mail nie zgadza się z adresem użytym w tym zamówieniu. Zaloguj się na właściwe konto i spróbuj ponownie.",
       activateAccount: "Aktywuj konto",
       activatingAccount: "Aktywowanie konta...",
       checkingAccount: "Sprawdzanie konta...",
@@ -802,7 +814,7 @@ export const messages = {
     footer: {
       about: "O nas",
       addressLines: [
-        "Kanna Bikes Studio",
+        "Kanna Bikes Showroom",
         "Placeholder Street 12",
         "00-001 Warsaw",
         "Poland",
@@ -820,7 +832,7 @@ export const messages = {
       cookieSettings: "Ustawienia cookies",
       privacyTerms: "Prywatność i warunki",
       products: "Produkty",
-      studio: "Studio",
+      showroom: "Showroom",
       support: "Wsparcie",
       warranty: "Gwarancja",
       youtube: "YouTube",
@@ -875,6 +887,10 @@ export const messages = {
           "Skontaktuj się z Kanna Bikes w sprawie custom builda lub zapytania.",
         title: "Kontakt",
       },
+      delivery: {
+        description: "Domyślne warunki dostawy dla zamówień Kanna Bikes.",
+        title: "Dostawa",
+      },
       home: {
         description:
           "Ręcznie budowane rowery, komponenty i projekty custom od Kanna Bikes.",
@@ -896,6 +912,10 @@ export const messages = {
       shop: {
         description: "Kup produkty i komponenty Kanna Bikes.",
         title: "Sklep",
+      },
+      warranty: {
+        description: "Domyślne warunki 5-letniej gwarancji na ramy Kanna Bikes.",
+        title: "5-letnia gwarancja na ramę",
       },
     },
     nav: {

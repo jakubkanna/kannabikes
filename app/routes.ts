@@ -14,6 +14,7 @@ const localizedRoutes = [
   route("cart", "routes/cart.tsx", { id: "cart" }),
   route("checkout", "routes/checkout.tsx", { id: "checkout" }),
   route("contact", "routes/contact.tsx", { id: "contact" }),
+  route("delivery", "routes/delivery.tsx", { id: "delivery" }),
   route("forgot-password", "routes/forgot-password.tsx", { id: "forgot-password" }),
   route("order/:orderNumber", "routes/order.$orderNumber.tsx", { id: "order" }),
   route("pre-order", "routes/pre-order.tsx", { id: "pre-order" }),
@@ -27,6 +28,7 @@ const localizedRoutes = [
   }),
   route("sign-in", "routes/sign-in.tsx", { id: "sign-in" }),
   route("sign-up", "routes/sign-up.tsx", { id: "sign-up" }),
+  route("warranty", "routes/warranty.tsx", { id: "warranty" }),
 ];
 
 const polishRoutes = [
@@ -43,6 +45,7 @@ const polishRoutes = [
   route("cart", "routes/cart.tsx", { id: "pl-cart" }),
   route("checkout", "routes/checkout.tsx", { id: "pl-checkout" }),
   route("contact", "routes/contact.tsx", { id: "pl-contact" }),
+  route("delivery", "routes/delivery.tsx", { id: "pl-delivery" }),
   route("forgot-password", "routes/forgot-password.tsx", { id: "pl-forgot-password" }),
   route("order/:orderNumber", "routes/order.$orderNumber.tsx", { id: "pl-order" }),
   route("pre-order", "routes/pre-order.tsx", { id: "pl-pre-order" }),
@@ -56,6 +59,7 @@ const polishRoutes = [
   }),
   route("sign-in", "routes/sign-in.tsx", { id: "pl-sign-in" }),
   route("sign-up", "routes/sign-up.tsx", { id: "pl-sign-up" }),
+  route("warranty", "routes/warranty.tsx", { id: "pl-warranty" }),
 ];
 
 export default [

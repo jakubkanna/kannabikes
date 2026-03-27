@@ -21,6 +21,7 @@ import {
 import type { OrderShippingAddress, OrderShippingState } from "~/lib/order-api";
 import { isPhoneNumberWithCountryCode } from "~/lib/phone";
 import { formatOrderMoney, getInclusiveTaxBreakdown } from "~/lib/order-tax";
+import { getIntlLocale } from "~/lib/i18n";
 
 const PRODUCTION_SUCCESS_HIGHLIGHT_DELAY_MS = 4000;
 const SHIPPING_QUOTE_DEBOUNCE_MS = 450;
@@ -41,6 +42,158 @@ type ShippingReferenceData = {
 };
 
 let shippingReferenceDataPromise: Promise<ShippingReferenceData> | null = null;
+
+function getProductionCopy(locale: "en" | "pl") {
+  if (locale === "pl") {
+    return {
+      errors: {
+        fullName: "Wpisz imię i nazwisko odbiorcy.",
+        lastName: "Wpisz nazwisko odbiorcy.",
+        email: "Wpisz poprawny adres e-mail.",
+        street: "Wpisz ulicę i numer domu.",
+        postalCode: "Wpisz poprawny kod pocztowy dla wybranego kraju.",
+        cityFromList: "Wybierz miasto z listy.",
+        city: "Wpisz miasto.",
+        country: "Wybierz poprawny kraj.",
+        shippingQuote: "Nie udało się obliczyć kosztu dostawy dla tego adresu.",
+      },
+      bankTransferDetails: "Dane do przelewu",
+      accountHolder: "Właściciel konta",
+      amount: "Kwota",
+      transferTitle: "Tytuł przelewu",
+      finalPaymentForOrder: (orderNumber: string) =>
+        `Płatność końcowa za zamówienie ${orderNumber}`,
+      nextBikeDesign: "Dalej: projekt roweru",
+      nextBikeDesignDescription:
+        "Gdy prześlesz pomiary i zaliczka zostanie zaksięgowana, projekt będzie gotowy do rozpoczęcia i trafi do naszego projektanta na kolejny etap realizacji.",
+      production: "Produkcja",
+      waitingForFinalPayment: "Oczekiwanie na płatność końcową",
+      waitingForFinalPaymentDescription:
+        "Płatność końcowa obejmuje koszt materiałów, wybranych części i produkcji Twojego roweru na zamówienie. Gdy ją otrzymamy, rower przejdzie bezpośrednio do produkcji, a my przekażemy szacowany termin dostawy. (Zwykle 4-6 tygodni)",
+      shippingDetails: "Dane dostawy",
+      firstName: "Imię",
+      lastName: "Nazwisko",
+      email: "E-mail",
+      phoneNumber: "Numer telefonu",
+      country: "Kraj",
+      postalCode: "Kod pocztowy",
+      city: "Miasto",
+      street: "Ulica i numer domu",
+      shippingOption: "Opcja dostawy",
+      courierDelivery: "Dostawa kurierem",
+      showroomPickup: "Odbiór w showroomie",
+      paymentOptions: "Opcje płatności",
+      classicBankTransfer: "Klasyczny przelew bankowy",
+      summary: "Podsumowanie",
+      totalAmount: "Łączna kwota",
+      deposit: "Zaliczka",
+      shipping: "Dostawa",
+      fillShippingDetails: "Uzupełnij dane dostawy",
+      contactUs: "Skontaktuj się z nami",
+      paymentMethod: "Metoda płatności",
+      classicTransfer: "Przelew tradycyjny",
+      vatIncluded: "Łączny VAT (w tym 23%)",
+      totalDue: "Do zapłaty",
+      submittingPayment: "Wysyłanie płatności...",
+      continueWithTransfer: "Kontynuuj przelew",
+      payFinalAmount: "Zapłać kwotę końcową",
+      inReview: "W weryfikacji",
+      inReviewDescription:
+        "Weryfikujemy płatność końcową. Gdy zostanie potwierdzona, zamówienie przejdzie ręcznie do produkcji.",
+      inProduction: "W produkcji",
+      ready: "Gotowe",
+      delivered: "Dostarczone",
+      readyDescription:
+        "Twój rower jest gotowy do dostawy lub odbioru osobistego.",
+      courierTrackingAvailable:
+        "Twój rower jest gotowy do dostawy lub odbioru osobistego. Link do śledzenia przesyłki znajdziesz poniżej.",
+      courierTracking: "Śledzenie przesyłki",
+      deliveredOn: "Dostarczono",
+      estimatedDeliveryTime: "Szacowany termin dostawy",
+      estimatedDeliveryWindow: "6-8 tygodni",
+      shippingAddress: "Adres dostawy",
+      paymentDate: "Data płatności",
+      amountPaidByCustomer: "Kwota opłacona przez klienta",
+      nextProduction: "Dalej: produkcja",
+      nextProductionDescription:
+        "Gdy projekt roweru zostanie dopracowany i zatwierdzony, zamówienie przejdzie do produkcji.",
+    };
+  }
+
+  return {
+    errors: {
+      fullName: "Enter recipient name and lastname.",
+      lastName: "Enter recipient lastname.",
+      email: "Enter a valid email address.",
+      street: "Enter street and house number.",
+      postalCode: "Enter a valid postal code for the selected country.",
+      cityFromList: "Select a city from the list.",
+      city: "Enter city.",
+      country: "Select a valid country.",
+      shippingQuote: "We could not calculate shipping for this address.",
+    },
+    bankTransferDetails: "Bank transfer details",
+    accountHolder: "Account holder",
+    amount: "Amount",
+    transferTitle: "Transfer title",
+    finalPaymentForOrder: (orderNumber: string) =>
+      `Final payment for order ${orderNumber}`,
+    nextBikeDesign: "Next: bike design",
+    nextBikeDesignDescription:
+      "Once your measurements are submitted and the deposit is received, your project will be ready to start and assigned to our designer for the next stage of the build.",
+    production: "Production",
+    waitingForFinalPayment: "Waiting for final payment",
+    waitingForFinalPaymentDescription:
+      "Final payment will cover the cost of materials, specified parts, and production of your custom bicycle. Once we receive it, your bike will move directly into production and we will provide an estimated delivery time. (Usually 4-6 weeks)",
+    shippingDetails: "Shipping details",
+    firstName: "First name",
+    lastName: "Last name",
+    email: "Email",
+    phoneNumber: "Phone number",
+    country: "Country",
+    postalCode: "Postal code",
+    city: "City",
+    street: "Street and house number",
+    shippingOption: "Shipping option",
+    courierDelivery: "Courier delivery",
+    showroomPickup: "Showroom pickup",
+    paymentOptions: "Payment options",
+    classicBankTransfer: "Classic bank transfer",
+    summary: "Summary",
+    totalAmount: "Total amount",
+    deposit: "Deposit",
+    shipping: "Shipping",
+    fillShippingDetails: "Fill shipping details",
+    contactUs: "Contact us",
+    paymentMethod: "Payment method",
+    classicTransfer: "Classic transfer",
+    vatIncluded: "VAT total (23% included)",
+    totalDue: "Total due",
+    submittingPayment: "Submitting payment...",
+    continueWithTransfer: "Continue with transfer",
+    payFinalAmount: "Pay final amount",
+    inReview: "In review",
+    inReviewDescription:
+      "We are reviewing the final payment. Once it is confirmed, the order will move into production manually.",
+    inProduction: "In production",
+    ready: "Ready",
+    delivered: "Delivered",
+    readyDescription:
+      "Your bicycle is ready for delivery or pickup.",
+    courierTrackingAvailable:
+      "Your bicycle is ready for delivery or pickup. Courier tracking is available below.",
+    courierTracking: "Courier tracking",
+    deliveredOn: "Delivered on",
+    estimatedDeliveryTime: "Estimated delivery time",
+    estimatedDeliveryWindow: "6-8 weeks",
+    shippingAddress: "Shipping address",
+    paymentDate: "Payment date",
+    amountPaidByCustomer: "Amount paid by customer",
+    nextProduction: "Next: production",
+    nextProductionDescription:
+      "Once the bike design is finalized and approved, the project will move into production.",
+  };
+}
 
 function getCountryLabel(
   countryCode: string,
@@ -139,6 +292,7 @@ function validateShippingDetails(
   shippingOption: "courier" | "pickup",
   shippingReferenceData: ShippingReferenceData | null,
   phoneErrorMessage: string,
+  copy: ReturnType<typeof getProductionCopy>,
 ) {
   const errors: Partial<Record<keyof typeof shippingAddress, string>> = {};
   const [firstName, ...lastNameParts] = shippingAddress.fullName
@@ -147,9 +301,9 @@ function validateShippingDetails(
     .filter(Boolean);
 
   if (!firstName || firstName.length < 2) {
-    errors.fullName = "Enter recipient name and lastname.";
+    errors.fullName = copy.errors.fullName;
   } else if (lastNameParts.join(" ").length < 2) {
-    errors.fullName = "Enter recipient lastname.";
+    errors.fullName = copy.errors.lastName;
   }
 
   const isEmailValid = shippingReferenceData
@@ -157,7 +311,7 @@ function validateShippingDetails(
     : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(shippingAddress.email.trim());
 
   if (!shippingAddress.email.trim() || !isEmailValid) {
-    errors.email = "Enter a valid email address.";
+    errors.email = copy.errors.email;
   }
 
   if (!isPhoneNumberWithCountryCode(shippingAddress.phoneNumber)) {
@@ -166,7 +320,7 @@ function validateShippingDetails(
 
   if (shippingOption === "courier") {
     if (shippingAddress.street.trim().length < 4) {
-      errors.street = "Enter street and house number.";
+      errors.street = copy.errors.street;
     }
     if (
       shippingReferenceData &&
@@ -175,7 +329,7 @@ function validateShippingDetails(
         shippingAddress.countryCode,
       )
     ) {
-      errors.postalCode = "Enter a valid postal code for the selected country.";
+      errors.postalCode = copy.errors.postalCode;
     }
     if (cityOptions.length > 0) {
       const cityMatch = cityOptions.some(
@@ -184,16 +338,16 @@ function validateShippingDetails(
       );
 
       if (!cityMatch) {
-        errors.city = "Select a city from the list.";
+        errors.city = copy.errors.cityFromList;
       }
     } else if (shippingAddress.city.trim().length < 2) {
-      errors.city = "Enter city.";
+      errors.city = copy.errors.city;
     }
     if (
       shippingReferenceData &&
       !shippingReferenceData.isValidCountry(shippingAddress.countryCode)
     ) {
-      errors.country = "Select a valid country.";
+      errors.country = copy.errors.country;
     }
   }
 
@@ -244,7 +398,7 @@ function PendingValue() {
   );
 }
 
-function formatPaymentDate(value?: string | null) {
+function formatPaymentDate(value?: string | null, locale: "en" | "pl" = "en") {
   if (!value) {
     return null;
   }
@@ -254,7 +408,7 @@ function formatPaymentDate(value?: string | null) {
     return null;
   }
 
-  return new Intl.DateTimeFormat("en-GB", {
+  return new Intl.DateTimeFormat(getIntlLocale(locale), {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -263,26 +417,28 @@ function formatPaymentDate(value?: string | null) {
 
 function BankTransferDetails({
   amountLabel,
+  copy,
   orderNumber,
 }: {
   amountLabel: string;
+  copy: ReturnType<typeof getProductionCopy>;
   orderNumber: string;
 }) {
   return (
     <div className="mt-4 rounded-lg border border-stone-200 bg-stone-50 p-4">
       <p className="text-sm font-semibold text-gray-900">
-        Bank transfer details
+        {copy.bankTransferDetails}
       </p>
       <div className="mt-3 grid gap-3 text-sm text-gray-700 sm:grid-cols-2">
         <div>
           <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
-            Account holder
+            {copy.accountHolder}
           </span>
           <p className="mt-1">Kanna Bikes Sp. z o.o.</p>
         </div>
         <div>
           <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
-            Amount
+            {copy.amount}
           </span>
           <p className="mt-1">{amountLabel}</p>
         </div>
@@ -302,10 +458,10 @@ function BankTransferDetails({
         </div>
         <div className="sm:col-span-2">
           <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
-            Transfer title
+            {copy.transferTitle}
           </span>
           <p className="mt-1 font-medium text-gray-900">
-            {`Final payment for order ${orderNumber}`}
+            {copy.finalPaymentForOrder(orderNumber)}
           </p>
         </div>
       </div>
@@ -350,11 +506,13 @@ export function OrderPendingSection({
 }
 
 export function OrderBikeDesignPreviewSection() {
+  const locale = useLocale();
+  const copy = getProductionCopy(locale);
   return (
     <OrderPendingSection
-      title="Next: bike design"
+      title={copy.nextBikeDesign}
       titleStyle="eyebrow"
-      description="Once your measurements are submitted and the deposit is received, your project will be ready to start and assigned to our designer for the next stage of the build."
+      description={copy.nextBikeDesignDescription}
     />
   );
 }
@@ -404,6 +562,7 @@ export function OrderProductionPreviewSection({
 }) {
   const locale = useLocale();
   const messages = useMessages();
+  const copy = getProductionCopy(locale);
   const cityListId = useId();
   const countryListId = useId();
   const [shippingOption, setShippingOption] = useState<"courier" | "pickup">(
@@ -482,6 +641,7 @@ export function OrderProductionPreviewSection({
     shippingOption,
     shippingReferenceData,
     messages.common.phoneNumberWithCountryCodeError,
+    copy,
   );
   const [shippingFirstName, ...shippingLastNameParts] = shippingAddress.fullName
     .split(/\s+/)
@@ -510,7 +670,7 @@ export function OrderProductionPreviewSection({
     effectiveShippingState.shippingCost !== null;
   const totalAmountBeforeDeposit = finalAmountValue + depositAmountValue;
   const totalWithShipping = finalAmountValue + shippingCost;
-  const formattedPaymentDate = formatPaymentDate(finalPaymentPaidAt);
+  const formattedPaymentDate = formatPaymentDate(finalPaymentPaidAt, locale);
   const balanceTaxSummary = getInclusiveTaxBreakdown(finalAmountValue, locale);
   const shippingTaxSummary =
     effectiveShippingState?.shippingCost !== null &&
@@ -705,7 +865,7 @@ export function OrderProductionPreviewSection({
         setShippingQuoteError(
           error instanceof Error
             ? error.message
-            : "We could not calculate shipping for this address.",
+            : copy.errors.shippingQuote,
         );
       } finally {
         if (!isCancelled) {
@@ -735,22 +895,19 @@ export function OrderProductionPreviewSection({
   if (effectiveProductionStage === "waiting_for_final_payment") {
     return (
       <AnimatedOrderSection className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm">
-        <SectionPill>Production</SectionPill>
+        <SectionPill>{copy.production}</SectionPill>
         <h2 className="mt-2 text-xl font-semibold text-gray-900">
-          Waiting for final payment
+          {copy.waitingForFinalPayment}
         </h2>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">
-          Final payment will cover the cost of materials, specified parts, and
-          production of your custom bicycle. Once we receive it, your bike will
-          move directly into production and we will provide an estimated
-          delivery time. (Usually 4-6 weeks)
+          {copy.waitingForFinalPaymentDescription}
         </p>
         <div className="mt-6 grid gap-6 md:grid-cols-[minmax(0,1.7fr)_minmax(280px,1fr)] md:items-start">
-          <DetailPanel title="Shipping details">
+          <DetailPanel title={copy.shippingDetails}>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <label className="block">
                 <span className="mb-2 block text-sm font-semibold text-gray-700">
-                  Name
+                  {copy.firstName}
                 </span>
                 <InputField
                   type="text"
@@ -765,7 +922,7 @@ export function OrderProductionPreviewSection({
                     resetShippingQuoteState();
                   }}
                   onFocus={resetShippingQuoteState}
-                  placeholder="Name"
+                  placeholder={copy.firstName}
                   hasError={
                     showShippingValidation && Boolean(shippingErrors.fullName)
                   }
@@ -774,7 +931,7 @@ export function OrderProductionPreviewSection({
               </label>
               <label className="block">
                 <span className="mb-2 block text-sm font-semibold text-gray-700">
-                  Lastname
+                  {copy.lastName}
                 </span>
                 <InputField
                   type="text"
@@ -792,7 +949,7 @@ export function OrderProductionPreviewSection({
                     resetShippingQuoteState();
                   }}
                   onFocus={resetShippingQuoteState}
-                  placeholder="Lastname"
+                  placeholder={copy.lastName}
                   hasError={
                     showShippingValidation && Boolean(shippingErrors.fullName)
                   }
@@ -806,7 +963,7 @@ export function OrderProductionPreviewSection({
               ) : null}
               <label className="block">
                 <span className="mb-2 block text-sm font-semibold text-gray-700">
-                  Email
+                  {copy.email}
                 </span>
                 <InputField
                   type="email"
@@ -819,7 +976,7 @@ export function OrderProductionPreviewSection({
                     resetShippingQuoteState();
                   }}
                   onFocus={resetShippingQuoteState}
-                  placeholder="Email"
+                  placeholder={copy.email}
                   hasError={
                     showShippingValidation && Boolean(shippingErrors.email)
                   }
@@ -833,7 +990,7 @@ export function OrderProductionPreviewSection({
               </label>
               <label className="block">
                 <span className="mb-2 block text-sm font-semibold text-gray-700">
-                  Phone number
+                  {copy.phoneNumber}
                 </span>
                 <PhoneNumberField
                   hasError={
@@ -882,7 +1039,7 @@ export function OrderProductionPreviewSection({
                     }));
                     resetShippingQuoteState();
                   }}
-                  placeholder="Country"
+                  placeholder={copy.country}
                   hasError={
                     showShippingValidation && Boolean(shippingErrors.country)
                   }
@@ -911,7 +1068,7 @@ export function OrderProductionPreviewSection({
                     resetShippingQuoteState();
                   }}
                   onFocus={resetShippingQuoteState}
-                  placeholder="Postal code"
+                  placeholder={copy.postalCode}
                   hasError={
                     showShippingValidation && Boolean(shippingErrors.postalCode)
                   }
@@ -937,7 +1094,7 @@ export function OrderProductionPreviewSection({
                   }}
                   onFocus={resetShippingQuoteState}
                   disabled={!shippingAddress.countryCode}
-                  placeholder="City"
+                  placeholder={copy.city}
                   hasError={
                     showShippingValidation && Boolean(shippingErrors.city)
                   }
@@ -968,7 +1125,7 @@ export function OrderProductionPreviewSection({
                     resetShippingQuoteState();
                   }}
                   onFocus={resetShippingQuoteState}
-                  placeholder="Street and house number"
+                  placeholder={copy.street}
                   hasError={
                     showShippingValidation && Boolean(shippingErrors.street)
                   }
@@ -984,7 +1141,7 @@ export function OrderProductionPreviewSection({
 
             <fieldset className="mt-5">
               <legend className="mb-2 text-sm font-semibold text-gray-700">
-                Shipping option
+                {copy.shippingOption}
               </legend>
               <div className="grid gap-2">
                 <label className="flex items-center gap-3 rounded-lg border border-stone-200 bg-white px-4 py-3 text-sm text-gray-900">
@@ -997,7 +1154,7 @@ export function OrderProductionPreviewSection({
                       resetShippingQuoteState();
                     }}
                   />
-                  <span>Courier delivery</span>
+                  <span>{copy.courierDelivery}</span>
                 </label>
                 <label className="flex items-center gap-3 rounded-lg border border-stone-200 bg-white px-4 py-3 text-sm text-gray-900">
                   <input
@@ -1009,14 +1166,14 @@ export function OrderProductionPreviewSection({
                       resetShippingQuoteState();
                     }}
                   />
-                  <span>Studio pickup</span>
+                  <span>{copy.showroomPickup}</span>
                 </label>
               </div>
             </fieldset>
 
             <div className="mt-5 border-t border-stone-200 pt-5">
               <p className="text-sm font-semibold text-gray-900">
-                Payment options
+                {copy.paymentOptions}
               </p>
               <div className="mt-3 grid gap-2">
                 {availablePaymentMethods.map((method) => (
@@ -1033,7 +1190,7 @@ export function OrderProductionPreviewSection({
                     onSelect={() => setPaymentMethod(method)}
                     title={
                       method === "classic_transfer"
-                        ? "Classic bank transfer"
+                        ? copy.classicBankTransfer
                         : "Stripe"
                     }
                     helper=""
@@ -1042,6 +1199,7 @@ export function OrderProductionPreviewSection({
               </div>
               {paymentMethod === "classic_transfer" && hasShippingQuote ? (
                 <BankTransferDetails
+                  copy={copy}
                   amountLabel={
                     totalTaxSummary
                       ? formatOrderMoney(
@@ -1058,22 +1216,22 @@ export function OrderProductionPreviewSection({
           </DetailPanel>
 
           <aside className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
-            <h3 className="text-sm font-semibold text-gray-900">Summary</h3>
+            <h3 className="text-sm font-semibold text-gray-900">{copy.summary}</h3>
             <div className="mt-4 rounded-lg border border-stone-200 bg-stone-50 p-4 text-sm">
               <div className="flex items-center justify-between gap-4">
-                <span className="text-gray-700">Total amount</span>
+                <span className="text-gray-700">{copy.totalAmount}</span>
                 <span className="font-semibold text-gray-900">
                   {formatOrderMoney(totalAmountBeforeDeposit, currency, locale)}
                 </span>
               </div>
               <div className="mt-2 flex items-center justify-between gap-4">
-                <span className="text-gray-700">Deposit</span>
+                <span className="text-gray-700">{copy.deposit}</span>
                 <span className="font-semibold text-gray-900">
                   -{formatOrderMoney(depositAmountValue, currency, locale)}
                 </span>
               </div>
               <div className="mt-2 flex items-center justify-between gap-4">
-                <span className="text-gray-700">Shipping</span>
+                <span className="text-gray-700">{copy.shipping}</span>
                 <div className="text-right">
                   <span className="font-semibold text-gray-900">
                     {isCalculatingShipping ? (
@@ -1085,7 +1243,7 @@ export function OrderProductionPreviewSection({
                         formatOrderMoney(shippingCost, currency, locale)
                       )
                     ) : (
-                      "Fill shipping details"
+                      copy.fillShippingDetails
                     )}
                   </span>
                   {quotedShipping?.shippingRateLabel ? (
@@ -1103,7 +1261,7 @@ export function OrderProductionPreviewSection({
                             to="/contact"
                             className="font-semibold underline underline-offset-2"
                           >
-                            Contact us
+                            {copy.contactUs}
                           </LocalizedLink>
                           .
                         </>
@@ -1113,17 +1271,17 @@ export function OrderProductionPreviewSection({
                 </div>
               </div>
               <div className="mt-2 flex items-center justify-between gap-4">
-                <span className="text-gray-700">Payment method</span>
+                <span className="text-gray-700">{copy.paymentMethod}</span>
                 <span className="font-semibold text-gray-900">
                   {paymentMethod === "classic_transfer"
-                    ? "Classic transfer"
+                    ? copy.classicTransfer
                     : "Stripe"}
                 </span>
               </div>
               <div className="mt-3 border-t border-stone-200 pt-3">
                 <div className="mb-2 flex items-center justify-between gap-4">
                   <span className="text-gray-700">
-                    VAT total (23% included)
+                    {copy.vatIncluded}
                   </span>
                   <span className="font-semibold text-gray-900">
                     {totalTaxSummary ? (
@@ -1141,7 +1299,7 @@ export function OrderProductionPreviewSection({
                 </div>
                 <div className="flex items-center justify-between gap-4">
                   <span className="text-base font-semibold text-gray-900">
-                    Total due
+                    {copy.totalDue}
                   </span>
                   <span className="text-lg font-semibold text-gray-900">
                     {totalTaxSummary ? (
@@ -1181,10 +1339,10 @@ export function OrderProductionPreviewSection({
               className="mt-4 inline-flex w-full items-center justify-center rounded-md bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:bg-stone-300"
             >
               {isSubmittingFinalPayment
-                ? "Submitting payment..."
+                ? copy.submittingPayment
                 : paymentMethod === "classic_transfer"
-                  ? "Continue with transfer"
-                  : "Pay final amount"}
+                  ? copy.continueWithTransfer
+                  : copy.payFinalAmount}
             </button>
           </aside>
         </div>
@@ -1195,14 +1353,14 @@ export function OrderProductionPreviewSection({
   if (effectiveProductionStage === "final_payment_in_review") {
     return (
       <AnimatedOrderSection className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm">
-        <SectionPill>Production</SectionPill>
-        <h2 className="mt-2 text-xl font-semibold text-gray-900">In review</h2>
+        <SectionPill>{copy.production}</SectionPill>
+        <h2 className="mt-2 text-xl font-semibold text-gray-900">{copy.inReview}</h2>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">
-          We are reviewing the final payment. Once it is confirmed, the order
-          will move into production manually.
+          {copy.inReviewDescription}
         </p>
         {finalPaymentMethod === "classic_transfer" ? (
           <BankTransferDetails
+            copy={copy}
             amountLabel={finalTransferAmountLabel}
             orderNumber={orderNumber}
           />
@@ -1235,19 +1393,20 @@ export function OrderProductionPreviewSection({
               : "light"
           }
         >
-          Production
+          {copy.production}
         </SectionPill>
         <h2 className="mt-2 text-xl font-semibold text-gray-900">
           {effectiveProductionStage === "in_production"
-            ? "In production"
+            ? copy.inProduction
             : effectiveProductionStage === "waiting_for_delivery"
-              ? "Ready"
-              : "Delivered"}
+              ? copy.ready
+              : copy.delivered}
         </h2>
         {effectiveProductionStage === "waiting_for_delivery" ? (
           <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">
-            Your bicycle is ready for delivery or pickup.
-            {trackingUrl ? <> Courier tracking is available below.</> : null}
+            {trackingUrl
+              ? copy.courierTrackingAvailable
+              : copy.readyDescription}
           </p>
         ) : null}
         {trackingUrl &&
@@ -1255,7 +1414,7 @@ export function OrderProductionPreviewSection({
           effectiveProductionStage === "delivered") ? (
           <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
             <span className="mb-2 block text-sm font-semibold text-amber-700">
-              Courier tracking
+              {copy.courierTracking}
             </span>
             <a
               href={trackingUrl}
@@ -1275,19 +1434,19 @@ export function OrderProductionPreviewSection({
           <div className="rounded-lg border border-stone-200 bg-stone-50 p-4">
             <span className="mb-2 block text-sm font-semibold text-gray-700">
               {effectiveProductionStage === "delivered"
-                ? "Delivered on"
-                : "Estimated delivery time"}
+                ? copy.deliveredOn
+                : copy.estimatedDeliveryTime}
             </span>
             <p className="text-sm text-gray-900">
               {effectiveProductionStage === "delivered"
                 ? MOCK_DELIVERED_ON
-                : MOCK_ESTIMATED_DELIVERY_TIME}
+                : copy.estimatedDeliveryWindow}
             </p>
           </div>
           {initialShippingState?.option === "courier" ? (
             <div className="rounded-lg border border-stone-200 bg-stone-50 p-4">
               <span className="mb-2 block text-sm font-semibold text-gray-700">
-                Shipping address
+                {copy.shippingAddress}
               </span>
               <div className="space-y-1 text-sm text-gray-700">
                 <p className="font-semibold text-gray-900">
@@ -1312,14 +1471,14 @@ export function OrderProductionPreviewSection({
             {formattedPaymentDate ? (
               <div>
                 <span className="mb-2 block text-sm font-semibold text-gray-700">
-                  Payment date
+                  {copy.paymentDate}
                 </span>
                 <p className="text-sm text-gray-900">{formattedPaymentDate}</p>
               </div>
             ) : null}
             <div>
               <span className="mb-2 block text-sm font-semibold text-gray-700">
-                Amount paid by customer
+                {copy.amountPaidByCustomer}
               </span>
               <p className="text-sm text-gray-900">
                 {formatOrderMoney(totalWithShipping, currency, locale)}
@@ -1333,9 +1492,9 @@ export function OrderProductionPreviewSection({
 
   return (
     <OrderPendingSection
-      title="Next: production"
+      title={copy.nextProduction}
       titleStyle="eyebrow"
-      description="Once the bike design is finalized and approved, the project will move into production."
+      description={copy.nextProductionDescription}
     />
   );
 }

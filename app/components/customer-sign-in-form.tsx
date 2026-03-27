@@ -10,6 +10,7 @@ import type { Locale } from "~/lib/i18n";
 
 type CustomerSignInFormProps = {
   description?: ReactNode;
+  googleRedirectTo?: string | null;
   initialLoginValue?: string;
   locale: Locale;
   onRequestSignUp?: () => void;
@@ -23,6 +24,7 @@ type CustomerSignInFormProps = {
 
 export function CustomerSignInForm({
   description,
+  googleRedirectTo,
   initialLoginValue = "",
   locale,
   onRequestSignUp,
@@ -57,9 +59,9 @@ export function CustomerSignInForm({
       getGoogleAuthUrl({
         intent: "sign-in",
         locale,
-        redirectTo,
+        redirectTo: googleRedirectTo ?? redirectTo,
       }),
-    [locale, redirectTo],
+    [googleRedirectTo, locale, redirectTo],
   );
   const signUpPath = useMemo(() => {
     if (!redirectTo) {

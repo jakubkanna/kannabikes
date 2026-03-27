@@ -21,18 +21,22 @@ export async function loader({ request }: Route.LoaderArgs) {
     "/cart",
     "/checkout",
     "/contact",
+    "/delivery",
     "/pre-order",
     "/privacy-terms",
     "/shop",
+    "/warranty",
     "/pl",
     "/pl/about",
     "/pl/blog",
     "/pl/cart",
     "/pl/checkout",
     "/pl/contact",
+    "/pl/delivery",
     "/pl/pre-order",
     "/pl/privacy-terms",
     "/pl/shop",
+    "/pl/warranty",
   ];
   const now = new Date().toISOString();
 

@@ -1,4 +1,5 @@
 import type { Route } from "./+types/privacy-terms";
+import { LocalizedLink } from "~/components/localized-link";
 import { PageContainer, PageShell } from "~/components/page-container";
 import { SectionPill } from "~/components/section-pill";
 import { useLocale, useMessages } from "~/components/locale-provider";
@@ -24,6 +25,10 @@ const BUSINESS = {
 type PolicySection = {
   actionLabel?: string;
   bullets?: string[];
+  links?: Array<{
+    label: string;
+    to: string;
+  }>;
   paragraphs?: string[];
   title: string;
 };
@@ -156,6 +161,17 @@ const POLICY_CONTENT: Record<
         ],
         title: "10. Delivery and customer portal",
       },
+      {
+        paragraphs: [
+          "The default delivery framework for completed orders is described on our separate delivery page.",
+          "The default commercial frame-warranty framework is described on our separate warranty page.",
+        ],
+        links: [
+          { label: "Delivery", to: "/delivery" },
+          { label: "5 year frame warranty", to: "/warranty" },
+        ],
+        title: "11. Related delivery and warranty pages",
+      },
     ],
   },
   pl: {
@@ -273,6 +289,17 @@ const POLICY_CONTENT: Record<
         ],
         title: "10. Dostawa i portal klienta",
       },
+      {
+        paragraphs: [
+          "Domyślne zasady dostawy dla zrealizowanych zamówień opisujemy na oddzielnej stronie dostawy.",
+          "Domyślne handlowe zasady gwarancji na ramę opisujemy na oddzielnej stronie gwarancji.",
+        ],
+        links: [
+          { label: "Dostawa", to: "/delivery" },
+          { label: "5-letnia gwarancja na ramę", to: "/warranty" },
+        ],
+        title: "11. Powiązane strony dostawy i gwarancji",
+      },
     ],
   },
 };
@@ -317,6 +344,19 @@ function PolicySectionBlock({
         >
           {section.actionLabel}
         </button>
+      ) : null}
+      {section.links ? (
+        <div className="mt-4 flex flex-wrap gap-3">
+          {section.links.map((link) => (
+            <LocalizedLink
+              key={link.to}
+              to={link.to}
+              className="inline-flex items-center justify-center rounded-none border border-stone-300 px-4 py-3 text-sm font-semibold text-[var(--kanna-ink)] transition hover:border-black/70"
+            >
+              {link.label}
+            </LocalizedLink>
+          ))}
+        </div>
       ) : null}
     </section>
   );
