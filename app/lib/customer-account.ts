@@ -34,7 +34,9 @@ export type CustomerRegistrationPayload = {
   firstName: string;
   lastName: string;
   locale: Locale;
+  marketingAccepted: boolean;
   password: string;
+  privacyAccepted: boolean;
 };
 
 export type CustomerAddressFields = {

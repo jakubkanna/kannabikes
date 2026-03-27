@@ -7,11 +7,28 @@ type GalleryImage = {
 };
 
 type ImageGalleryProps = {
+  className?: string;
   images: readonly GalleryImage[];
+  variant?: "grid" | "product";
 };
 
-export function ImageGallery({ images }: ImageGalleryProps) {
+function joinClassNames(
+  ...classNames: Array<string | false | null | undefined>
+) {
+  return classNames.filter(Boolean).join(" ");
+}
+
+export function ImageGallery({
+  className,
+  images,
+  variant = "grid",
+}: ImageGalleryProps) {
   const [activeImageIndex, setActiveImageIndex] = useState<number | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+  useEffect(() => {
+    setSelectedImageIndex(0);
+  }, [images]);
 
   useEffect(() => {
     if (activeImageIndex === null) return;
@@ -46,23 +63,86 @@ export function ImageGallery({ images }: ImageGalleryProps) {
 
   return (
     <>
-      <div className="mt-12 grid gap-4 md:grid-cols-3">
-        {images.map((image, index) => (
+      {variant === "product" ? (
+        <div className={joinClassNames("mt-12", className)}>
           <button
-            key={image.src}
             type="button"
-            onClick={() => setActiveImageIndex(index)}
-            className="group relative aspect-square overflow-hidden bg-stone-200"
+            onClick={() => setActiveImageIndex(selectedImageIndex)}
+            className="group block aspect-square w-full overflow-hidden border border-stone-200 bg-white shadow-sm"
           >
             <img
-              src={image.src}
-              alt={image.alt}
+              src={images[selectedImageIndex]?.src}
+              alt={images[selectedImageIndex]?.alt}
               className="block h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
-              style={image.objectPosition ? { objectPosition: image.objectPosition } : undefined}
+              style={
+                images[selectedImageIndex]?.objectPosition
+                  ? { objectPosition: images[selectedImageIndex].objectPosition }
+                  : undefined
+              }
             />
           </button>
-        ))}
-      </div>
+
+          {images.length > 1 ? (
+            <div className="mt-4 grid grid-cols-4 gap-3 md:grid-cols-5">
+              {images.map((image, index) => {
+                const isSelected = selectedImageIndex === index;
+
+                return (
+                  <button
+                    key={image.src}
+                    type="button"
+                    onClick={() => setSelectedImageIndex(index)}
+                    className={joinClassNames(
+                      "group relative aspect-square overflow-hidden border bg-white shadow-sm transition",
+                      isSelected
+                        ? "border-[var(--kanna-ink)]"
+                        : "border-stone-200 hover:border-black/30",
+                    )}
+                  >
+                    <img
+                      src={image.src}
+                      alt={image.alt}
+                      className="block h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+                      style={
+                        image.objectPosition
+                          ? { objectPosition: image.objectPosition }
+                          : undefined
+                      }
+                    />
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
+        </div>
+      ) : (
+        <div
+          className={joinClassNames(
+            "mt-12 grid gap-4 md:grid-cols-3",
+            className,
+          )}
+        >
+          {images.map((image, index) => (
+            <button
+              key={image.src}
+              type="button"
+              onClick={() => setActiveImageIndex(index)}
+              className="group relative aspect-square overflow-hidden bg-stone-200"
+            >
+              <img
+                src={image.src}
+                alt={image.alt}
+                className="block h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+                style={
+                  image.objectPosition
+                    ? { objectPosition: image.objectPosition }
+                    : undefined
+                }
+              />
+            </button>
+          ))}
+        </div>
+      )}
 
       {activeImageIndex !== null ? (
         <div

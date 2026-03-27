@@ -78,6 +78,13 @@ export const messages = {
       reviewsBody:
         "Signed-in customers will be able to leave default WooCommerce product reviews from this account flow.",
       reviewsTitle: "Reviews",
+      registrationMarketingConsent:
+        "I agree to receive future marketing updates by email.",
+      registrationPrivacyConsent:
+        "I confirm that I have read the privacy information and terms and conditions and want to create a Kanna Bikes customer account.",
+      registrationPrivacyLink: "privacy information and terms and conditions",
+      registrationPrivacyRequired:
+        "You must accept the privacy information and terms and conditions.",
       saveError: "We could not save your changes right now.",
       selectProductLabel: "Product",
       shippingAddress: "Shipping address",
@@ -87,8 +94,7 @@ export const messages = {
         "Sign in with Google to access your customer account, track orders, and leave default product reviews.",
       signInError: "We could not sign you in right now.",
       signInTitle: "Sign in",
-      signUpDescription:
-        "Create your Kanna Bikes customer account with email and password, or continue with Google if you prefer.",
+      signUpDescription: "Create your Kanna Bikes customer account.",
       signUpTitle: "Sign up",
       signUpError: "We could not create your account right now.",
       title: "Account",
@@ -162,20 +168,16 @@ export const messages = {
       passwordActivationNotice:
         "Save it securely. You will need it to access the configurator and view your order status.",
       prepareDepositError: "We could not prepare the deposit payment.",
-      prepareFinalPaymentError:
-        "We could not prepare the final payment.",
+      prepareFinalPaymentError: "We could not prepare the final payment.",
       protectedOrder: "Protected order",
       signInRequired: "Please sign in to access this order.",
       submitMeasurementsError: "We could not submit the measurements.",
-      submitSpecificationError:
-        "We could not submit the bike specification.",
+      submitSpecificationError: "We could not submit the bike specification.",
       approveDesignError: "We could not approve the design.",
-      connectAccountError:
-        "We could not connect this order to your account.",
+      connectAccountError: "We could not connect this order to your account.",
       openSignedInAccountError:
         "We could not open this order for the signed-in account.",
-      depositAgreementRequired:
-        "Accept the order agreement before continuing.",
+      depositAgreementRequired: "Accept the order agreement before continuing.",
       depositSignInHint:
         "Use the account section below to activate your account or sign in before continuing with the deposit.",
       deposit: {
@@ -305,8 +307,7 @@ export const messages = {
       firstName: "First name",
       headingLines: ["Get in touch"],
       lastName: "Last name",
-      marketingConsent:
-        "I agree to receive future marketing updates by email. This consent is optional and can be withdrawn at any time.",
+      marketingConsent: "I agree to receive future marketing updates by email.",
       message: "Message",
       phoneNumber: "Phone number",
       pill: "Contact",
@@ -547,6 +548,13 @@ export const messages = {
       reviewsBody:
         "Zalogowani klienci będą mogli dodawać tutaj domyślne opinie WooCommerce o produktach.",
       reviewsTitle: "Opinie",
+      registrationMarketingConsent:
+        "Wyrażam zgodę na otrzymywanie przyszłych aktualizacji marketingowych e-mailem. Ta zgoda jest opcjonalna i może zostać wycofana w każdej chwili.",
+      registrationPrivacyConsent:
+        "Potwierdzam, że zapoznałem(-am) się z informacjami o prywatności oraz regulaminem i chcę utworzyć konto klienta Kanna Bikes.",
+      registrationPrivacyLink: "informacjami o prywatności oraz regulaminem",
+      registrationPrivacyRequired:
+        "Musisz zaakceptować informacje o prywatności oraz regulamin.",
       saveError: "Nie udało się teraz zapisać zmian.",
       selectProductLabel: "Produkt",
       shippingAddress: "Adres dostawy",
@@ -556,8 +564,7 @@ export const messages = {
         "Zaloguj się przez Google, aby uzyskać dostęp do konta klienta, śledzić zamówienia i dodawać domyślne opinie o produktach.",
       signInError: "Nie udało się teraz zalogować.",
       signInTitle: "Zaloguj się",
-      signUpDescription:
-        "Załóż konto Kanna Bikes przez e-mail i hasło albo skorzystaj z Google, jeśli wolisz.",
+      signUpDescription: "Załóż konto Kanna Bikes.",
       signUpTitle: "Załóż konto",
       signUpError: "Nie udało się teraz utworzyć konta.",
       title: "Konto",
@@ -628,22 +635,16 @@ export const messages = {
       measurementPreviewDescription:
         "Poprosimy Cię o podanie niezbędnych pomiarów, aby rozpocząć proces projektowy.",
       measurementPreviewTitle: "Dalej: pomiary",
-      missingSession:
-        "Wymagana jest prawidłowa sesja konfiguratora roweru.",
+      missingSession: "Wymagana jest prawidłowa sesja konfiguratora roweru.",
       passwordActivationNotice:
         "Zapisz je bezpiecznie. Będzie potrzebne, aby uzyskać dostęp do konfiguratora i sprawdzać status zamówienia.",
-      prepareDepositError:
-        "Nie udało się przygotować płatności zaliczki.",
-      prepareFinalPaymentError:
-        "Nie udało się przygotować płatności końcowej.",
+      prepareDepositError: "Nie udało się przygotować płatności zaliczki.",
+      prepareFinalPaymentError: "Nie udało się przygotować płatności końcowej.",
       protectedOrder: "Chronione zamówienie",
       signInRequired: "Zaloguj się, aby uzyskać dostęp do tego zamówienia.",
-      submitMeasurementsError:
-        "Nie udało się wysłać pomiarów.",
-      submitSpecificationError:
-        "Nie udało się wysłać specyfikacji roweru.",
-      approveDesignError:
-        "Nie udało się zatwierdzić projektu.",
+      submitMeasurementsError: "Nie udało się wysłać pomiarów.",
+      submitSpecificationError: "Nie udało się wysłać specyfikacji roweru.",
+      approveDesignError: "Nie udało się zatwierdzić projektu.",
       connectAccountError:
         "Nie udało się połączyć tego zamówienia z Twoim kontem.",
       openSignedInAccountError:

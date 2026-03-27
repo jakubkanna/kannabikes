@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { Route } from "./+types/checkout";
+import { AccountRegistrationConsents } from "~/components/account-registration-consents";
 import { Button } from "~/components/button";
 import { DetailPanel } from "~/components/commerce/detail-panel";
 import { CustomerSignInForm } from "~/components/customer-sign-in-form";
@@ -61,15 +62,6 @@ export function meta({ location }: Route.MetaArgs) {
 export default function CheckoutPage() {
   const locale = useLocale();
   const messages = useMessages();
-  const googleAuthUrl = useMemo(
-    () =>
-      getGoogleAuthUrl({
-        intent: "sign-in",
-        locale,
-        redirectTo: locale === "pl" ? "/pl/checkout" : "/checkout",
-      }),
-    [locale],
-  );
   const [cart, setCart] = useState<StoreCart | null>(null);
   const [isLoadingCart, setIsLoadingCart] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -86,6 +78,29 @@ export default function CheckoutPage() {
   );
   const [accountPassword, setAccountPassword] = useState("");
   const [accountPasswordConfirm, setAccountPasswordConfirm] = useState("");
+  const [accountMarketingAccepted, setAccountMarketingAccepted] =
+    useState(false);
+  const [accountPrivacyAccepted, setAccountPrivacyAccepted] = useState(false);
+  const googleSignInUrl = useMemo(
+    () =>
+      getGoogleAuthUrl({
+        intent: "sign-in",
+        locale,
+        redirectTo: locale === "pl" ? "/pl/checkout" : "/checkout",
+      }),
+    [locale],
+  );
+  const googleSignUpUrl = useMemo(
+    () =>
+      getGoogleAuthUrl({
+        intent: "sign-up",
+        locale,
+        marketingAccepted: accountMarketingAccepted,
+        privacyAccepted: accountPrivacyAccepted,
+        redirectTo: locale === "pl" ? "/pl/checkout" : "/checkout",
+      }),
+    [accountMarketingAccepted, accountPrivacyAccepted, locale],
+  );
   const prefetchedCustomerIdRef = useRef<number | null>(null);
   const [formValues, setFormValues] = useState({
     address1: "",
@@ -331,8 +346,18 @@ export default function CheckoutPage() {
                               Create your Kanna Bikes customer account with
                               email and password, or{" "}
                               <a
-                                href={googleAuthUrl ?? "#"}
+                                href={googleSignUpUrl ?? "#"}
                                 className="font-semibold underline underline-offset-2 transition hover:text-black"
+                                onClick={(event) => {
+                                  if (accountPrivacyAccepted) {
+                                    return;
+                                  }
+
+                                  event.preventDefault();
+                                  setSubmitError(
+                                    messages.account.registrationPrivacyRequired,
+                                  );
+                                }}
                               >
                                 {messages.account.continueWithGoogle}
                               </a>{" "}
@@ -418,6 +443,25 @@ export default function CheckoutPage() {
                               </label>
                             </div>
 
+                            <div className="mt-6">
+                              <AccountRegistrationConsents
+                                errorMessage={
+                                  submitError ===
+                                  messages.account.registrationPrivacyRequired
+                                    ? submitError
+                                    : null
+                                }
+                                marketingAccepted={accountMarketingAccepted}
+                                onMarketingAcceptedChange={
+                                  setAccountMarketingAccepted
+                                }
+                                onPrivacyAcceptedChange={
+                                  setAccountPrivacyAccepted
+                                }
+                                privacyAccepted={accountPrivacyAccepted}
+                              />
+                            </div>
+
                             <div className="mt-6 flex flex-wrap gap-3">
                               <Button
                                 type="button"
@@ -435,20 +479,32 @@ export default function CheckoutPage() {
                                     return;
                                   }
 
+                                  if (!accountPrivacyAccepted) {
+                                    setSubmitError(
+                                      messages.account.registrationPrivacyRequired,
+                                    );
+                                    return;
+                                  }
+
                                   try {
                                     await registerCustomerAccount({
                                       email: formValues.email,
                                       firstName: formValues.firstName,
                                       lastName: formValues.lastName,
                                       locale,
+                                      marketingAccepted:
+                                        accountMarketingAccepted,
                                       password: accountPassword,
+                                      privacyAccepted: accountPrivacyAccepted,
                                     });
                                     const session = await fetchCustomerSession(locale);
 
                                     setCustomerSession(session);
                                     setAccountMode("sign-in");
+                                    setAccountMarketingAccepted(false);
                                     setAccountPassword("");
                                     setAccountPasswordConfirm("");
+                                    setAccountPrivacyAccepted(false);
                                   } catch (error) {
                                     setSubmitError(
                                       error instanceof Error

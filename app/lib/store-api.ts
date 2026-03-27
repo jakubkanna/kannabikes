@@ -134,6 +134,10 @@ export type StoreProduct = {
   id: number;
   imageAlt: string;
   imageSrc: string | null;
+  images: Array<{
+    alt: string;
+    src: string;
+  }>;
   locale: Locale;
   name: string;
   optionAttributes: Array<{
@@ -495,6 +499,12 @@ function mapStoreProduct(product: StoreApiProduct, locale: Locale): StoreProduct
   });
   const optionAttributes = mapOptionAttributes(product.attributes);
   const variations = mapProductVariations(product.variations);
+  const images = (product.images ?? [])
+    .map((image) => ({
+      alt: image.alt ?? image.name ?? product.name ?? "",
+      src: image.src ?? image.thumbnail ?? "",
+    }))
+    .filter((image) => image.src);
 
   return {
     categorySlugs: (product.categories ?? [])
@@ -510,6 +520,7 @@ function mapStoreProduct(product: StoreApiProduct, locale: Locale): StoreProduct
       product.images?.[0]?.src ??
       product.images?.[0]?.thumbnail ??
       null,
+    images,
     locale,
     name: product.name ?? `Product ${product.id}`,
     optionAttributes,

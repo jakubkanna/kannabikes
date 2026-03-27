@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { MouseEventHandler, ReactNode } from "react";
 
 function joinClassNames(
   ...classNames: Array<string | false | null | undefined>
@@ -11,11 +11,13 @@ export function GoogleAuthButton({
   className,
   disabled = false,
   href,
+  onClick,
 }: {
   children: ReactNode;
   className?: string;
   disabled?: boolean;
   href?: string | null;
+  onClick?: MouseEventHandler<HTMLAnchorElement>;
 }) {
   const classes = joinClassNames(
     "inline-flex min-h-12 items-center justify-center gap-3 border border-[var(--kanna-ink)] bg-white px-5 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)] transition",
@@ -62,7 +64,7 @@ export function GoogleAuthButton({
   }
 
   return (
-    <a href={href} className={classes}>
+    <a href={href} className={classes} onClick={onClick}>
       {content}
     </a>
   );

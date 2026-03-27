@@ -37,10 +37,14 @@ function getFrontendRedirectUrl({
 export function getGoogleAuthUrl({
   intent,
   locale,
+  marketingAccepted,
+  privacyAccepted,
   redirectTo,
 }: {
   intent: "sign-in" | "sign-up";
   locale: Locale;
+  marketingAccepted?: boolean;
+  privacyAccepted?: boolean;
   redirectTo?: string | null;
 }) {
   const baseUrl = import.meta.env.VITE_GOOGLE_AUTH_URL?.trim();
@@ -55,6 +59,14 @@ export function getGoogleAuthUrl({
   authUrl.searchParams.set("locale", locale);
   authUrl.searchParams.set("intent", intent);
   authUrl.searchParams.set("redirect_to", targetUrl.toString());
+
+  if (intent === "sign-up" && privacyAccepted) {
+    authUrl.searchParams.set("privacy_accepted", "1");
+    authUrl.searchParams.set(
+      "marketing_accepted",
+      marketingAccepted ? "1" : "0",
+    );
+  }
 
   return authUrl.toString();
 }

@@ -1,5 +1,6 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { useLocation } from "react-router";
+import { AccountRegistrationConsents } from "~/components/account-registration-consents";
 import { ArchivoInkBleed } from "~/components/archivo-ink-bleed";
 import { Button } from "~/components/button";
 import { InputField } from "~/components/form-field";
@@ -31,7 +32,9 @@ type FormState = {
   email: string;
   firstName: string;
   lastName: string;
+  marketingAccepted: boolean;
   password: string;
+  privacyAccepted: boolean;
 };
 
 const INITIAL_FORM_STATE: FormState = {
@@ -39,7 +42,9 @@ const INITIAL_FORM_STATE: FormState = {
   email: "",
   firstName: "",
   lastName: "",
+  marketingAccepted: false,
   password: "",
+  privacyAccepted: false,
 };
 
 export default function SignUpPage() {
@@ -47,15 +52,6 @@ export default function SignUpPage() {
   const location = useLocation();
   const messages = useMessages();
   const redirectTo = new URLSearchParams(location.search).get("redirect");
-  const googleAuthUrl = useMemo(
-    () =>
-      getGoogleAuthUrl({
-        intent: "sign-up",
-        locale,
-        redirectTo,
-      }),
-    [locale, redirectTo],
-  );
   const finalRedirectUrl = useMemo(
     () =>
       getFrontendAccountRedirect({
@@ -68,6 +64,17 @@ export default function SignUpPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const googleAuthUrl = useMemo(
+    () =>
+      getGoogleAuthUrl({
+        intent: "sign-up",
+        locale,
+        marketingAccepted: formState.marketingAccepted,
+        privacyAccepted: formState.privacyAccepted,
+        redirectTo,
+      }),
+    [formState.marketingAccepted, formState.privacyAccepted, locale, redirectTo],
+  );
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -82,6 +89,11 @@ export default function SignUpPage() {
       return;
     }
 
+    if (!formState.privacyAccepted) {
+      setErrorMessage(messages.account.registrationPrivacyRequired);
+      return;
+    }
+
     setIsSubmitting(true);
     setErrorMessage(null);
     setSuccessMessage(null);
@@ -92,7 +104,9 @@ export default function SignUpPage() {
         firstName: formState.firstName,
         lastName: formState.lastName,
         locale,
+        marketingAccepted: formState.marketingAccepted,
         password: formState.password,
+        privacyAccepted: formState.privacyAccepted,
       });
 
       setSuccessMessage(messages.account.registrationSuccess);
@@ -224,10 +238,30 @@ export default function SignUpPage() {
               </label>
             </div>
 
+            <div className="mt-6">
+              <AccountRegistrationConsents
+                errorMessage={
+                  errorMessage === messages.account.registrationPrivacyRequired
+                    ? errorMessage
+                    : null
+                }
+                marketingAccepted={formState.marketingAccepted}
+                onMarketingAcceptedChange={(accepted) =>
+                  updateField("marketingAccepted", accepted)
+                }
+                onPrivacyAcceptedChange={(accepted) =>
+                  updateField("privacyAccepted", accepted)
+                }
+                privacyAccepted={formState.privacyAccepted}
+              />
+            </div>
+
             {errorMessage ? (
+              errorMessage !== messages.account.registrationPrivacyRequired ? (
               <p className="mt-5 text-sm font-medium text-red-600">
                 {errorMessage}
               </p>
+              ) : null
             ) : null}
 
             {successMessage ? (
@@ -259,6 +293,14 @@ export default function SignUpPage() {
             <GoogleAuthButton
               href={googleAuthUrl}
               className="flex min-h-14 w-full justify-center text-base"
+              onClick={(event) => {
+                if (formState.privacyAccepted) {
+                  return;
+                }
+
+                event.preventDefault();
+                setErrorMessage(messages.account.registrationPrivacyRequired);
+              }}
             >
               {messages.account.continueWithGoogle}
             </GoogleAuthButton>

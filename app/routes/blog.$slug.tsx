@@ -1,6 +1,6 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { Link } from "react-router";
-import { useLocation } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 
 import type { Route } from "./+types/blog.$slug";
 import { Button } from "~/components/button";
@@ -137,6 +137,7 @@ export function HydrateFallback() {
 export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
   const locale = useLocale();
   const location = useLocation();
+  const navigate = useNavigate();
   const messages = useMessages();
   const [comments, setComments] = useState<WordpressComment[]>([]);
   const [commentsLoading, setCommentsLoading] = useState(false);
@@ -493,12 +494,14 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
             </section>
 
             <div className="mt-12">
-              <Link
-                to={loaderData.locale === "pl" ? "/pl/blog" : "/blog"}
-                className="inline-flex rounded-full border border-black/15 bg-white px-6 py-3 text-sm font-semibold text-[var(--kanna-ink)] transition hover:border-black hover:bg-black hover:text-white"
+              <Button
+                type="button"
+                onClick={() =>
+                  navigate(loaderData.locale === "pl" ? "/pl/blog" : "/blog")
+                }
               >
                 {messages.blog.backToBlog}
-              </Link>
+              </Button>
             </div>
           </div>
         </PageContainer>
