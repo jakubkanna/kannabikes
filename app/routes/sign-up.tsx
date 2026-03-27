@@ -9,7 +9,11 @@ import { GoogleAuthButton } from "~/components/google-auth-button";
 import { PageContainer, PageShell } from "~/components/page-container";
 import { SectionPill } from "~/components/section-pill";
 import { useLocale, useMessages } from "~/components/locale-provider";
-import { getFrontendAccountRedirect, getGoogleAuthUrl } from "~/lib/auth";
+import {
+  getFrontendAccountRedirect,
+  getGoogleAuthUrl,
+  normalizeFrontendRedirectPath,
+} from "~/lib/auth";
 import { registerCustomerAccount } from "~/lib/customer-account";
 import { buildLocalizedMeta, getLocaleFromPath, getMessages } from "~/lib/i18n";
 import { formatPageTitle } from "~/root";
@@ -53,6 +57,10 @@ export default function SignUpPage() {
   const location = useLocation();
   const messages = useMessages();
   const redirectTo = new URLSearchParams(location.search).get("redirect");
+  const normalizedRedirectTo = useMemo(
+    () => normalizeFrontendRedirectPath(redirectTo),
+    [redirectTo],
+  );
   const finalRedirectUrl = useMemo(
     () =>
       getFrontendAccountRedirect({
@@ -310,7 +318,11 @@ export default function SignUpPage() {
           <p className="mt-10 text-sm text-[var(--kanna-ink)]">
             {messages.account.alreadyHaveAccount}{" "}
             <LocalizedLink
-              to="/sign-in"
+              to={
+                normalizedRedirectTo
+                  ? `/sign-in?redirect=${encodeURIComponent(normalizedRedirectTo)}`
+                  : "/sign-in"
+              }
               className="font-semibold underline underline-offset-2 transition hover:text-black"
             >
               {messages.account.signInTitle}

@@ -19,6 +19,31 @@ const WORDPRESS_BASE_URL = (() => {
   }
 })();
 
+export function normalizeFrontendRedirectPath(redirectTo?: string | null) {
+  if (typeof redirectTo !== "string") {
+    return null;
+  }
+
+  const trimmedRedirect = redirectTo.trim();
+
+  if (!trimmedRedirect) {
+    return null;
+  }
+
+  try {
+    const siteUrl = new URL(SITE_URL);
+    const redirectUrl = new URL(trimmedRedirect, siteUrl);
+
+    if (redirectUrl.origin !== siteUrl.origin || !redirectUrl.pathname.startsWith("/")) {
+      return null;
+    }
+
+    return `${redirectUrl.pathname}${redirectUrl.search}${redirectUrl.hash}`;
+  } catch {
+    return null;
+  }
+}
+
 function getFrontendRedirectUrl({
   locale,
   redirectTo,
@@ -26,7 +51,8 @@ function getFrontendRedirectUrl({
   locale: Locale;
   redirectTo?: string | null;
 }) {
-  const fallbackPath = redirectTo || localizePath("/account", locale);
+  const fallbackPath =
+    normalizeFrontendRedirectPath(redirectTo) ?? localizePath("/account", locale);
 
   return new URL(
     fallbackPath.startsWith("/") ? fallbackPath : `/${fallbackPath}`,
@@ -96,9 +122,10 @@ export function getForgotPasswordPath({
   redirectTo?: string | null;
 }) {
   const url = new URL(localizePath("/forgot-password", locale), SITE_URL);
+  const normalizedRedirectPath = normalizeFrontendRedirectPath(redirectTo);
 
-  if (redirectTo) {
-    url.searchParams.set("redirect", redirectTo);
+  if (normalizedRedirectPath) {
+    url.searchParams.set("redirect", normalizedRedirectPath);
   }
 
   return `${url.pathname}${url.search}`;

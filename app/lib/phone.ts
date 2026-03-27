@@ -1,5 +1,3 @@
-import { Country } from "country-state-city";
-
 export function normalizePhoneNumber(value: string) {
   return value.replace(/[^\d+]/g, "");
 }
@@ -42,56 +40,83 @@ export type PhoneCountryOption = {
 const PRIORITY_COUNTRY_CODES = ["PL", "DE", "FR", "GB", "US"];
 
 let cachedPhoneCountryOptions: PhoneCountryOption[] | null = null;
+let phoneCountryOptionsPromise: Promise<PhoneCountryOption[]> | null = null;
 
-export function getPhoneCountryOptions() {
+function sortPhoneCountryOptions(options: PhoneCountryOption[]) {
+  return options.sort((left, right) => {
+    const leftPriority = PRIORITY_COUNTRY_CODES.indexOf(left.countryCode);
+    const rightPriority = PRIORITY_COUNTRY_CODES.indexOf(right.countryCode);
+
+    if (leftPriority !== -1 || rightPriority !== -1) {
+      if (leftPriority === -1) {
+        return 1;
+      }
+
+      if (rightPriority === -1) {
+        return -1;
+      }
+
+      return leftPriority - rightPriority;
+    }
+
+    return left.name.localeCompare(right.name);
+  });
+}
+
+export async function loadPhoneCountryOptions() {
   if (cachedPhoneCountryOptions) {
     return cachedPhoneCountryOptions;
   }
 
-  cachedPhoneCountryOptions = Country.getAllCountries()
-    .filter((country) => typeof country.phonecode === "string" && country.phonecode.trim() !== "")
-    .map((country) => {
-      const dialCode = normalizeDialCode(`+${country.phonecode.trim()}`);
+  if (phoneCountryOptionsPromise) {
+    return phoneCountryOptionsPromise;
+  }
 
-      return {
-        countryCode: country.isoCode,
-        dialCode,
-        label: `${country.isoCode} (${dialCode})`,
-        name: country.name,
-      };
+  phoneCountryOptionsPromise = import("country-state-city")
+    .then(({ Country }) => {
+      cachedPhoneCountryOptions = sortPhoneCountryOptions(
+        Country.getAllCountries()
+          .filter(
+            (country) =>
+              typeof country.phonecode === "string" && country.phonecode.trim() !== "",
+          )
+          .map((country) => {
+            const dialCode = normalizeDialCode(`+${country.phonecode.trim()}`);
+
+            return {
+              countryCode: country.isoCode,
+              dialCode,
+              label: `${country.isoCode} (${dialCode})`,
+              name: country.name,
+            };
+          }),
+      );
+
+      return cachedPhoneCountryOptions;
     })
-    .sort((left, right) => {
-      const leftPriority = PRIORITY_COUNTRY_CODES.indexOf(left.countryCode);
-      const rightPriority = PRIORITY_COUNTRY_CODES.indexOf(right.countryCode);
-
-      if (leftPriority !== -1 || rightPriority !== -1) {
-        if (leftPriority === -1) {
-          return 1;
-        }
-
-        if (rightPriority === -1) {
-          return -1;
-        }
-
-        return leftPriority - rightPriority;
-      }
-
-      return left.name.localeCompare(right.name);
+    .catch((error) => {
+      phoneCountryOptionsPromise = null;
+      throw error;
     });
 
-  return cachedPhoneCountryOptions;
+  return phoneCountryOptionsPromise;
 }
 
 export function parsePhoneNumberValue(
   value: string,
   defaultCountryCode = "PL",
+  options: PhoneCountryOption[] = [],
 ) {
   const trimmedValue = value.trim();
   const normalized = normalizePhoneNumber(trimmedValue);
-  const options = getPhoneCountryOptions();
   const defaultOption =
     options.find((option) => option.countryCode === defaultCountryCode) ??
-    options[0];
+    options[0] ?? {
+      countryCode: defaultCountryCode,
+      dialCode: "",
+      label: defaultCountryCode,
+      name: defaultCountryCode,
+    };
 
   if (trimmedValue === "") {
     return {
@@ -145,10 +170,11 @@ export function parsePhoneNumberValue(
   };
 }
 
-export function getDialCodeByCountryCode(countryCode: string) {
-  const option = getPhoneCountryOptions().find(
-    (item) => item.countryCode === countryCode,
-  );
+export function getDialCodeByCountryCode(
+  countryCode: string,
+  options: PhoneCountryOption[] = [],
+) {
+  const option = options.find((item) => item.countryCode === countryCode);
 
   return option?.dialCode ?? "+";
 }

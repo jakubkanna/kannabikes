@@ -1,4 +1,5 @@
 import { getLocaleFromPath, localizePath, type Locale } from "./i18n";
+import { sanitizeUserHtml } from "./html";
 
 export type CustomerUser = {
   avatarUrl: string;
@@ -264,12 +265,19 @@ export async function fetchCustomerOrders(locale: Locale) {
 }
 
 export async function fetchCustomerComments(locale: Locale) {
-  return customerAccountRequest<{ comments: CustomerAccountComment[] }>(
+  const payload = await customerAccountRequest<{ comments: CustomerAccountComment[] }>(
     "/account/comments",
     {
       locale,
     },
   );
+
+  return {
+    comments: payload.comments.map((comment) => ({
+      ...comment,
+      contentHtml: sanitizeUserHtml(comment.contentHtml),
+    })),
+  };
 }
 
 export async function fetchCustomerAddresses(locale: Locale) {
@@ -397,7 +405,7 @@ export async function createCustomerReview({
 export async function createCustomerBlogComment({
   csrfToken,
   locale,
-  payload,
+  payload: input,
 }: {
   csrfToken: string;
   locale: Locale;
@@ -407,15 +415,23 @@ export async function createCustomerBlogComment({
     postId: number;
   };
 }) {
-  return customerAccountRequest<{
+  const response = await customerAccountRequest<{
     comment: CustomerBlogComment;
     success: boolean;
   }>("/blog/comments", {
-    body: JSON.stringify(payload),
+    body: JSON.stringify(input),
     csrfToken,
     locale,
     method: "POST",
   });
+
+  return {
+    ...response,
+    comment: {
+      ...response.comment,
+      contentHtml: sanitizeUserHtml(response.comment.contentHtml),
+    },
+  };
 }
 
 export async function voteCustomerBlogComment({

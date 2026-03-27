@@ -4,7 +4,11 @@ import { InputField } from "~/components/form-field";
 import { GoogleAuthButton } from "~/components/google-auth-button";
 import { LocalizedLink } from "~/components/localized-link";
 import { useMessages } from "~/components/locale-provider";
-import { getForgotPasswordPath, getGoogleAuthUrl } from "~/lib/auth";
+import {
+  getForgotPasswordPath,
+  getGoogleAuthUrl,
+  normalizeFrontendRedirectPath,
+} from "~/lib/auth";
 import { loginCustomerSession, type CustomerSession } from "~/lib/customer-account";
 import type { Locale } from "~/lib/i18n";
 
@@ -41,6 +45,10 @@ export function CustomerSignInForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const isPageVariant = variant === "page";
+  const normalizedRedirectTo = useMemo(
+    () => normalizeFrontendRedirectPath(redirectTo),
+    [redirectTo],
+  );
 
   useEffect(() => {
     setLoginValue(initialLoginValue);
@@ -64,12 +72,12 @@ export function CustomerSignInForm({
     [googleRedirectTo, locale, redirectTo],
   );
   const signUpPath = useMemo(() => {
-    if (!redirectTo) {
+    if (!normalizedRedirectTo) {
       return "/sign-up";
     }
 
-    return `/sign-up?redirect=${encodeURIComponent(redirectTo)}`;
-  }, [redirectTo]);
+    return `/sign-up?redirect=${encodeURIComponent(normalizedRedirectTo)}`;
+  }, [normalizedRedirectTo]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

@@ -1,4 +1,5 @@
 import { localizePath, type Locale } from "./i18n";
+import { sanitizeUserHtml } from "./html";
 
 export type WordpressImage = {
   alt: string;
@@ -532,7 +533,9 @@ export async function fetchWordpressComments(
       typeof comment.avatarUrl === "string" && comment.avatarUrl.trim()
         ? comment.avatarUrl.trim()
         : null,
-    contentHtml: typeof comment.contentHtml === "string" ? comment.contentHtml : "",
+    contentHtml: sanitizeUserHtml(
+      typeof comment.contentHtml === "string" ? comment.contentHtml : "",
+    ),
     createdAt: typeof comment.createdAt === "string" ? comment.createdAt : "",
     currentUserVote:
       comment.currentUserVote === 1

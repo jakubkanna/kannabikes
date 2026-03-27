@@ -7,6 +7,7 @@ import { LocalizedLink } from "~/components/localized-link";
 import { PageContainer, PageShell } from "~/components/page-container";
 import { SectionPill } from "~/components/section-pill";
 import { useLocale, useMessages } from "~/components/locale-provider";
+import { normalizeFrontendRedirectPath } from "~/lib/auth";
 import { requestCustomerPasswordReset } from "~/lib/customer-account";
 import { buildLocalizedMeta, getLocaleFromPath, getMessages } from "~/lib/i18n";
 import { formatPageTitle } from "~/root";
@@ -30,13 +31,17 @@ export default function ForgotPasswordPage() {
   const location = useLocation();
   const messages = useMessages();
   const redirectTo = new URLSearchParams(location.search).get("redirect");
+  const normalizedRedirectTo = useMemo(
+    () => normalizeFrontendRedirectPath(redirectTo),
+    [redirectTo],
+  );
   const signInPath = useMemo(() => {
-    if (!redirectTo) {
+    if (!normalizedRedirectTo) {
       return "/sign-in";
     }
 
-    return `/sign-in?redirect=${encodeURIComponent(redirectTo)}`;
-  }, [redirectTo]);
+    return `/sign-in?redirect=${encodeURIComponent(normalizedRedirectTo)}`;
+  }, [normalizedRedirectTo]);
   const [loginValue, setLoginValue] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState<string | null>(null);

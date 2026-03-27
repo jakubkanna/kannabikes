@@ -30,6 +30,10 @@ const STATIC_PUBLIC_PATHS: SitemapEntry[] = [
   { path: "/pl/warranty" },
 ];
 
+function reportSitemapSourceFailure(source: string, error: unknown) {
+  console.error(`[sitemap] Failed to fetch ${source}.`, error);
+}
+
 function normalizeBaseUrl(input: string) {
   return input.endsWith("/") ? input.slice(0, -1) : input;
 }
@@ -67,9 +71,10 @@ async function fetchAllStoreProducts(locale: Locale) {
   const perPage = 100;
 
   for (let page = 1; page <= 10; page += 1) {
-    const batch = await fetchStoreProducts({ locale, page, perPage }).catch(
-      () => [],
-    );
+    const batch = await fetchStoreProducts({ locale, page, perPage }).catch((error) => {
+      reportSitemapSourceFailure(`store products (${locale}, page ${page})`, error);
+      return [];
+    });
 
     if (batch.length === 0) {
       break;
@@ -91,11 +96,14 @@ async function fetchAllBlogPosts(locale: Locale) {
 
   while (page <= 20) {
     const result = await fetchWordpressPostsByCategory("blog", locale, page, 50)
-      .catch(() => ({
+      .catch((error) => {
+        reportSitemapSourceFailure(`blog posts (${locale}, page ${page})`, error);
+        return {
         hasMore: false,
         nextPage: null,
         posts: [],
-      }));
+      };
+      });
 
     posts.push(...result.posts);
 
@@ -122,8 +130,14 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const [enCategories, plCategories, enProducts, plProducts, enPosts, plPosts] =
     await Promise.all([
-      fetchStoreCategories("en").catch(() => []),
-      fetchStoreCategories("pl").catch(() => []),
+      fetchStoreCategories("en").catch((error) => {
+        reportSitemapSourceFailure("store categories (en)", error);
+        return [];
+      }),
+      fetchStoreCategories("pl").catch((error) => {
+        reportSitemapSourceFailure("store categories (pl)", error);
+        return [];
+      }),
       fetchAllStoreProducts("en"),
       fetchAllStoreProducts("pl"),
       fetchAllBlogPosts("en"),
