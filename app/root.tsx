@@ -8,7 +8,7 @@ import {
   useLocation,
   useNavigate,
 } from "react-router";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import type { Route } from "./+types/root";
 import "./app.css";
@@ -119,8 +119,15 @@ export default function App() {
   const location = useLocation();
   const { hash, pathname, search } = location;
   const shouldOffsetContent = stripLocalePrefix(pathname) !== "/";
+  const hasResolvedInitialLocale = useRef(false);
 
   useEffect(() => {
+    if (hasResolvedInitialLocale.current) {
+      return;
+    }
+
+    hasResolvedInitialLocale.current = true;
+
     if (pathname !== "/") {
       return;
     }

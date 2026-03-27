@@ -80,55 +80,46 @@ export function HydrateFallback() {
 
 function BlogPostCard({
   locale,
-  messages,
   post,
 }: {
   locale: "en" | "pl";
-  messages: ReturnType<typeof useMessages>;
   post: WordpressPost;
 }) {
+  const postPath = post.url ?? `/blog/${post.slug}`;
+
   return (
-    <article className="overflow-hidden border border-stone-200 bg-white shadow-sm">
-      <Link to={post.url ?? `/blog/${post.slug}`} className="block">
+    <Link
+      to={postPath}
+      className="group block h-full overflow-hidden border border-stone-200 bg-white shadow-sm transition hover:-translate-y-1"
+    >
+      <article className="h-full">
         <img
           src={post.image.src}
           srcSet={post.image.srcSet}
           sizes="(min-width: 1024px) 32vw, (min-width: 768px) 48vw, 100vw"
           alt={post.image.alt}
-          className="aspect-[4/3] w-full object-cover"
+          className="aspect-[4/3] w-full object-cover transition duration-300 group-hover:scale-[1.02]"
         />
-      </Link>
 
-      <div className="p-6">
-        {post.publishedAt ? (
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
-            {formatPublishedDate(post.publishedAt, locale)}
-          </p>
-        ) : null}
+        <div className="p-6">
+          {post.publishedAt ? (
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+              {formatPublishedDate(post.publishedAt, locale)}
+            </p>
+          ) : null}
 
-        <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[var(--kanna-ink)]">
-          <Link
-            to={post.url ?? `/blog/${post.slug}`}
-            className="transition hover:text-black/75"
-          >
+          <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[var(--kanna-ink)] transition group-hover:text-black/75">
             {post.title}
-          </Link>
-        </h2>
+          </h2>
 
-        {post.excerpt ? (
-          <p className="mt-3 text-sm leading-6 text-stone-600">
-            {post.excerpt}
-          </p>
-        ) : null}
-
-        <Link
-          to={post.url ?? `/blog/${post.slug}`}
-          className="mt-5 inline-flex text-sm font-semibold text-[var(--kanna-ink)] underline decoration-black/20 underline-offset-4 transition hover:decoration-black/70"
-        >
-          {messages.blog.readArticle}
-        </Link>
-      </div>
-    </article>
+          {post.excerpt ? (
+            <p className="mt-3 text-sm leading-6 text-stone-600">
+              {post.excerpt}
+            </p>
+          ) : null}
+        </div>
+      </article>
+    </Link>
   );
 }
 
@@ -158,7 +149,6 @@ export default function BlogPage({ loaderData }: Route.ComponentProps) {
               <BlogPostCard
                 key={post.id}
                 locale={loaderData.locale}
-                messages={messages}
                 post={post}
               />
             ))}

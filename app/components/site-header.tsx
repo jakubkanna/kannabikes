@@ -23,7 +23,9 @@ export function SiteHeader() {
   const messages = useMessages();
   const localizedPathname = stripLocalePrefix(pathname);
   const isHome = localizedPathname === "/";
-  const isShopRoute =
+  const isCommerceRoute =
+    localizedPathname === "/cart" ||
+    localizedPathname === "/checkout" ||
     localizedPathname === "/shop" || localizedPathname.startsWith("/shop/");
   const [useBlendMode, setUseBlendMode] = useState(!isHome);
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
@@ -36,13 +38,13 @@ export function SiteHeader() {
   ] as const;
 
   useEffect(() => {
-    if (!isShopRoute) {
+    if (!isCommerceRoute) {
       setIsCartDrawerOpen(false);
     }
-  }, [isShopRoute]);
+  }, [isCommerceRoute]);
 
   useEffect(() => {
-    if (!isShopRoute) {
+    if (!isCommerceRoute) {
       setCartItemsCount(0);
       return;
     }
@@ -84,7 +86,7 @@ export function SiteHeader() {
       cancelled = true;
       window.removeEventListener(STORE_CART_UPDATED_EVENT, handleCartUpdated);
     };
-  }, [isShopRoute, pathname]);
+  }, [isCommerceRoute, pathname]);
 
   useEffect(() => {
     if (!isHome) {
@@ -188,7 +190,7 @@ export function SiteHeader() {
                 </svg>
               </LocalizedLink>
               <AnimatePresence initial={false}>
-                {isShopRoute ? (
+                {isCommerceRoute ? (
                   <motion.button
                     layout
                     key="cart-trigger"

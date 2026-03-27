@@ -562,6 +562,15 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
                 )}
               </div>
             </section>
+
+            <div className="mt-12">
+              <Link
+                to={loaderData.locale === "pl" ? "/pl/blog" : "/blog"}
+                className="inline-flex rounded-full border border-black/15 bg-white px-6 py-3 text-sm font-semibold text-[var(--kanna-ink)] transition hover:border-black hover:bg-black hover:text-white"
+              >
+                {messages.blog.backToBlog}
+              </Link>
+            </div>
           </div>
         </PageContainer>
       </article>

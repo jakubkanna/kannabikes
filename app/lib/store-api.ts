@@ -83,6 +83,7 @@ type StoreApiCartItem = {
   id: string;
   key: string;
   name: string;
+  permalink?: string;
   permutation: string[];
   prices: {
     currency_code: string;
@@ -310,6 +311,41 @@ function normalizeOptionKey(value: string | undefined) {
   return value?.trim().toLowerCase() ?? "";
 }
 
+function buildStoreProductPath({
+  fallbackId,
+  locale,
+  permalink,
+  slug,
+}: {
+  fallbackId: number | string;
+  locale: Locale;
+  permalink?: string;
+  slug?: string;
+}) {
+  const normalizedSlug = slug?.trim();
+
+  if (normalizedSlug) {
+    return localizePath(`/shop/products/${normalizedSlug}`, locale);
+  }
+
+  if (permalink) {
+    try {
+      const pathname = new URL(permalink, WORDPRESS_BASE_URL).pathname.replace(/\/+$/, "");
+      const strippedPathname = pathname.replace(/^\/pl(?=\/|$)/, "") || "/";
+      const segments = strippedPathname.split("/").filter(Boolean);
+      const permalinkSlug = segments[segments.length - 1];
+
+      if (permalinkSlug) {
+        return localizePath(`/shop/products/${permalinkSlug}`, locale);
+      }
+    } catch {
+      // Fall through to the id-based path.
+    }
+  }
+
+  return localizePath(`/shop/products/${fallbackId}`, locale);
+}
+
 async function storeApiRequest<T>(
   path: string,
   options?: {
@@ -451,7 +487,12 @@ function mapStoreProduct(product: StoreApiProduct, locale: Locale): StoreProduct
   const prices = product.prices ?? {};
   const currencyCode = prices.currency_code ?? "EUR";
   const currencyMinorUnit = prices.currency_minor_unit ?? 2;
-  const path = localizePath(`/shop/products/${product.slug ?? product.id}`, locale);
+  const path = buildStoreProductPath({
+    fallbackId: product.id,
+    locale,
+    permalink: product.permalink,
+    slug: product.slug,
+  });
   const optionAttributes = mapOptionAttributes(product.attributes);
   const variations = mapProductVariations(product.variations);
 
@@ -521,7 +562,12 @@ function mapStoreCart(cart: StoreApiCart, locale: Locale): StoreCart {
       id: item.id,
       key: item.key,
       name: item.name,
-      path: localizePath(`/shop/products/${item.slug}`, locale),
+      path: buildStoreProductPath({
+        fallbackId: item.id,
+        locale,
+        permalink: item.permalink,
+        slug: item.slug,
+      }),
       price: normalizeMoney(
         item.prices.price,
         item.prices.currency_code,

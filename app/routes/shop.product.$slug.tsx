@@ -5,6 +5,7 @@ import { Button } from "~/components/button";
 import { CustomerSignInForm } from "~/components/customer-sign-in-form";
 import { SelectField, TextareaField } from "~/components/form-field";
 import { ProductHydrateFallback } from "~/components/hydrate-fallbacks";
+import { LocalizedLink } from "~/components/localized-link";
 import type { Route } from "./+types/shop.product.$slug";
 import { useLocale, useMessages } from "~/components/locale-provider";
 import { PageContainer, PageShell } from "~/components/page-container";
@@ -305,6 +306,17 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
   return (
     <PageShell>
       <PageContainer>
+        <nav
+          aria-label="Breadcrumb"
+          className="mt-1 flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/45"
+        >
+          <LocalizedLink to="/shop" className="transition hover:text-black">
+            {messages.nav.shop}
+          </LocalizedLink>
+          <span aria-hidden="true">/</span>
+          <span className="text-[var(--kanna-ink)]">{product.name}</span>
+        </nav>
+
         <SectionPill>{messages.commerce.shopPill}</SectionPill>
         <div className="mt-8 grid gap-10 lg:grid-cols-[0.95fr_1.05fr]">
           <div className="overflow-hidden border border-stone-200 bg-white shadow-sm">
