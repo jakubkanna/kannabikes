@@ -25,6 +25,7 @@ export function meta({ location }: Route.MetaArgs) {
 export default function Home() {
   const messages = useMessages();
   const backgroundRef = useRef<HTMLDivElement | null>(null);
+  const heroVideoRef = useRef<HTMLVideoElement | null>(null);
   const walkerBackgroundRef = useRef<HTMLDivElement | null>(null);
   const customOrderRef = useRef<HTMLDivElement | null>(null);
   const customOrderTextRef = useRef<HTMLDivElement | null>(null);
@@ -34,7 +35,9 @@ export default function Home() {
   const chainringTextRef = useRef<HTMLDivElement | null>(null);
   const chainringImageRef = useRef<HTMLDivElement | null>(null);
   const baseUrl = import.meta.env.BASE_URL;
-  const [bgSrc, setBgSrc] = useState(`${baseUrl}_DSF0937_low.jpg`);
+  const lowHeroVideoSrc = `${baseUrl}kannabikes_ride_low.mp4`;
+  const fullHeroVideoSrc = `${baseUrl}kannabikes_ride.mp4`;
+  const [bgVideoSrc, setBgVideoSrc] = useState(lowHeroVideoSrc);
   const [heroLogoOpacity, setHeroLogoOpacity] = useState(1);
   const [revealedSections, setRevealedSections] = useState<
     Record<string, boolean>
@@ -64,13 +67,52 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const img = new Image();
-    img.src = `${baseUrl}_DSF0937.jpg`;
-    img.onload = () => setBgSrc(`${baseUrl}_DSF0937.jpg`);
-    return () => {
-      img.onload = null;
+    setBgVideoSrc(lowHeroVideoSrc);
+
+    let cancelled = false;
+    const preloadedVideo = document.createElement("video");
+
+    preloadedVideo.preload = "auto";
+    preloadedVideo.muted = true;
+    preloadedVideo.playsInline = true;
+
+    const handleCanPlayThrough = () => {
+      if (cancelled) return;
+
+      const currentTime = heroVideoRef.current?.currentTime ?? 0;
+      setBgVideoSrc((currentSrc) =>
+        currentSrc === fullHeroVideoSrc ? currentSrc : fullHeroVideoSrc,
+      );
+
+      window.requestAnimationFrame(() => {
+        const currentVideo = heroVideoRef.current;
+        if (!currentVideo) return;
+
+        if (currentTime > 0 && Number.isFinite(currentTime)) {
+          try {
+            currentVideo.currentTime = currentTime;
+          } catch {
+            // Ignore seek errors while the upgraded stream is still finalizing.
+          }
+        }
+
+        void currentVideo.play().catch(() => {});
+      });
     };
-  }, [baseUrl]);
+
+    preloadedVideo.addEventListener("canplaythrough", handleCanPlayThrough, {
+      once: true,
+    });
+    preloadedVideo.src = fullHeroVideoSrc;
+    preloadedVideo.load();
+
+    return () => {
+      cancelled = true;
+      preloadedVideo.pause();
+      preloadedVideo.removeAttribute("src");
+      preloadedVideo.load();
+    };
+  }, [fullHeroVideoSrc, lowHeroVideoSrc]);
 
   useEffect(() => {
     const updateHeroLogoOpacity = () => {
@@ -170,14 +212,25 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="overflow-x-clip bg-stone-100 text-gray-900">
+    <div className="overflow-x-clip bg-gray-300 text-gray-900">
       <main className="relative isolate mb-3 h-[calc(100svh-0.75rem)] overflow-hidden">
         <div
           ref={backgroundRef}
           aria-hidden="true"
-          className="absolute inset-0 z-0 pointer-events-none bg-cover bg-center will-change-transform translate-x-[var(--bg-x,0px)] translate-y-[var(--bg-y,0px)] scale-[1.08]"
-          style={{ backgroundImage: `url(${bgSrc})` }}
-        />
+          className="absolute inset-0 z-0 pointer-events-none overflow-hidden will-change-transform translate-x-[var(--bg-x,0px)] translate-y-[var(--bg-y,0px)] scale-[1.08]"
+        >
+          <video
+            ref={heroVideoRef}
+            key={bgVideoSrc}
+            className="h-full w-full object-cover object-center"
+            src={bgVideoSrc}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+          />
+        </div>
 
         <section className="relative z-20 flex h-full flex-col items-stretch justify-end text-center text-white">
           <div className="px-4 pb-28 md:px-6">
@@ -210,7 +263,7 @@ export default function Home() {
         </section>
       </main>
 
-      <section id="custom-order" className="relative bg-stone-100 px-6 py-20">
+      <section id="custom-order" className="relative bg-gray-300 px-6 py-20">
         <div ref={customOrderRef} className="w-full">
           <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_33%] lg:items-stretch">
             <div className="flex h-full flex-col">
@@ -219,16 +272,13 @@ export default function Home() {
                 className={`reveal-slide-left ${revealedSections.customOrderText ? "is-visible" : ""}`}
               >
                 <SectionPill>{messages.home.customOrder.pill}</SectionPill>
-                <h2 className="mt-4 max-w-3xl">
+                <h2 className="mt-6 max-w-3xl">
                   <ArchivoInkBleed
                     className="block w-full max-w-[54rem]"
                     color="var(--kanna-ink)"
                     lines={[...messages.home.customOrder.titleLines]}
                   />
                 </h2>
-                <p className="mt-5 max-w-2xl text-sm leading-7 text-gray-600 md:text-base">
-                  {messages.home.customOrder.description}
-                </p>
               </div>
 
               <div className="pt-8 lg:mt-auto">
@@ -238,7 +288,7 @@ export default function Home() {
                 >
                   <LocalizedLink
                     to="/pre-order"
-                    className={`reveal-button-up inline-flex h-[15rem] w-[15rem] min-h-[15rem] min-w-[15rem] shrink-0 items-center justify-center rounded-full border border-transparent bg-[var(--kanna-ink)] p-0 text-center text-[3rem] font-semibold leading-[0.95] text-white uppercase transition hover:border-black hover:bg-white hover:text-black ${revealedSections.customOrderButton ? "is-visible" : ""}`}
+                    className={`reveal-button-up inline-flex h-[15rem] w-[15rem] min-h-[15rem] min-w-[15rem] shrink-0 items-center justify-center rounded-full border border-transparent bg-[var(--kanna-ink)] p-0 text-center text-[2.375rem] font-semibold leading-[0.95] text-white uppercase transition hover:border-black hover:bg-transparent hover:text-black ${revealedSections.customOrderButton ? "is-visible" : ""}`}
                   >
                     {messages.home.customOrder.button}
                   </LocalizedLink>
@@ -248,13 +298,13 @@ export default function Home() {
 
             <div
               ref={customOrderImageRef}
-              className={`overflow-hidden border border-stone-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.08)] reveal-slide-right ${revealedSections.customOrderImage ? "is-visible" : ""}`}
+              className={`aspect-square w-full self-end overflow-hidden border border-stone-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.08)] reveal-slide-right lg:h-[66.6%] lg:w-auto lg:max-w-full lg:justify-self-end ${revealedSections.customOrderImage ? "is-visible" : ""}`}
             >
-              <LocalizedLink to="/pre-order" className="block h-full">
+              <LocalizedLink to="/pre-order" className="block h-full w-full">
                 <img
                   src={`${baseUrl}welding-kanna.jpg`}
                   alt={messages.home.customOrder.imageAlt}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover object-bottom-right"
                 />
               </LocalizedLink>
             </div>
@@ -271,39 +321,42 @@ export default function Home() {
             backgroundImage: `url(${baseUrl}2013_DSF6372_jakubkanna.jpg)`,
           }}
         />
-        <div className="relative z-10 w-full flex min-h-[34rem] items-start">
+        <div className="relative z-10 flex min-h-[80vh] w-full items-start justify-center">
+          <div className="absolute top-0 left-0">
+            <SectionPill tone="dark">{messages.home.walker.pill}</SectionPill>
+          </div>
           <div
             ref={walkerTextRef}
-            className={`max-w-3xl reveal-slide-left ${revealedSections.walkerText ? "is-visible" : ""}`}
+            className={`mx-auto max-w-3xl text-center reveal-slide-left ${revealedSections.walkerText ? "is-visible" : ""}`}
           >
-            <SectionPill tone="dark">{messages.home.walker.pill}</SectionPill>
-            <h2 className="mt-4 max-w-3xl">
+            <h2 className="mx-auto mt-6 max-w-3xl">
               <ArchivoInkBleed
-                className="block w-full max-w-[34rem]"
+                align="center"
+                className="mx-auto block w-full max-w-[34rem]"
                 lines={[...messages.home.walker.titleLines]}
               />
             </h2>
-            <p className="mt-5 max-w-2xl text-sm leading-7 text-white md:text-base">
-              {messages.home.walker.description}
-            </p>
           </div>
-          <p className="absolute bottom-0 left-0 text-xs font-semibold uppercase tracking-[0.18em] text-white">
+          <p className="absolute bottom-0 left-0 max-w-2xl text-sm leading-7 text-white md:text-base">
+            {messages.home.walker.description}
+          </p>
+          <p className="absolute right-0 bottom-0 text-xs font-semibold uppercase tracking-[0.18em] text-white">
             {messages.common.comingSoon}
           </p>
         </div>
       </section>
 
       <section className="relative overflow-hidden bg-white">
-        <div className="relative grid min-h-[28rem] gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="flex items-start px-6 py-20">
+        <div className="relative grid min-h-136 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:items-stretch">
+          <div className="flex items-center px-6">
             <div
               ref={chainringTextRef}
-              className={`reveal-slide-left ${revealedSections.chainringText ? "is-visible" : ""}`}
+              className={`relative max-w-3xl  reveal-slide-left ${revealedSections.chainringText ? "is-visible" : ""}`}
             >
               <SectionPill>{messages.home.chainring.pill}</SectionPill>
-              <h2 className="mt-4 max-w-3xl">
+              <h2 className="mt-6 max-w-3xl">
                 <ArchivoInkBleed
-                  className="block w-full max-w-[54rem]"
+                  className="block w-full max-w-[34rem]"
                   color="var(--kanna-ink)"
                   lines={[...messages.home.chainring.titleLines]}
                 />
@@ -311,21 +364,21 @@ export default function Home() {
               <p className="mt-5 max-w-2xl text-sm leading-7 text-gray-600 md:text-base">
                 {messages.home.chainring.description}
               </p>
+              <p className="mt-8 text-xs font-semibold uppercase tracking-[0.18em] text-gray-900">
+                {messages.common.comingSoon}
+              </p>
             </div>
           </div>
           <div
             ref={chainringImageRef}
-            className={`flex items-center justify-end reveal-slide-right ${revealedSections.chainringImage ? "is-visible" : ""}`}
+            className={`overflow-hidden self-stretch reveal-slide-right ${revealedSections.chainringImage ? "is-visible" : ""}`}
           >
             <img
               src={`${baseUrl}Survior_Chainring_v147_2024-Jan-10_05-04-08PM-000_CustomizedView27250563922.webp`}
               alt={messages.home.chainring.imageAlt}
-              className="w-full max-w-xl object-contain"
+              className="h-full w-full object-cover object-left"
             />
           </div>
-          <p className="absolute bottom-6 left-4 text-xs font-semibold uppercase tracking-[0.18em] text-gray-900 md:left-8">
-            {messages.common.comingSoon}
-          </p>
         </div>
       </section>
     </div>

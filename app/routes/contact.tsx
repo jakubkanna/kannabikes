@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Route } from "./+types/contact";
 import { ArchivoInkBleed } from "~/components/archivo-ink-bleed";
+import { Button } from "~/components/button";
 import { PageContainer, PageShell } from "~/components/page-container";
 import {
   InputField,
@@ -415,15 +416,15 @@ export default function ContactPage() {
                 </div>
               ) : null}
 
-              <button
+              <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="inline-flex items-center justify-center rounded-xl bg-[var(--kanna-ink)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-black"
+                className="rounded-xl"
               >
                 {isSubmitting
                   ? messages.contact.sending
                   : messages.contact.send}
-              </button>
+              </Button>
             </form>
           )}
         </section>

@@ -1,6 +1,7 @@
 import { useId } from "react";
 
 type ArchivoInkBleedProps = {
+  align?: "left" | "center";
   className?: string;
   color?: string;
   fontSize?: number;
@@ -9,6 +10,7 @@ type ArchivoInkBleedProps = {
 };
 
 export function ArchivoInkBleed({
+  align = "left",
   className,
   color = "#f3f3ea",
   fontSize = 180,
@@ -18,7 +20,7 @@ export function ArchivoInkBleed({
   const filterId = useId();
   const safeLines = lines.filter((line) => line.trim().length > 0);
   const lineCount = Math.max(safeLines.length, 1);
-  const paddingX = 60;
+  const paddingX = 0;
   const estimatedCharacterWidth = 0.58;
   const longestLineLength = safeLines.reduce(
     (longest, line) => Math.max(longest, line.length),
@@ -70,7 +72,8 @@ export function ArchivoInkBleed({
           fontSize={fittedFontSize}
           fontWeight="900"
           letterSpacing="-0.06em"
-          x={paddingX}
+          textAnchor={align === "center" ? "middle" : "start"}
+          x={align === "center" ? maxWidth / 2 : paddingX}
           y={paddingTop + lineHeight * index}
         >
           {line}
