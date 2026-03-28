@@ -1,5 +1,9 @@
 import { localizePath, type Locale } from "./i18n";
 import { sanitizeUserHtml } from "./html";
+import {
+  buildRideWithGpsEmbedUrl,
+  buildRideWithGpsRouteUrl,
+} from "./blog";
 
 export type WordpressImage = {
   alt: string;
@@ -11,6 +15,7 @@ export type WordpressImage = {
 };
 
 export type WordpressPost = {
+  categorySlugs: string[];
   commentsOpen: boolean;
   contentHtml: string;
   excerpt: string;
@@ -19,10 +24,17 @@ export type WordpressPost = {
   locale: Locale;
   postId: number;
   publishedAt: string;
+  route: WordpressPostRoute | null;
   slug: string;
   title: string;
   translations: Partial<Record<Locale, string>>;
   url: string | null;
+};
+
+export type WordpressPostRoute = {
+  gpxDownloadUrl: string | null;
+  rideWithGpsEmbedUrl: string | null;
+  rideWithGpsUrl: string | null;
 };
 
 export type WordpressComment = {
@@ -42,6 +54,8 @@ export type FetchPostsResult = {
   nextPage: number | null;
   posts: WordpressPost[];
 };
+
+export const BLOG_POST_CATEGORY_SLUGS = ["blog", "route", "gear"] as const;
 
 type WordpressPostsApiResponse = Array<{
   [key: string]: unknown;
@@ -94,6 +108,11 @@ type WordpressCommentsApiResponse = {
 type WordpressCategoriesApiResponse = Array<{
   id: number;
   slug?: string;
+}>;
+
+type WordpressMediaApiResponse = Array<{
+  id: number;
+  source_url?: string;
 }>;
 
 const APP_BASE = (import.meta.env.BASE_URL ?? "/").replace(/\/$/, "");
@@ -178,6 +197,25 @@ function normalizeUrl(value: unknown) {
   return null;
 }
 
+function normalizeAcfFileUrl(
+  value: unknown,
+  mediaUrlsById: Map<number, string> = new Map(),
+) {
+  if (typeof value === "string") {
+    return normalizeUrl(value);
+  }
+
+  if (typeof value === "number" && Number.isFinite(value) && value > 0) {
+    return normalizeUrl(mediaUrlsById.get(value));
+  }
+
+  if (value && typeof value === "object" && "url" in value) {
+    return normalizeUrl((value as { url?: unknown }).url);
+  }
+
+  return null;
+}
+
 function normalizeWordpressAssetUrl(value: string | undefined) {
   if (!value) return "";
 
@@ -239,9 +277,34 @@ function mapWpPost(
   post: WordpressPostsApiResponse[number],
   locale: Locale,
   translations: Partial<Record<Locale, string>> = {},
+  knownCategorySlugsById: Map<number, string> = new Map(),
+  mediaUrlsById: Map<number, string> = new Map(),
 ): WordpressPost {
   const customUrl = pickCustomUrl(post);
+  const rideWithGpsUrl = buildRideWithGpsRouteUrl(
+    normalizeUrl(post.acf?.ride_with_gps_url),
+  );
+  const gpxDownloadUrl = normalizeAcfFileUrl(
+    post.acf?.route_gpx_file,
+    mediaUrlsById,
+  );
+  const rideWithGpsEmbedUrl = buildRideWithGpsEmbedUrl(rideWithGpsUrl);
+  const route =
+    rideWithGpsUrl || gpxDownloadUrl
+      ? {
+          gpxDownloadUrl,
+          rideWithGpsEmbedUrl,
+          rideWithGpsUrl,
+        }
+      : null;
+  const categorySlugs = Array.isArray(post.categories)
+    ? post.categories
+        .map((categoryId) => knownCategorySlugsById.get(categoryId))
+        .filter((slug): slug is string => Boolean(slug))
+    : [];
+
   return {
+    categorySlugs,
     commentsOpen: post.comment_status !== "closed",
     contentHtml: typeof post.content?.rendered === "string" ? post.content.rendered : "",
     excerpt: sanitizeHtml(post.excerpt?.rendered),
@@ -250,6 +313,7 @@ function mapWpPost(
     locale,
     postId: post.id,
     publishedAt: typeof post.date === "string" ? post.date : "",
+    route,
     slug: typeof post.slug === "string" ? post.slug : String(post.id),
     title: sanitizeHtml(post.title?.rendered) || `Post ${post.id}`,
     translations,
@@ -267,10 +331,29 @@ async function fetchWordpressCategoryId(
   locale: Locale,
   fetchImpl: typeof fetch = fetch,
 ) {
+  const payload = await fetchWordpressCategoriesBySlugs([slug], locale, fetchImpl);
+  const category = payload[0];
+
+  return category?.id ?? null;
+}
+
+async function fetchWordpressCategoriesBySlugs(
+  slugs: readonly string[],
+  locale: Locale,
+  fetchImpl: typeof fetch = fetch,
+) {
+  const normalizedSlugs = Array.from(
+    new Set(slugs.map((slug) => slug.trim()).filter(Boolean)),
+  );
+
+  if (normalizedSlugs.length === 0) {
+    return [];
+  }
+
   const endpoint = buildWordpressApiUrl("/wp-json/wp/v2/categories");
   endpoint.searchParams.set("lang", locale);
-  endpoint.searchParams.set("slug", slug);
-  endpoint.searchParams.set("per_page", "1");
+  endpoint.searchParams.set("slug", normalizedSlugs.join(","));
+  endpoint.searchParams.set("per_page", String(normalizedSlugs.length));
 
   const response = await fetchImpl(endpoint.toString(), {
     headers: { Accept: "application/json" },
@@ -281,9 +364,14 @@ async function fetchWordpressCategoryId(
   }
 
   const payload = (await response.json()) as WordpressCategoriesApiResponse;
-  const category = payload[0];
 
-  return category?.id ?? null;
+  return payload.filter(
+    (category) =>
+      Number.isFinite(category.id) &&
+      category.id > 0 &&
+      typeof category.slug === "string" &&
+      category.slug.trim().length > 0,
+  );
 }
 
 async function fetchWordpressPostsRequest(
@@ -342,10 +430,45 @@ async function fetchWordpressPostSlugsByIds(
   );
 }
 
+async function fetchWordpressMediaUrlsByIds(
+  ids: number[],
+  fetchImpl: typeof fetch = fetch,
+) {
+  const uniqueIds = Array.from(
+    new Set(ids.filter((id) => Number.isFinite(id) && id > 0)),
+  );
+
+  if (uniqueIds.length === 0) {
+    return new Map<number, string>();
+  }
+
+  const endpoint = buildWordpressApiUrl("/wp-json/wp/v2/media");
+  endpoint.searchParams.set("include", uniqueIds.join(","));
+  endpoint.searchParams.set("per_page", String(uniqueIds.length));
+  endpoint.searchParams.set("_fields", "id,source_url");
+
+  const response = await fetchImpl(endpoint.toString(), {
+    headers: { Accept: "application/json" },
+  });
+
+  if (!response.ok) {
+    throw new Error(`WordPress media fetch failed (${response.status})`);
+  }
+
+  const payload = (await response.json()) as WordpressMediaApiResponse;
+
+  return new Map(
+    payload
+      .map((media) => [media.id, normalizeUrl(media.source_url)] as const)
+      .filter((entry): entry is [number, string] => Boolean(entry[1])),
+  );
+}
+
 async function mapWordpressPostsWithTranslations(
   posts: WordpressPostsApiResponse,
   locale: Locale,
   fetchImpl: typeof fetch = fetch,
+  knownCategorySlugsById: Map<number, string> = new Map(),
 ) {
   const translationIds = posts.flatMap((post) =>
     Object.entries(post.translations ?? {})
@@ -357,6 +480,12 @@ async function mapWordpressPostsWithTranslations(
     locale === "en" ? "pl" : "en",
     fetchImpl,
   );
+  const mediaIds = posts
+    .map((post) => post.acf?.route_gpx_file)
+    .filter(
+      (value): value is number => typeof value === "number" && Number.isFinite(value) && value > 0,
+    );
+  const mediaUrlsById = await fetchWordpressMediaUrlsByIds(mediaIds, fetchImpl);
 
   return posts.map((post) => {
     const translations = Object.entries(post.translations ?? {}).reduce<
@@ -373,7 +502,13 @@ async function mapWordpressPostsWithTranslations(
     }, {});
 
     return {
-      ...mapWpPost(post, locale, translations),
+      ...mapWpPost(
+        post,
+        locale,
+        translations,
+        knownCategorySlugsById,
+        mediaUrlsById,
+      ),
       url: localizePath(
         `/blog/${typeof post.slug === "string" ? post.slug : post.id}`,
         locale,
@@ -421,15 +556,26 @@ export async function fetchWordpressPosts(
 }
 
 export async function fetchWordpressPostsByCategory(
-  categorySlug: string,
+  categorySlug: string | readonly string[],
   locale: Locale,
   page: number,
   pageSize: number,
   fetchImpl: typeof fetch = fetch,
 ): Promise<FetchPostsResult> {
-  const categoryId = await fetchWordpressCategoryId(categorySlug, locale, fetchImpl);
+  const categorySlugs = Array.isArray(categorySlug)
+    ? categorySlug
+    : [categorySlug];
+  const categories = await fetchWordpressCategoriesBySlugs(
+    categorySlugs,
+    locale,
+    fetchImpl,
+  );
+  const categoryIds = categories.map((category) => category.id);
+  const categorySlugById = new Map(
+    categories.map((category) => [category.id, category.slug ?? String(category.id)]),
+  );
 
-  if (!categoryId) {
+  if (categoryIds.length === 0) {
     return {
       hasMore: false,
       nextPage: null,
@@ -448,11 +594,21 @@ export async function fetchWordpressPostsByCategory(
       lang: locale,
       orderby: "date",
       order: "desc",
-      categories: String(categoryId),
+      categories: categoryIds.join(","),
     },
     fetchImpl,
   );
-  const posts = await mapWordpressPostsWithTranslations(payload, locale, fetchImpl);
+  const matchingPayload = payload.filter((entry) =>
+    Array.isArray(entry.categories)
+      ? entry.categories.some((categoryId) => categoryIds.includes(categoryId))
+      : false,
+  );
+  const posts = await mapWordpressPostsWithTranslations(
+    matchingPayload,
+    locale,
+    fetchImpl,
+    categorySlugById,
+  );
 
   return {
     hasMore: safePage < totalPages,
@@ -464,7 +620,7 @@ export async function fetchWordpressPostsByCategory(
 export async function fetchWordpressPostBySlug(
   slug: string,
   locale: Locale,
-  categorySlug = "blog",
+  categorySlug: string | readonly string[] = BLOG_POST_CATEGORY_SLUGS,
   fetchImpl: typeof fetch = fetch,
 ): Promise<WordpressPost | null> {
   const normalizedSlug = slug.trim();
@@ -473,9 +629,20 @@ export async function fetchWordpressPostBySlug(
     return null;
   }
 
-  const categoryId = await fetchWordpressCategoryId(categorySlug, locale, fetchImpl);
+  const categorySlugs = Array.isArray(categorySlug)
+    ? categorySlug
+    : [categorySlug];
+  const categories = await fetchWordpressCategoriesBySlugs(
+    categorySlugs,
+    locale,
+    fetchImpl,
+  );
+  const categoryIds = categories.map((category) => category.id);
+  const categorySlugById = new Map(
+    categories.map((category) => [category.id, category.slug ?? String(category.id)]),
+  );
 
-  if (!categoryId) {
+  if (categoryIds.length === 0) {
     return null;
   }
 
@@ -485,21 +652,28 @@ export async function fetchWordpressPostBySlug(
       status: "publish",
       _embed: "wp:featuredmedia",
       lang: locale,
-      categories: String(categoryId),
+      categories: categoryIds.join(","),
       per_page: "1",
     },
     fetchImpl,
   );
 
   const post = payload.find((entry) =>
-    Array.isArray(entry.categories) ? entry.categories.includes(categoryId) : false,
+    Array.isArray(entry.categories)
+      ? entry.categories.some((categoryId) => categoryIds.includes(categoryId))
+      : false,
   );
 
   if (!post) {
     return null;
   }
 
-  const [mappedPost] = await mapWordpressPostsWithTranslations([post], locale, fetchImpl);
+  const [mappedPost] = await mapWordpressPostsWithTranslations(
+    [post],
+    locale,
+    fetchImpl,
+    categorySlugById,
+  );
   return mappedPost ?? null;
 }
 

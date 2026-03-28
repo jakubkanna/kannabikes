@@ -25,6 +25,7 @@ import {
   voteCustomerBlogComment,
 } from "~/lib/customer-account";
 import {
+  BLOG_POST_CATEGORY_SLUGS,
   fetchWordpressComments,
   fetchWordpressPostBySlug,
   type WordpressComment,
@@ -94,7 +95,7 @@ export async function loader({
     const post = await fetchWordpressPostBySlug(
       params.slug ?? "",
       locale,
-      "blog",
+      BLOG_POST_CATEGORY_SLUGS,
     );
 
     return {
@@ -199,6 +200,11 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
   const commentRedirectPath = `${location.pathname}${location.search}#comments`;
   const threadedComments = buildCommentTree(comments);
   const postUrl = buildSiteUrl(location.pathname);
+  const gpxDownloadPath = post.route?.gpxDownloadUrl
+    ? `${localizePath("/blog/download-gpx", locale)}?source=${encodeURIComponent(
+        post.route.gpxDownloadUrl,
+      )}&filename=${encodeURIComponent(`${post.slug}.gpx`)}`
+    : null;
   const articleJsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -337,15 +343,8 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
       <JsonLd data={breadcrumbJsonLd} />
       <section className="bg-black px-4 pb-12 pt-10 text-white md:px-8 md:pb-16 md:pt-14">
         <PageContainer>
-          <Link
-            to={loaderData.locale === "pl" ? "/pl/blog" : "/blog"}
-            className="text-sm font-semibold text-white/80 underline decoration-white/30 underline-offset-4 transition hover:text-white hover:decoration-white"
-          >
-            {messages.blog.backToBlog}
-          </Link>
-
           {post.publishedAt ? (
-            <p className="mt-8 text-xs font-semibold uppercase tracking-[0.18em] text-white/55">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">
               {formatPublishedDate(post.publishedAt, loaderData.locale)}
             </p>
           ) : null}
@@ -373,6 +372,31 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
           />
 
           <div className="mx-auto mt-10 max-w-3xl">
+            {post.route?.rideWithGpsEmbedUrl ? (
+              <div className="mb-10 overflow-hidden rounded-[28px] bg-white shadow-[0_24px_80px_rgba(15,23,42,0.08)]">
+                <iframe
+                  src={post.route.rideWithGpsEmbedUrl}
+                  title={`${post.title} Ride with GPS`}
+                  className="h-[420px] w-full border-0 md:h-[560px]"
+                  loading="lazy"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allowFullScreen
+                />
+                {gpxDownloadPath ? (
+                  <div className="flex justify-end px-4 pb-4 pt-5 md:px-6 md:pb-6 md:pt-6">
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        window.location.assign(gpxDownloadPath);
+                      }}
+                    >
+                      {messages.blog.downloadGpx}
+                    </Button>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+
             <div
               className="blog-content text-base"
               dangerouslySetInnerHTML={{ __html: post.contentHtml }}

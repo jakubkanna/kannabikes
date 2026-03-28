@@ -1,11 +1,18 @@
+import { useState } from "react";
 import { Link } from "react-router";
 
 import type { Route } from "./+types/blog._index";
 import { ArchivoInkBleed } from "~/components/archivo-ink-bleed";
+import { SelectField } from "~/components/form-field";
 import { BlogIndexHydrateFallback } from "~/components/hydrate-fallbacks";
 import { useMessages } from "~/components/locale-provider";
 import { PageContainer, PageShell } from "~/components/page-container";
 import { SectionPill } from "~/components/section-pill";
+import {
+  getBlogCategories,
+  getBlogCategorySlugs,
+  type BlogCategorySlug,
+} from "~/lib/blog";
 import {
   buildLocalizedMeta,
   getIntlLocale,
@@ -13,6 +20,7 @@ import {
   getMessages,
 } from "~/lib/i18n";
 import {
+  BLOG_POST_CATEGORY_SLUGS,
   fetchWordpressPostsByCategory,
   type WordpressPost,
 } from "~/lib/wordpress";
@@ -38,17 +46,27 @@ function formatPublishedDate(value: string, locale: "en" | "pl") {
 
 export async function loader({ request }: Route.LoaderArgs) {
   const locale = getLocaleFromPath(new URL(request.url).pathname);
+  const categories = getBlogCategories(locale);
 
   try {
-    const result = await fetchWordpressPostsByCategory("blog", locale, 1, 24);
+    const result = await fetchWordpressPostsByCategory(
+      BLOG_POST_CATEGORY_SLUGS,
+      locale,
+      1,
+      24,
+    );
     return {
       alternatePaths: {
         en: "/blog",
         pl: "/pl/blog",
       },
+      categories,
       loadError: null,
       locale,
-      posts: result.posts,
+      posts: result.posts.map((post) => ({
+        ...post,
+        blogCategorySlugs: getBlogCategorySlugs(post),
+      })),
     };
   } catch {
     return {
@@ -56,9 +74,12 @@ export async function loader({ request }: Route.LoaderArgs) {
         en: "/blog",
         pl: "/pl/blog",
       },
+      categories,
       loadError: getMessages(locale).blog.loadError,
       locale,
-      posts: [] as WordpressPost[],
+      posts: [] as Array<
+        WordpressPost & { blogCategorySlugs: BlogCategorySlug[] }
+      >,
     };
   }
 }
@@ -128,6 +149,15 @@ function BlogPostCard({
 
 export default function BlogPage({ loaderData }: Route.ComponentProps) {
   const messages = useMessages();
+  const [selectedCategorySlug, setSelectedCategorySlug] = useState<
+    "all" | BlogCategorySlug
+  >("all");
+  const filteredPosts = loaderData.posts.filter((post) => {
+    return (
+      selectedCategorySlug === "all" ||
+      post.blogCategorySlugs.includes(selectedCategorySlug)
+    );
+  });
 
   return (
     <PageShell>
@@ -147,14 +177,42 @@ export default function BlogPage({ loaderData }: Route.ComponentProps) {
             {loaderData.loadError}
           </section>
         ) : loaderData.posts.length > 0 ? (
-          <section className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {loaderData.posts.map((post) => (
-              <BlogPostCard
-                key={post.id}
-                locale={loaderData.locale}
-                post={post}
-              />
-            ))}
+          <section className="mt-6">
+            <div className="max-w-xs">
+              <SelectField
+                value={selectedCategorySlug}
+                onChange={(event) =>
+                  setSelectedCategorySlug(
+                    event.target.value as "all" | BlogCategorySlug,
+                  )
+                }
+                aria-label={messages.commerce.categories}
+                className="bg-white"
+              >
+                <option value="all">{messages.blog.allCategories}</option>
+                {loaderData.categories.map((category) => (
+                  <option key={category.slug} value={category.slug}>
+                    {category.label}
+                  </option>
+                ))}
+              </SelectField>
+            </div>
+
+            {filteredPosts.length > 0 ? (
+              <div className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                {filteredPosts.map((post) => (
+                  <BlogPostCard
+                    key={post.id}
+                    locale={loaderData.locale}
+                    post={post}
+                  />
+                ))}
+              </div>
+            ) : (
+              <section className="mt-6 border border-dashed border-stone-300 bg-white p-8 text-sm leading-6 text-stone-600 shadow-sm">
+                {messages.blog.empty}
+              </section>
+            )}
           </section>
         ) : (
           <section className="mt-6 border border-dashed border-stone-300 bg-white p-8 text-sm leading-6 text-stone-600 shadow-sm">

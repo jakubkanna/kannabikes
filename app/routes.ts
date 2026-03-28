@@ -19,6 +19,12 @@ const polishRoutes = buildLocalizedRoutes("pl-");
 export default [
   ...localizedRoutes,
   ...prefix("pl", polishRoutes),
+  route("blog/download-gpx", "routes/blog.download-gpx.ts", {
+    id: "blog-download-gpx",
+  }),
+  route("pl/blog/download-gpx", "routes/blog.download-gpx.ts", {
+    id: "pl-blog-download-gpx",
+  }),
   route("robots.txt", "routes/robots[.]txt.ts", { id: "robots" }),
   route("sitemap.xml", "routes/sitemap[.]xml.ts", { id: "sitemap" }),
 ] satisfies RouteConfig;

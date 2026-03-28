@@ -1,6 +1,9 @@
 import { fetchStoreCategories, fetchStoreProducts } from "~/lib/store-api";
 import { SITE_URL, type Locale } from "~/lib/i18n";
-import { fetchWordpressPostsByCategory } from "~/lib/wordpress";
+import {
+  BLOG_POST_CATEGORY_SLUGS,
+  fetchWordpressPostsByCategory,
+} from "~/lib/wordpress";
 import { getStaticPublicSitemapEntries } from "../../route-manifest";
 import type { Route } from "./+types/sitemap[.]xml";
 
@@ -77,7 +80,12 @@ async function fetchAllBlogPosts(locale: Locale) {
   let page = 1;
 
   while (page <= 20) {
-    const result = await fetchWordpressPostsByCategory("blog", locale, page, 50)
+    const result = await fetchWordpressPostsByCategory(
+      BLOG_POST_CATEGORY_SLUGS,
+      locale,
+      page,
+      50,
+    )
       .catch((error) => {
         reportSitemapSourceFailure(`blog posts (${locale}, page ${page})`, error);
         return {

@@ -103,6 +103,7 @@ export const messages = {
       passwordMinLength: "Password must be at least 8 characters long.",
     },
     blog: {
+      allCategories: "All categories",
       backToBlog: "Back to blog",
       commentBodyLabel: "Comment",
       commentEmailLabel: "e-mail",
@@ -122,9 +123,15 @@ export const messages = {
       loadingPosts: "Loading blog posts...",
       noComments: "No comments yet.",
       notFound: "This blog post was not found.",
+      downloadGpx: "Download GPX",
+      openOnRideWithGps: "Open on Ride with GPS",
       pill: "Blog",
       readArticle: "Read article",
       replyToComment: "Reply",
+      routeToolsDescription:
+        "Use the Ride with GPS map for route preview and navigation planning, or download the GPX file you uploaded for offline use.",
+      routeToolsEyebrow: "Map & GPS",
+      routeToolsTitle: "Route tools",
       signInToComment: "Sign in to comment",
       submitComment: "Publish comment",
       submitCommentError:
@@ -587,6 +594,7 @@ export const messages = {
       passwordMinLength: "Hasło musi mieć co najmniej 8 znaków.",
     },
     blog: {
+      allCategories: "Wszystkie kategorie",
       backToBlog: "Wróć do bloga",
       commentBodyLabel: "Komentarz",
       commentEmailLabel: "e-mail",
@@ -606,9 +614,15 @@ export const messages = {
       loadingPosts: "Ładowanie wpisów bloga...",
       noComments: "Brak komentarzy.",
       notFound: "Nie znaleziono tego wpisu.",
+      downloadGpx: "Pobierz GPX",
+      openOnRideWithGps: "Otwórz w Ride with GPS",
       pill: "Blog",
       readArticle: "Czytaj artykuł",
       replyToComment: "Odpowiedz",
+      routeToolsDescription:
+        "Użyj mapy Ride with GPS do podglądu trasy i planowania nawigacji albo pobierz przesłany plik GPX do jazdy offline.",
+      routeToolsEyebrow: "Mapa i GPX",
+      routeToolsTitle: "Narzędzia trasy",
       signInToComment: "Zaloguj się, aby skomentować",
       submitComment: "Opublikuj komentarz",
       submitCommentError:
