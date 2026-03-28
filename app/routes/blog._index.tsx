@@ -110,6 +110,7 @@ function BlogPostCard({
   post: WordpressPost;
 }) {
   const postPath = post.url ?? `/blog/${post.slug}`;
+  const hasFeaturedImage = Boolean(post.image.src);
 
   return (
     <Link
@@ -117,13 +118,17 @@ function BlogPostCard({
       className="group block h-full overflow-hidden border border-stone-200 bg-white shadow-sm transition hover:-translate-y-1"
     >
       <article className="h-full">
-        <img
-          src={post.image.src}
-          srcSet={post.image.srcSet}
-          sizes="(min-width: 1024px) 32vw, (min-width: 768px) 48vw, 100vw"
-          alt={post.image.alt}
-          className="aspect-[4/3] w-full object-cover transition duration-300 group-hover:scale-[1.02]"
-        />
+        {hasFeaturedImage ? (
+          <img
+            src={post.image.src}
+            srcSet={post.image.srcSet}
+            sizes="(min-width: 1024px) 32vw, (min-width: 768px) 48vw, 100vw"
+            alt={post.image.alt}
+            className="aspect-[4/3] w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+          />
+        ) : (
+          <div className="aspect-[4/3] w-full bg-black" aria-hidden="true" />
+        )}
 
         <div className="p-6">
           {post.publishedAt ? (

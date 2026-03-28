@@ -1,6 +1,6 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { Link } from "react-router";
-import { useLocation, useNavigate } from "react-router";
+import { useLocation } from "react-router";
 
 import type { Route } from "./+types/blog.$slug";
 import { Button } from "~/components/button";
@@ -85,10 +85,7 @@ function formatPublishedDate(value: string, locale: "en" | "pl") {
   }).format(date);
 }
 
-export async function loader({
-  params,
-  request,
-}: Route.LoaderArgs) {
+export async function loader({ params, request }: Route.LoaderArgs) {
   const locale = getLocaleFromPath(new URL(request.url).pathname);
 
   try {
@@ -124,7 +121,8 @@ export function meta({ loaderData, location }: Route.MetaArgs) {
   const locale = getLocaleFromPath(location.pathname);
   const messages = getMessages(locale);
   const title = loaderData?.post?.title ?? messages.meta.blog.title;
-  const description = loaderData?.post?.excerpt || messages.meta.blog.description;
+  const description =
+    loaderData?.post?.excerpt || messages.meta.blog.description;
 
   return buildLocalizedMeta({
     alternates: loaderData?.alternatePaths,
@@ -147,7 +145,6 @@ export function HydrateFallback() {
 export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
   const locale = useLocale();
   const location = useLocation();
-  const navigate = useNavigate();
   const messages = useMessages();
   const [comments, setComments] = useState<WordpressComment[]>([]);
   const [commentsLoading, setCommentsLoading] = useState(false);
@@ -159,7 +156,9 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
   const [commentSubmitting, setCommentSubmitting] = useState(false);
   const [commentStatus, setCommentStatus] = useState<string | null>(null);
   const [replyBody, setReplyBody] = useState("");
-  const [replyingToCommentId, setReplyingToCommentId] = useState<number | null>(null);
+  const [replyingToCommentId, setReplyingToCommentId] = useState<number | null>(
+    null,
+  );
   const [activeVoteCommentId, setActiveVoteCommentId] = useState<number | null>(
     null,
   );
@@ -200,6 +199,7 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
   const commentRedirectPath = `${location.pathname}${location.search}#comments`;
   const threadedComments = buildCommentTree(comments);
   const postUrl = buildSiteUrl(location.pathname);
+  const hasRealFeaturedImage = Boolean(post.image.src);
   const gpxDownloadPath = post.route?.gpxDownloadUrl
     ? `${localizePath("/blog/download-gpx", locale)}?source=${encodeURIComponent(
         post.route.gpxDownloadUrl,
@@ -341,39 +341,45 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
     <main className="min-h-screen bg-white">
       <JsonLd data={articleJsonLd} />
       <JsonLd data={breadcrumbJsonLd} />
-      <section className="bg-black px-4 pb-12 pt-10 text-white md:px-8 md:pb-16 md:pt-14">
+      <section className="relative overflow-hidden bg-black px-4 pb-12 pt-10 text-white md:px-8 md:pb-16 md:pt-14">
+        {hasRealFeaturedImage ? (
+          <>
+            <img
+              src={post.image.src}
+              srcSet={post.image.srcSet}
+              sizes="100vw"
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 h-full w-full object-cover opacity-35"
+            />
+            <div className="absolute inset-0 bg-black/20" aria-hidden="true" />
+          </>
+        ) : null}
         <PageContainer>
-          {post.publishedAt ? (
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">
-              {formatPublishedDate(post.publishedAt, loaderData.locale)}
-            </p>
-          ) : null}
+          <div className="relative z-10">
+            {post.publishedAt ? (
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">
+                {formatPublishedDate(post.publishedAt, loaderData.locale)}
+              </p>
+            ) : null}
 
-          <h1 className="page-heading mt-3 max-w-4xl text-[2.7rem] leading-[0.9] text-white md:text-[4.8rem]">
-            {post.title}
-          </h1>
-
-          {post.excerpt ? (
-            <p className="mt-5 max-w-3xl text-base leading-7 text-white/72 md:text-lg">
-              {post.excerpt}
-            </p>
-          ) : null}
+            <h1 className="page-heading mt-3 max-w-4xl text-[2.7rem] leading-[0.9] text-white md:text-[4.8rem]">
+              {post.title}
+            </h1>
+          </div>
         </PageContainer>
       </section>
 
       <article className="px-4 pb-16 pt-8 md:px-8 md:pb-24 md:pt-10">
         <PageContainer>
-          <img
-            src={post.image.src}
-            srcSet={post.image.srcSet}
-            sizes="(min-width: 1024px) 64rem, 100vw"
-            alt={post.image.alt}
-            className="aspect-[16/9] w-full rounded-[28px] object-cover shadow-[0_24px_80px_rgba(15,23,42,0.18)]"
-          />
+          <div className="mx-auto max-w-3xl">
+            <div
+              className="blog-content text-base"
+              dangerouslySetInnerHTML={{ __html: post.contentHtml }}
+            />
 
-          <div className="mx-auto mt-10 max-w-3xl">
             {post.route?.rideWithGpsEmbedUrl ? (
-              <div className="mb-10 overflow-hidden rounded-[28px] bg-white shadow-[0_24px_80px_rgba(15,23,42,0.08)]">
+              <div className="mt-10 overflow-hidden rounded-[28px] bg-white shadow-[0_24px_80px_rgba(15,23,42,0.08)]">
                 <iframe
                   src={post.route.rideWithGpsEmbedUrl}
                   title={`${post.title} Ride with GPS`}
@@ -396,11 +402,6 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
                 ) : null}
               </div>
             ) : null}
-
-            <div
-              className="blog-content text-base"
-              dangerouslySetInnerHTML={{ __html: post.contentHtml }}
-            />
 
             <section
               id="comments"
@@ -570,14 +571,12 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
             </section>
 
             <div className="mt-12">
-              <Button
-                type="button"
-                onClick={() =>
-                  navigate(loaderData.locale === "pl" ? "/pl/blog" : "/blog")
-                }
+              <Link
+                to={loaderData.locale === "pl" ? "/pl/blog" : "/blog"}
+                className="text-sm font-semibold text-[var(--kanna-ink)] underline decoration-black/20 underline-offset-4 transition hover:decoration-black/70"
               >
                 {messages.blog.backToBlog}
-              </Button>
+              </Link>
             </div>
           </div>
         </PageContainer>
@@ -684,7 +683,13 @@ function CommentCard({
   const isReplying = replyingToCommentId === node.id;
 
   return (
-    <div className={depth > 0 ? "ml-6 mt-4 border-l border-black/10 pl-4 md:ml-10 md:pl-6" : ""}>
+    <div
+      className={
+        depth > 0
+          ? "ml-6 mt-4 border-l border-black/10 pl-4 md:ml-10 md:pl-6"
+          : ""
+      }
+    >
       <article className="border border-black/15 bg-white p-5">
         <div className="flex gap-4">
           <div className="flex w-10 shrink-0 flex-col items-center">
@@ -697,7 +702,10 @@ function CommentCard({
               }
               className={`inline-flex h-8 w-8 cursor-pointer items-center justify-center border border-black/15 text-[var(--kanna-ink)] transition hover:border-black ${node.currentUserVote === 1 ? "bg-black text-white" : "bg-white"} disabled:cursor-not-allowed disabled:opacity-50`}
               onClick={async () => {
-                if (!customerSession?.authenticated || !customerSession.csrfToken) {
+                if (
+                  !customerSession?.authenticated ||
+                  !customerSession.csrfToken
+                ) {
                   return;
                 }
 
@@ -752,7 +760,10 @@ function CommentCard({
               }
               className={`mt-2 inline-flex h-8 w-8 cursor-pointer items-center justify-center border border-black/15 text-[var(--kanna-ink)] transition hover:border-black ${node.currentUserVote === -1 ? "bg-black text-white" : "bg-white"} disabled:cursor-not-allowed disabled:opacity-50`}
               onClick={async () => {
-                if (!customerSession?.authenticated || !customerSession.csrfToken) {
+                if (
+                  !customerSession?.authenticated ||
+                  !customerSession.csrfToken
+                ) {
                   return;
                 }
 
@@ -852,11 +863,17 @@ function CommentCard({
                         required
                         rows={4}
                         value={replyBody}
-                        onChange={(event) => onReplyChange(event.currentTarget.value)}
+                        onChange={(event) =>
+                          onReplyChange(event.currentTarget.value)
+                        }
                       />
                     </label>
                     <div className="flex flex-wrap gap-3">
-                      <Button type="submit" disabled={replySubmitting} className="rounded-none">
+                      <Button
+                        type="submit"
+                        disabled={replySubmitting}
+                        className="rounded-none"
+                      >
                         {messages.blog.submitComment}
                       </Button>
                       <Button

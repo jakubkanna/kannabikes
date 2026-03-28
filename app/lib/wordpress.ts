@@ -115,7 +115,6 @@ type WordpressMediaApiResponse = Array<{
   source_url?: string;
 }>;
 
-const APP_BASE = (import.meta.env.BASE_URL ?? "/").replace(/\/$/, "");
 const WORDPRESS_API_BASE = (
   import.meta.env.VITE_WORDPRESS_API_BASE_URL ?? ""
 ).replace(/\/$/, "");
@@ -149,7 +148,6 @@ const WORDPRESS_BASE_ORIGIN = (() => {
     return WORDPRESS_BASE_URL;
   }
 })();
-const PLACEHOLDER_SRC = `${APP_BASE}/placeholder.png`;
 const DEFAULT_IMAGE_SIZE = 1400;
 
 function buildWordpressApiUrl(path: string) {
@@ -182,9 +180,9 @@ function createFallbackImage(postId: number): WordpressImage {
   return {
     alt: `Portfolio visual ${postId}`,
     height: DEFAULT_IMAGE_SIZE,
-    src: PLACEHOLDER_SRC,
-    srcSet: `${PLACEHOLDER_SRC} ${DEFAULT_IMAGE_SIZE}w`,
-    sources: [{ src: PLACEHOLDER_SRC, width: DEFAULT_IMAGE_SIZE }],
+    src: "",
+    srcSet: "",
+    sources: [],
     width: DEFAULT_IMAGE_SIZE,
   };
 }

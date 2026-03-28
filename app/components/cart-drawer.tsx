@@ -175,22 +175,39 @@ export function CartDrawer({
                   className="border border-stone-200 bg-white p-4 shadow-sm"
                 >
                   <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <LocalizedLink
-                        to={item.path}
-                        onClick={onClose}
-                        className="text-base font-semibold text-[var(--kanna-ink)]"
-                      >
-                        {item.name}
-                      </LocalizedLink>
-                      <p className="mt-1 text-sm text-gray-600">{item.price}</p>
+                    <div className="flex min-w-0 items-start gap-3">
+                      <div className="h-16 w-16 shrink-0 overflow-hidden rounded-md bg-stone-200">
+                        {item.imageSrc ? (
+                          <img
+                            src={item.imageSrc}
+                            alt={item.imageAlt}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : null}
+                      </div>
+                      <div className="min-w-0">
+                        <LocalizedLink
+                          to={item.path}
+                          onClick={onClose}
+                          className="text-base font-semibold text-[var(--kanna-ink)]"
+                        >
+                          {item.name}
+                        </LocalizedLink>
+                        <p className="mt-1 text-sm text-gray-600">{item.price}</p>
+                      </div>
                     </div>
                     <button
                       type="button"
+                      aria-label={messages.cart.remove}
                       onClick={() => void handleRemove(item.key)}
-                      className="text-sm font-semibold text-red-700"
+                      className="shrink-0 cursor-pointer text-red-700 transition hover:text-red-800"
                     >
-                      {messages.cart.remove}
+                      <img
+                        src="/icons/trash-outline.svg"
+                        alt=""
+                        aria-hidden="true"
+                        className="h-5 w-5"
+                      />
                     </button>
                   </div>
 

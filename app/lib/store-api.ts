@@ -81,6 +81,7 @@ type StoreApiProductReview = {
 };
 
 type StoreApiCartItem = {
+  images?: StoreApiImage[];
   id: string;
   key: string;
   name: string;
@@ -182,6 +183,8 @@ export type StoreProductReview = {
 
 export type StoreCartItem = {
   id: string;
+  imageAlt: string;
+  imageSrc: string | null;
   key: string;
   name: string;
   path: string;
@@ -599,6 +602,14 @@ function mapStoreCart(cart: StoreApiCart, locale: Locale): StoreCart {
   return {
     items: cart.items.map((item) => ({
       id: item.id,
+      imageAlt:
+        item.images?.[0]?.alt ??
+        item.images?.[0]?.name ??
+        item.name,
+      imageSrc:
+        item.images?.[0]?.src ??
+        item.images?.[0]?.thumbnail ??
+        null,
       key: item.key,
       name: item.name,
       path: buildStoreProductPath({

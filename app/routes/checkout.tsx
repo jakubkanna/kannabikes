@@ -744,16 +744,27 @@ export default function CheckoutPage() {
                           key={item.key}
                           className="flex items-start justify-between gap-4 border-b border-stone-200 pb-3 last:border-b-0 last:pb-0"
                         >
-                          <div className="min-w-0">
-                            <LocalizedLink
-                              to={item.path}
-                              className="block text-sm font-semibold text-[var(--kanna-ink)]"
-                            >
-                              {item.name}
-                            </LocalizedLink>
-                            <p className="mt-1 text-xs uppercase tracking-[0.12em] text-gray-500">
-                              {messages.cart.quantity}: {item.quantity}
-                            </p>
+                          <div className="flex min-w-0 items-start gap-3">
+                            <div className="h-16 w-16 shrink-0 overflow-hidden rounded-md bg-stone-200">
+                              {item.imageSrc ? (
+                                <img
+                                  src={item.imageSrc}
+                                  alt={item.imageAlt}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : null}
+                            </div>
+                            <div className="min-w-0">
+                              <LocalizedLink
+                                to={item.path}
+                                className="block text-sm font-semibold text-[var(--kanna-ink)]"
+                              >
+                                {item.name}
+                              </LocalizedLink>
+                              <p className="mt-1 text-xs uppercase tracking-[0.12em] text-gray-500">
+                                {messages.cart.quantity}: {item.quantity}
+                              </p>
+                            </div>
                           </div>
                           <p className="shrink-0 text-sm font-semibold text-[var(--kanna-ink)]">
                             {item.total}

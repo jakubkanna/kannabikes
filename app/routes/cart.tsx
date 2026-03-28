@@ -125,14 +125,25 @@ export default function CartPage() {
                     key={item.key}
                     className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-stone-200 bg-stone-50/50 p-5"
                   >
-                    <div className="min-w-0 flex-1">
-                      <LocalizedLink
-                        to={item.path}
-                        className="text-lg font-semibold text-[var(--kanna-ink)]"
-                      >
-                        {item.name}
-                      </LocalizedLink>
-                      <p className="mt-2 text-sm text-gray-600">{item.price}</p>
+                    <div className="flex min-w-0 flex-1 items-center gap-4">
+                      <div className="h-20 w-20 shrink-0 overflow-hidden rounded-md bg-stone-200">
+                        {item.imageSrc ? (
+                          <img
+                            src={item.imageSrc}
+                            alt={item.imageAlt}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : null}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <LocalizedLink
+                          to={item.path}
+                          className="text-lg font-semibold text-[var(--kanna-ink)]"
+                        >
+                          {item.name}
+                        </LocalizedLink>
+                        <p className="mt-2 text-sm text-gray-600">{item.price}</p>
+                      </div>
                     </div>
                     <label className="flex items-center gap-3 text-sm text-gray-700">
                       <span>{messages.cart.quantity}</span>
@@ -153,12 +164,18 @@ export default function CartPage() {
                       {item.total}
                     </p>
                     <Button
+                      aria-label={messages.cart.remove}
                       onClick={() => void handleRemove(item.key)}
                       size="sm"
                       variant="secondary"
-                      className="border-red-300 text-red-700 hover:bg-red-50"
+                      className="border-red-300 px-3 text-red-700 hover:bg-red-50"
                     >
-                      {messages.cart.remove}
+                      <img
+                        src="/icons/trash-outline.svg"
+                        alt=""
+                        aria-hidden="true"
+                        className="h-5 w-5"
+                      />
                     </Button>
                   </div>
                 ))}
