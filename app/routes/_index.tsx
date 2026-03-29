@@ -1,5 +1,6 @@
 import type { Route } from "./+types/_index";
 import { useEffect, useRef, useState } from "react";
+import { motion, useReducedMotion } from "motion/react";
 import { ArchivoInkBleed } from "~/components/archivo-ink-bleed";
 import { LocalizedLink } from "~/components/localized-link";
 import { useMessages } from "~/components/locale-provider";
@@ -24,8 +25,10 @@ export function meta({ location }: Route.MetaArgs) {
 
 export default function Home() {
   const messages = useMessages();
+  const shouldReduceMotion = useReducedMotion();
   const backgroundRef = useRef<HTMLDivElement | null>(null);
-  const heroVideoRef = useRef<HTMLVideoElement | null>(null);
+  const lowHeroVideoRef = useRef<HTMLVideoElement | null>(null);
+  const fullHeroVideoRef = useRef<HTMLVideoElement | null>(null);
   const walkerBackgroundRef = useRef<HTMLDivElement | null>(null);
   const customOrderRef = useRef<HTMLDivElement | null>(null);
   const customOrderTextRef = useRef<HTMLDivElement | null>(null);
@@ -37,7 +40,7 @@ export default function Home() {
   const baseUrl = import.meta.env.BASE_URL;
   const lowHeroVideoSrc = `${baseUrl}kannabikes_ride_low.mp4`;
   const fullHeroVideoSrc = `${baseUrl}kannabikes_ride.mp4`;
-  const [bgVideoSrc, setBgVideoSrc] = useState(lowHeroVideoSrc);
+  const [isHeroVideoReady, setIsHeroVideoReady] = useState(false);
   const [heroLogoOpacity, setHeroLogoOpacity] = useState(1);
   const [revealedSections, setRevealedSections] = useState<
     Record<string, boolean>
@@ -67,52 +70,27 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    setBgVideoSrc(lowHeroVideoSrc);
-
-    let cancelled = false;
-    const preloadedVideo = document.createElement("video");
-
-    preloadedVideo.preload = "auto";
-    preloadedVideo.muted = true;
-    preloadedVideo.playsInline = true;
-
-    const handleCanPlayThrough = () => {
-      if (cancelled) return;
-
-      const currentTime = heroVideoRef.current?.currentTime ?? 0;
-      setBgVideoSrc((currentSrc) =>
-        currentSrc === fullHeroVideoSrc ? currentSrc : fullHeroVideoSrc,
-      );
-
-      window.requestAnimationFrame(() => {
-        const currentVideo = heroVideoRef.current;
-        if (!currentVideo) return;
-
-        if (currentTime > 0 && Number.isFinite(currentTime)) {
-          try {
-            currentVideo.currentTime = currentTime;
-          } catch {
-            // Ignore seek errors while the upgraded stream is still finalizing.
-          }
-        }
-
-        void currentVideo.play().catch(() => {});
-      });
-    };
-
-    preloadedVideo.addEventListener("canplaythrough", handleCanPlayThrough, {
-      once: true,
-    });
-    preloadedVideo.src = fullHeroVideoSrc;
-    preloadedVideo.load();
-
-    return () => {
-      cancelled = true;
-      preloadedVideo.pause();
-      preloadedVideo.removeAttribute("src");
-      preloadedVideo.load();
-    };
+    setIsHeroVideoReady(false);
   }, [fullHeroVideoSrc, lowHeroVideoSrc]);
+
+  const handleFullHeroVideoCanPlayThrough = () => {
+    const fullVideo = fullHeroVideoRef.current;
+    if (!fullVideo) return;
+
+    const lowVideo = lowHeroVideoRef.current;
+    const currentTime = lowVideo?.currentTime ?? 0;
+
+    if (currentTime > 0 && Number.isFinite(currentTime)) {
+      try {
+        fullVideo.currentTime = currentTime;
+      } catch {
+        // Ignore seek errors if the browser is still finalizing buffering.
+      }
+    }
+
+    setIsHeroVideoReady(true);
+    void fullVideo.play().catch(() => {});
+  };
 
   useEffect(() => {
     const updateHeroLogoOpacity = () => {
@@ -220,15 +198,25 @@ export default function Home() {
           className="absolute inset-0 z-0 pointer-events-none overflow-hidden will-change-transform translate-x-[var(--bg-x,0px)] translate-y-[var(--bg-y,0px)] scale-[1.08]"
         >
           <video
-            ref={heroVideoRef}
-            key={bgVideoSrc}
-            className="h-full w-full object-cover object-center"
-            src={bgVideoSrc}
+            ref={lowHeroVideoRef}
+            className="absolute inset-0 h-full w-full object-cover object-center"
+            src={lowHeroVideoSrc}
             autoPlay
             loop
             muted
             playsInline
             preload="auto"
+          />
+          <video
+            ref={fullHeroVideoRef}
+            className={`absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-500 ${isHeroVideoReady ? "opacity-100" : "opacity-0"}`}
+            src={fullHeroVideoSrc}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            onCanPlayThrough={handleFullHeroVideoCanPlayThrough}
           />
         </div>
 
@@ -263,9 +251,12 @@ export default function Home() {
         </section>
       </main>
 
-      <section id="custom-order" className="relative bg-gray-300 px-6 py-20">
-        <div ref={customOrderRef} className="w-full">
-          <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_33%] lg:items-stretch">
+      <section
+        id="custom-order"
+        className="relative h-[120vh] bg-gray-300 px-6 py-20"
+      >
+        <div ref={customOrderRef} className="h-full w-full">
+          <div className="grid h-full gap-10 lg:grid-cols-[minmax(0,1fr)_33%] lg:items-stretch">
             <div className="flex h-full flex-col">
               <div
                 ref={customOrderTextRef}
@@ -298,15 +289,35 @@ export default function Home() {
 
             <div
               ref={customOrderImageRef}
-              className={`aspect-square w-full self-end overflow-hidden border border-stone-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.08)] reveal-slide-right lg:h-[66.6%] lg:w-auto lg:max-w-full lg:justify-self-end ${revealedSections.customOrderImage ? "is-visible" : ""}`}
+              className="relative aspect-square w-full self-end overflow-hidden lg:w-[min(80vh,100%)] lg:justify-self-end"
             >
-              <LocalizedLink to="/pre-order" className="block h-full w-full">
-                <img
-                  src={`${baseUrl}welding-kanna.jpg`}
-                  alt={messages.home.customOrder.imageAlt}
-                  className="h-full w-full object-cover object-bottom-right"
-                />
-              </LocalizedLink>
+              <motion.div
+                className="absolute inset-0 overflow-hidden"
+                initial={
+                  shouldReduceMotion ? false : { clipPath: "inset(0 0 0 100%)" }
+                }
+                animate={
+                  shouldReduceMotion
+                    ? { clipPath: "inset(0 0 0 0)" }
+                    : revealedSections.customOrderImage
+                      ? { clipPath: "inset(0 0 0 0)" }
+                      : { clipPath: "inset(0 0 0 100%)" }
+                }
+                transition={
+                  shouldReduceMotion
+                    ? { duration: 0 }
+                    : { duration: 1, ease: [0.22, 1, 0.36, 1] }
+                }
+                style={{ willChange: "clip-path" }}
+              >
+                <LocalizedLink to="/pre-order" className="block h-full w-full">
+                  <img
+                    src={`${baseUrl}welding-kanna.jpg`}
+                    alt={messages.home.customOrder.imageAlt}
+                    className="h-full w-full object-cover object-bottom-right"
+                  />
+                </LocalizedLink>
+              </motion.div>
             </div>
           </div>
         </div>
@@ -346,8 +357,8 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-white">
-        <div className="relative grid min-h-136 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:items-stretch">
+      <section className="relative overflow-hidden bg-stone-100">
+        <div className="relative grid  lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:items-stretch">
           <div className="flex items-center px-6">
             <div
               ref={chainringTextRef}
@@ -376,7 +387,7 @@ export default function Home() {
             <img
               src={`${baseUrl}Survior_Chainring_v147_2024-Jan-10_05-04-08PM-000_CustomizedView27250563922.webp`}
               alt={messages.home.chainring.imageAlt}
-              className="h-full w-full object-cover object-left"
+              className="h-full w-full object-cover object-left mix-blend-multiply"
             />
           </div>
         </div>
