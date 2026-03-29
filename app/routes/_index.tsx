@@ -324,11 +324,27 @@ export default function Home() {
       </section>
 
       <section className="relative overflow-hidden bg-[var(--kanna-ink)] px-6 py-20 text-white">
-        <div
+        <motion.div
           ref={walkerBackgroundRef}
           aria-hidden="true"
           className="absolute inset-0 bg-cover bg-center will-change-transform translate-x-[var(--walker-bg-x,0px)] translate-y-[var(--walker-bg-y,0px)] scale-[1.04]"
+          initial={
+            shouldReduceMotion ? false : { clipPath: "inset(0 0 100% 0)" }
+          }
+          animate={
+            shouldReduceMotion
+              ? { clipPath: "inset(0 0 0 0)" }
+              : revealedSections.walkerText
+                ? { clipPath: "inset(0 0 0 0)" }
+                : { clipPath: "inset(0 0 100% 0)" }
+          }
+          transition={
+            shouldReduceMotion
+              ? { duration: 0 }
+              : { duration: 1, ease: [0.22, 1, 0.36, 1] }
+          }
           style={{
+            willChange: "clip-path",
             backgroundImage: `url(${baseUrl}2013_DSF6372_jakubkanna.jpg)`,
           }}
         />
@@ -382,13 +398,33 @@ export default function Home() {
           </div>
           <div
             ref={chainringImageRef}
-            className={`overflow-hidden self-stretch reveal-slide-right ${revealedSections.chainringImage ? "is-visible" : ""}`}
+            className="relative aspect-square w-full self-center overflow-hidden"
           >
-            <img
-              src={`${baseUrl}Survior_Chainring_v147_2024-Jan-10_05-04-08PM-000_CustomizedView27250563922.webp`}
-              alt={messages.home.chainring.imageAlt}
-              className="h-full w-full object-cover object-left mix-blend-multiply"
-            />
+            <motion.div
+              className="absolute inset-0 overflow-hidden"
+              initial={
+                shouldReduceMotion ? false : { clipPath: "inset(0 0 0 100%)" }
+              }
+              animate={
+                shouldReduceMotion
+                  ? { clipPath: "inset(0 0 0 0)" }
+                  : revealedSections.chainringImage
+                    ? { clipPath: "inset(0 0 0 0)" }
+                    : { clipPath: "inset(0 0 0 100%)" }
+              }
+              transition={
+                shouldReduceMotion
+                  ? { duration: 0 }
+                  : { duration: 1, ease: [0.22, 1, 0.36, 1] }
+              }
+              style={{ willChange: "clip-path" }}
+            >
+              <img
+                src={`${baseUrl}Survior_Chainring_v147_2024-Jan-10_05-04-08PM-000_CustomizedView27250563922.webp`}
+                alt={messages.home.chainring.imageAlt}
+                className="h-full w-full object-cover object-left mix-blend-multiply"
+              />
+            </motion.div>
           </div>
         </div>
       </section>
