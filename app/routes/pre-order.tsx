@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { ArchivoInkBleed } from "~/components/archivo-ink-bleed";
 import { LocalizedLink } from "~/components/localized-link";
 import { useMessages } from "~/components/locale-provider";
@@ -25,6 +26,13 @@ export function meta({ location }: Route.MetaArgs) {
 export default function PreOrderPage() {
   const messages = useMessages();
   const baseUrl = import.meta.env.BASE_URL;
+  const [bodyImageVariant, setBodyImageVariant] = useState<"M" | "F">("M");
+
+  useEffect(() => {
+    setBodyImageVariant(Math.random() < 0.5 ? "M" : "F");
+  }, []);
+
+  const bodyImageSrc = `${baseUrl}bodies/body-kannabikes-${bodyImageVariant}.svg`;
 
   return (
     <PageShell>
@@ -58,9 +66,12 @@ export default function PreOrderPage() {
 
           <div className="flex h-full items-center justify-center">
             <img
-              src={`${baseUrl}cards-work-process.svg`}
+              src={bodyImageSrc}
               alt={messages.pages.preOrder.imageAlt}
-              className="mx-auto block h-auto w-full max-w-full"
+              className="mx-auto block h-auto w-full max-w-full cursor-pointer"
+              onClick={() =>
+                setBodyImageVariant((current) => (current === "M" ? "F" : "M"))
+              }
             />
           </div>
         </div>

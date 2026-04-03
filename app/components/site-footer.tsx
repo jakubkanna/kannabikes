@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router";
 import { stripLocalePrefix } from "~/lib/i18n";
-import { ArchivoInkBleed } from "./archivo-ink-bleed";
 import { LocalizedLink } from "./localized-link";
 import { useMessages } from "./locale-provider";
 
@@ -9,6 +8,10 @@ export function SiteFooter() {
   const { pathname } = useLocation();
   const messages = useMessages();
   const currentYear = new Date().getFullYear();
+  const baseUrl = import.meta.env.BASE_URL;
+  const footerHeadingSrc = pathname.startsWith("/pl")
+    ? `${baseUrl}recznie-budowane-z-pasja-w-polsce-mark.svg`
+    : `${baseUrl}handbuilt-with-poland-mark.svg`;
   const [useHomeKannaState, setUseHomeKannaState] = useState(
     stripLocalePrefix(pathname) === "/",
   );
@@ -121,11 +124,10 @@ export function SiteFooter() {
               ref={footerHeadingRef}
               className={`max-w-4xl reveal-slide-left ${isFooterHeadingVisible ? "is-visible" : ""}`}
             >
-              <ArchivoInkBleed
-                className="block w-full"
-                color={useHomeKannaState ? "var(--kanna-ink)" : "#f3f3ea"}
-                lines={[...messages.footer.headingLines]}
-                fontSize={1255}
+              <img
+                src={footerHeadingSrc}
+                alt={messages.footer.headingLines.join(" ")}
+                className={`block w-full ${useHomeKannaState ? "brightness-0" : ""}`}
               />
             </h2>
             <div className="grid gap-8 sm:grid-cols-3">

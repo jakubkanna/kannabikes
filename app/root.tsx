@@ -7,6 +7,7 @@ import {
   ScrollRestoration,
   useLocation,
   useNavigate,
+  useNavigation,
 } from "react-router";
 import { useEffect, useRef } from "react";
 
@@ -15,6 +16,7 @@ import "./app.css";
 import { CookieConsentBanner } from "./components/cookie-consent-banner";
 import { JsonLd } from "./components/json-ld";
 import { LocaleProvider } from "./components/locale-provider";
+import { RouteLoader } from "./components/route-loader";
 import { SiteFooter } from "./components/site-footer";
 import { SiteHeader } from "./components/site-header";
 import {
@@ -117,10 +119,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   const navigate = useNavigate();
+  const navigation = useNavigation();
   const location = useLocation();
   const { hash, pathname, search } = location;
   const shouldOffsetContent = stripLocalePrefix(pathname) !== "/";
   const hasResolvedInitialLocale = useRef(false);
+  const nextPathname = navigation.location?.pathname ?? pathname;
+  const isRouteLoading =
+    navigation.state === "loading" &&
+    navigation.location != null &&
+    (navigation.location.pathname !== pathname ||
+      navigation.location.search !== search);
+  const loadingLabel = getMessages(getLocaleFromPath(nextPathname)).common.loading;
 
   useEffect(() => {
     if (hasResolvedInitialLocale.current) {
@@ -147,10 +157,19 @@ export default function App() {
     <>
       <CookieConsentBanner />
       <SiteHeader />
-      <div className={shouldOffsetContent ? "pt-(--site-header-height)" : ""}>
+      <div
+        className={[
+          shouldOffsetContent ? "pt-(--site-header-height)" : "",
+          "transition-opacity duration-200 ease-out motion-reduce:transition-none",
+          isRouteLoading ? "opacity-40" : "opacity-100",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+      >
         <Outlet />
       </div>
       <SiteFooter />
+      <RouteLoader isLoading={isRouteLoading} label={loadingLabel} />
     </>
   );
 }

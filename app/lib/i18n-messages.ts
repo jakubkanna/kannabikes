@@ -278,6 +278,7 @@ export const messages = {
       closeMenu: "Close menu",
       comingSoon: "Coming soon",
       languageLabel: "Language",
+      loading: "Loading...",
       openMenu: "Open menu",
       phoneCountryCode: "Country code",
       phoneNumber: "Phone number",
@@ -366,11 +367,10 @@ export const messages = {
     },
     home: {
       chainring: {
-        description:
-          "Retro school fan? Resurrect your old 5-hole crankset with a new chainring.",
-        imageAlt: "Survivor chainring",
+        description: "On demand CNC and 3D printed parts.",
+        imageAlt: "3D components",
         pill: "New",
-        titleLines: ["Survivor", "Chainring"],
+        titleLines: ["3D", "Components"],
       },
       customOrder: {
         button: "Order custom bike",
@@ -772,6 +772,7 @@ export const messages = {
       closeMenu: "Zamknij menu",
       comingSoon: "Wkrótce",
       languageLabel: "Język",
+      loading: "Wczytywanie...",
       openMenu: "Otwórz menu",
       phoneCountryCode: "Numer kierunkowy",
       phoneNumber: "Numer telefonu",
@@ -861,11 +862,10 @@ export const messages = {
     },
     home: {
       chainring: {
-        description:
-          "Lubisz retro? Tchnij nowe życie w starą korbę dzięki nowej zębatce.",
-        imageAlt: "Zębatka Survivor",
+        description: "Elementy CNC i druk 3D na zamówienie.",
+        imageAlt: "Komponenty 3D",
         pill: "Nowość",
-        titleLines: ["Survivor", "Zębatka"],
+        titleLines: ["Komponenty", "3D"],
       },
       customOrder: {
         button: "Zamów rower",
