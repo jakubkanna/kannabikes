@@ -348,6 +348,11 @@ export default function Home() {
             backgroundImage: `url(${baseUrl}2013_DSF6372_jakubkanna.jpg)`,
           }}
         />
+        {/* Temporary teaser veil for Walker. Remove this layer to reveal the image fully. */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 z-0 bg-black/20 backdrop-blur-2xl"
+        />
         <div className="relative z-10 flex min-h-[80vh] w-full items-start justify-center">
           <div className="absolute top-0 left-0">
             <SectionPill tone="dark">{messages.home.walker.pill}</SectionPill>
@@ -367,7 +372,7 @@ export default function Home() {
           <p className="absolute bottom-0 left-0 max-w-2xl text-sm leading-7 text-white md:text-base">
             {messages.home.walker.description}
           </p>
-          <p className="absolute right-0 bottom-0 text-xs font-semibold uppercase tracking-[0.18em] text-white">
+          <p className="absolute right-0 bottom-0 text-xs font-semibold uppercase text-white">
             {messages.common.comingSoon}
           </p>
         </div>
@@ -391,7 +396,7 @@ export default function Home() {
               <p className="mt-5 max-w-2xl text-sm leading-7 text-gray-600 md:text-base">
                 {messages.home.chainring.description}
               </p>
-              <p className="mt-8 text-xs font-semibold uppercase tracking-[0.18em] text-gray-900">
+              <p className="mt-8 text-xs font-semibold uppercase text-gray-900">
                 {messages.common.comingSoon}
               </p>
             </div>

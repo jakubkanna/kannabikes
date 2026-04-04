@@ -3,7 +3,7 @@ import { useLocation } from "react-router";
 
 import { Button } from "~/components/button";
 import { CustomerSignInForm } from "~/components/customer-sign-in-form";
-import { SelectField, TextareaField } from "~/components/form-field";
+import { InputField, SelectField, TextareaField } from "~/components/form-field";
 import { ProductHydrateFallback } from "~/components/hydrate-fallbacks";
 import { ImageGallery } from "~/components/image-gallery";
 import { JsonLd } from "~/components/json-ld";
@@ -26,6 +26,7 @@ import {
   fetchStoreProductReviews,
   type StoreProductReview,
 } from "~/lib/store-api";
+import { subscribeBackInStock } from "~/lib/stock-notifications";
 import {
   createCustomerReview,
   fetchCustomerReviews,
@@ -128,6 +129,12 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
     null,
   );
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [showNotifyForm, setShowNotifyForm] = useState(false);
+  const [notifyEmail, setNotifyEmail] = useState("");
+  const [notifyNewsletterOptIn, setNotifyNewsletterOptIn] = useState(false);
+  const [notifyError, setNotifyError] = useState<string | null>(null);
+  const [notifySubmitted, setNotifySubmitted] = useState(false);
+  const [notifySubmitting, setNotifySubmitting] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState<
     Record<string, string>
   >(() => getInitialOptionSelection(loaderData?.product ?? null));
@@ -163,6 +170,7 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
   }
 
   const product = loaderData.product;
+  const isOutOfStock = product.stockStatus === "outofstock";
   const reviewRedirectPath = `${location.pathname}${location.search}#reviews`;
   const productDescription =
     stripHtml(product.shortDescriptionHtml) ||
@@ -221,6 +229,13 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
   useEffect(() => {
     setSelectedOptions(getInitialOptionSelection(product));
   }, [product]);
+
+  useEffect(() => {
+    setShowNotifyForm(false);
+    setNotifyNewsletterOptIn(false);
+    setNotifyError(null);
+    setNotifySubmitted(false);
+  }, [product.id]);
 
   useEffect(() => {
     if (location.hash === "#reviews") {
@@ -319,6 +334,14 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
     };
   }, [locale]);
 
+  useEffect(() => {
+    if (!customerSession?.authenticated || !customerSession.user?.email) {
+      return;
+    }
+
+    setNotifyEmail(customerSession.user.email);
+  }, [customerSession]);
+
   const canReviewProduct = useMemo(
     () =>
       reviewableProducts.some(
@@ -379,6 +402,53 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
     } finally {
       setIsAddingToCart(false);
     }
+  };
+
+  const handleNotifySubmit = async ({
+    email,
+    newsletterOptIn,
+  }: {
+    email?: string;
+    newsletterOptIn: boolean;
+  }) => {
+    setNotifySubmitting(true);
+    setNotifyError(null);
+
+    try {
+      await subscribeBackInStock({
+        csrfToken:
+          customerSession?.authenticated && customerSession.csrfToken
+            ? customerSession.csrfToken
+            : undefined,
+        payload: {
+          email,
+          locale,
+          newsletterOptIn,
+          productId: product.id,
+          productPath: location.pathname,
+        },
+      });
+      setNotifySubmitted(true);
+      setShowNotifyForm(false);
+    } catch (error) {
+      setNotifyError(
+        error instanceof Error ? error.message : messages.commerce.noProducts,
+      );
+    } finally {
+      setNotifySubmitting(false);
+    }
+  };
+
+  const handleNotifyTrigger = async () => {
+    if (customerSession?.authenticated && customerSession.user?.email) {
+      await handleNotifySubmit({
+        newsletterOptIn: false,
+      });
+      return;
+    }
+
+    setNotifyError(null);
+    setShowNotifyForm(true);
   };
 
   const reviewCount = reviews.length;
@@ -517,26 +587,119 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
               </div>
             ) : null}
 
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Button
-                onClick={handleAddToCart}
-                disabled={isAddingToCart}
-                className="min-h-16 px-8 text-lg"
-              >
-                {isAddingToCart
-                  ? `${messages.commerce.addToCart}...`
-                  : messages.commerce.addToCart}
-              </Button>
-            </div>
+            {isOutOfStock ? (
+              <div className="mt-8 max-w-md space-y-4">
+                <p className="text-sm font-semibold uppercase tracking-[0.08em] text-red-700">
+                  {messages.commerce.currentlyOutOfStock}
+                </p>
 
-            {addedToCart ? (
-              <p className="mt-4 text-sm text-emerald-700">
-                {messages.commerce.addedToCart}
-              </p>
-            ) : null}
-            {addToCartError ? (
-              <p className="mt-4 text-sm text-red-700">{addToCartError}</p>
-            ) : null}
+                {!notifySubmitted ? (
+                  showNotifyForm ? (
+                    <form
+                      className="space-y-4"
+                      onSubmit={(event) => {
+                        event.preventDefault();
+
+                        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(notifyEmail.trim())) {
+                          setNotifyError(messages.commerce.notifyInvalidEmail);
+                          return;
+                        }
+
+                        void handleNotifySubmit({
+                          email: notifyEmail.trim(),
+                          newsletterOptIn: notifyNewsletterOptIn,
+                        });
+                      }}
+                    >
+                      <label className="block">
+                        <span className="mb-2 block text-sm font-semibold text-[var(--kanna-ink)]">
+                          {messages.commerce.notifyEmailLabel}
+                        </span>
+                        <InputField
+                          type="email"
+                          value={notifyEmail}
+                          onChange={(event) => {
+                            setNotifyError(null);
+                            setNotifyEmail(event.currentTarget.value);
+                          }}
+                          placeholder={messages.commerce.notifyEmailLabel}
+                          autoComplete="email"
+                        />
+                      </label>
+
+                      <label className="flex items-start gap-3 text-sm text-[var(--kanna-ink)]">
+                        <input
+                          type="checkbox"
+                          checked={notifyNewsletterOptIn}
+                          onChange={(event) =>
+                            setNotifyNewsletterOptIn(event.currentTarget.checked)
+                          }
+                          className="mt-1 h-4 w-4 accent-[var(--kanna-ink)]"
+                        />
+                        <span>{messages.commerce.notifyNewsletterOptIn}</span>
+                      </label>
+
+                      <Button
+                        type="submit"
+                        disabled={notifySubmitting}
+                        className="min-h-16 px-8 text-lg"
+                      >
+                        {notifySubmitting
+                          ? `${messages.commerce.notifySubmit}...`
+                          : messages.commerce.notifySubmit}
+                      </Button>
+                    </form>
+                  ) : (
+                    <Button
+                      onClick={() => void handleNotifyTrigger()}
+                      disabled={notifySubmitting || customerSessionLoading}
+                      className="min-h-16 gap-3 px-8 text-lg"
+                    >
+                      <img
+                        src="/icons/notifications-outline.svg"
+                        alt=""
+                        aria-hidden="true"
+                        className="h-5 w-5 object-contain brightness-0 invert"
+                      />
+                      {notifySubmitting
+                        ? `${messages.commerce.notifyMe}...`
+                        : messages.commerce.notifyMe}
+                    </Button>
+                  )
+                ) : (
+                  <p className="text-sm text-emerald-700">
+                    {messages.commerce.notifySuccess}
+                  </p>
+                )}
+
+                {notifyError ? (
+                  <p className="text-sm text-red-700">{notifyError}</p>
+                ) : null}
+              </div>
+            ) : (
+              <>
+                <div className="mt-8 flex flex-wrap gap-4">
+                  <Button
+                    onClick={handleAddToCart}
+                    disabled={isAddingToCart}
+                    className="min-h-16 px-8 text-lg"
+                  >
+                    {isAddingToCart
+                      ? `${messages.commerce.addToCart}...`
+                      : messages.commerce.addToCart}
+                  </Button>
+                </div>
+
+                {addedToCart ? (
+                  <p className="mt-4 text-sm text-emerald-700">
+                    {messages.commerce.addedToCart}
+                  </p>
+                ) : null}
+                {addToCartError ? (
+                  <p className="mt-4 text-sm text-red-700">{addToCartError}</p>
+                ) : null}
+              </>
+            )}
           </div>
         </div>
 

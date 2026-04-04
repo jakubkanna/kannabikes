@@ -51,6 +51,8 @@ type StoreApiProduct = {
   has_options?: boolean;
   id: number;
   images?: StoreApiImage[];
+  is_in_stock?: boolean;
+  is_on_backorder?: boolean;
   name?: string;
   permalink?: string;
   prices?: {
@@ -535,6 +537,14 @@ function mapStoreProduct(product: StoreApiProduct, locale: Locale): StoreProduct
     }))
     .filter((image) => image.src);
 
+  const stockStatus =
+    product.stock_status ??
+    (product.is_in_stock === false
+      ? "outofstock"
+      : product.is_on_backorder
+        ? "onbackorder"
+        : "instock");
+
   return {
     categorySlugs: (product.categories ?? [])
       .map((category) => category.slug ?? "")
@@ -573,7 +583,7 @@ function mapStoreProduct(product: StoreApiProduct, locale: Locale): StoreProduct
       product.short_description ?? product.summary ?? product.description ?? "",
     sku: product.sku ?? "",
     slug: product.slug ?? String(product.id),
-    stockStatus: product.stock_status ?? "",
+    stockStatus,
     translationPaths: mapTranslationPaths(product.translations, path),
     variations,
   };
