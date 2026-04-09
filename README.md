@@ -41,6 +41,25 @@ For a Hostinger VPS with PM2 / CloudPanel:
 Hostinger's current VPS guidance is to run the app under Node/PM2 rather than deploy a static Pages artifact:
 https://www.hostinger.com/support/9553137-how-to-set-up-a-node-js-application-using-hostinger-cloudpanel/
 
+## Hostinger Security TODO
+
+After the app and WordPress are installed on Hostinger, complete this server-side checklist:
+
+- Put the domain behind Cloudflare and enable proxying for the production DNS records.
+- Add a Cloudflare WAF custom rule for `"/wp-login.php"` with `Managed Challenge`.
+- Add a Cloudflare rate limiting rule for `POST /wp-login.php`, starting with `5 requests per 1 minute` per IP and a `1 hour` block.
+- If admin access is only used by a known person or office IP, restrict `"/wp-admin/*"` by IP and exclude `"/wp-admin/admin-ajax.php"` from that block.
+- Enable WordPress 2FA for all administrator accounts.
+- Use unique admin accounts, remove any shared admin login, and avoid the `admin` username.
+- Confirm the `REST API Only` plugin is active so the site does not expose normal WordPress frontend routes.
+- Confirm XML-RPC is disabled and that `https://your-domain.tld/xmlrpc.php` does not return the normal XML-RPC endpoint response.
+- Force HTTPS for the site and WordPress admin, then verify there is no mixed-content output.
+- Set `DISALLOW_FILE_EDIT` in `wp-config.php` to disable the built-in plugin/theme file editor.
+- Delete unused plugins, themes, and inactive admin users.
+- Turn on automatic updates for WordPress core and trusted plugins where acceptable.
+- Make sure backups are enabled in Hostinger and that database restore has been tested at least once.
+- Add uptime/error monitoring and login/audit logging so admin access changes are visible.
+
 ## Example Env
 
 ```

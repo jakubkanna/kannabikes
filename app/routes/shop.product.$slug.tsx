@@ -108,6 +108,7 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
   const locale = useLocale();
   const location = useLocation();
   const messages = useMessages();
+  const product = loaderData?.product ?? null;
   const [activeTab, setActiveTab] = useState<"details" | "reviews">(() =>
     location.hash === "#reviews" ? "reviews" : "details",
   );
@@ -138,93 +139,65 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
   const [selectedOptions, setSelectedOptions] = useState<
     Record<string, string>
   >(() => getInitialOptionSelection(loaderData?.product ?? null));
-
-  if (!loaderData) {
-    return (
-      <PageShell>
-        <PageContainer>
-          <div className="max-w-4xl">
-            <SectionPill>{messages.commerce.shopPill}</SectionPill>
-            <p className="mt-6 text-sm text-gray-600">
-              {messages.commerce.noProducts}
-            </p>
-          </div>
-        </PageContainer>
-      </PageShell>
-    );
-  }
-
-  if (!loaderData.product) {
-    return (
-      <PageShell>
-        <PageContainer>
-          <div className="max-w-4xl">
-            <SectionPill>{messages.commerce.shopPill}</SectionPill>
-            <p className="mt-6 text-sm text-gray-600">
-              {messages.commerce.noProducts}
-            </p>
-          </div>
-        </PageContainer>
-      </PageShell>
-    );
-  }
-
-  const product = loaderData.product;
-  const isOutOfStock = product.stockStatus === "outofstock";
+  const productId = product?.id ?? null;
+  const isOutOfStock = Boolean(product && product.stockStatus === "outofstock");
   const reviewRedirectPath = `${location.pathname}${location.search}#reviews`;
   const productDescription =
-    stripHtml(product.shortDescriptionHtml) ||
-    stripHtml(product.descriptionHtml) ||
-    product.name;
+    stripHtml(product?.shortDescriptionHtml) ||
+    stripHtml(product?.descriptionHtml) ||
+    product?.name ||
+    messages.commerce.noProducts;
   const productUrl = buildSiteUrl(location.pathname);
-  const productImageUrls = product.images.map((image) => image.src);
-  const productJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: product.name,
-    description: productDescription,
-    image: productImageUrls,
-    offers: {
-      "@type": "Offer",
-      availability:
-        product.stockStatus === "instock"
-          ? "https://schema.org/InStock"
-          : "https://schema.org/OutOfStock",
-      price: product.price.replace(/[^\d,.-]/g, "").replace(",", "."),
-      priceCurrency: product.currencyCode,
-      url: productUrl,
-    },
-    url: productUrl,
-  };
-  const breadcrumbJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: messages.commerce.shopPill,
-        item: buildSiteUrl(localizePath("/shop", locale)),
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
+  const productImageUrls = product?.images.map((image) => image.src) ?? [];
+  const productJsonLd = product
+    ? {
+        "@context": "https://schema.org",
+        "@type": "Product",
         name: product.name,
-        item: productUrl,
-      },
-    ],
-  };
+        description: productDescription,
+        image: productImageUrls,
+        offers: {
+          "@type": "Offer",
+          availability:
+            product.stockStatus === "instock"
+              ? "https://schema.org/InStock"
+              : "https://schema.org/OutOfStock",
+          price: product.price.replace(/[^\d,.-]/g, "").replace(",", "."),
+          priceCurrency: product.currencyCode,
+          url: productUrl,
+        },
+        url: productUrl,
+      }
+    : null;
+  const breadcrumbJsonLd = product
+    ? {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: messages.commerce.shopPill,
+            item: buildSiteUrl(localizePath("/shop", locale)),
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: product.name,
+            item: productUrl,
+          },
+        ],
+      }
+    : null;
   const detailRows = [
-    ...(product.sku
+    ...(product?.sku
       ? [{ label: messages.commerce.sku, values: [product.sku] }]
       : []),
-    ...product.details.map((detail) => ({
+    ...(product?.details.map((detail) => ({
       label: detail.name,
       values: detail.values,
-    })),
+    })) ?? []),
   ];
-  const hasDetailsContent =
-    detailRows.length > 0 || Boolean(product.descriptionHtml);
 
   useEffect(() => {
     setSelectedOptions(getInitialOptionSelection(product));
@@ -235,7 +208,7 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
     setNotifyNewsletterOptIn(false);
     setNotifyError(null);
     setNotifySubmitted(false);
-  }, [product.id]);
+  }, [productId]);
 
   useEffect(() => {
     if (location.hash === "#reviews") {
@@ -249,6 +222,13 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
   }, [location.hash]);
 
   useEffect(() => {
+    if (!product) {
+      setReviews([]);
+      setReviewsError(null);
+      setReviewsLoading(false);
+      return;
+    }
+
     let cancelled = false;
 
     setReviewsLoading(true);
@@ -279,7 +259,7 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
     return () => {
       cancelled = true;
     };
-  }, [locale, messages.commerce.reviewsLoadError, product.id]);
+  }, [locale, messages.commerce.reviewsLoadError, productId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -344,13 +324,19 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
 
   const canReviewProduct = useMemo(
     () =>
-      reviewableProducts.some(
-        (reviewableProduct) => reviewableProduct.id === product.id,
-      ),
-    [product.id, reviewableProducts],
+      product
+        ? reviewableProducts.some(
+            (reviewableProduct) => reviewableProduct.id === product.id,
+          )
+        : false,
+    [productId, reviewableProducts],
   );
 
   const matchedVariationId = useMemo(() => {
+    if (!product) {
+      return null;
+    }
+
     if (!product.hasOptions) {
       return product.id;
     }
@@ -382,6 +368,12 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
     setAddedToCart(false);
     setAddToCartError(null);
 
+    if (!product) {
+      setAddToCartError(messages.commerce.noProducts);
+      setIsAddingToCart(false);
+      return;
+    }
+
     if (!matchedVariationId) {
       setAddToCartError(messages.commerce.optionRequired);
       setIsAddingToCart(false);
@@ -411,6 +403,10 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
     email?: string;
     newsletterOptIn: boolean;
   }) => {
+    if (!product) {
+      return;
+    }
+
     setNotifySubmitting(true);
     setNotifyError(null);
 
@@ -482,11 +478,26 @@ export default function ShopProductPage({ loaderData }: Route.ComponentProps) {
     }, 0);
   };
 
+  if (!product) {
+    return (
+      <PageShell>
+        <PageContainer>
+          <div className="max-w-4xl">
+            <SectionPill>{messages.commerce.shopPill}</SectionPill>
+            <p className="mt-6 text-sm text-gray-600">
+              {messages.commerce.noProducts}
+            </p>
+          </div>
+        </PageContainer>
+      </PageShell>
+    );
+  }
+
   return (
     <PageShell>
       <PageContainer>
-        <JsonLd data={productJsonLd} />
-        <JsonLd data={breadcrumbJsonLd} />
+        {productJsonLd ? <JsonLd data={productJsonLd} /> : null}
+        {breadcrumbJsonLd ? <JsonLd data={breadcrumbJsonLd} /> : null}
         <nav
           aria-label="Breadcrumb"
           className="mt-1 flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/45"
