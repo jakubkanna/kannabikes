@@ -1,6 +1,6 @@
 import type { Route } from "./+types/_index";
 import { useEffect, useRef, useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import { ArchivoInkBleed } from "~/components/archivo-ink-bleed";
 import { LocalizedLink } from "~/components/localized-link";
 import { useMessages } from "~/components/locale-provider";
@@ -30,6 +30,7 @@ export default function Home() {
   const lowHeroVideoRef = useRef<HTMLVideoElement | null>(null);
   const fullHeroVideoRef = useRef<HTMLVideoElement | null>(null);
   const walkerBackgroundRef = useRef<HTMLDivElement | null>(null);
+  const customOrderSectionRef = useRef<HTMLElement | null>(null);
   const customOrderRef = useRef<HTMLDivElement | null>(null);
   const customOrderTextRef = useRef<HTMLDivElement | null>(null);
   const customOrderButtonRef = useRef<HTMLDivElement | null>(null);
@@ -40,6 +41,15 @@ export default function Home() {
   const baseUrl = import.meta.env.BASE_URL;
   const lowHeroVideoSrc = `${baseUrl}kannabikes_ride_low.mp4`;
   const fullHeroVideoSrc = `${baseUrl}kannabikes_ride.mp4`;
+  const { scrollYProgress: customOrderScrollProgress } = useScroll({
+    target: customOrderSectionRef,
+    offset: ["start end", "end start"],
+  });
+  const customOrderFrameMargin = useTransform(
+    customOrderScrollProgress,
+    [0, 0.5, 1],
+    ["48px", "0px", "48px"],
+  );
   const [isHeroVideoReady, setIsHeroVideoReady] = useState(false);
   const [heroLogoOpacity, setHeroLogoOpacity] = useState(1);
   const [revealedSections, setRevealedSections] = useState<
@@ -94,12 +104,12 @@ export default function Home() {
 
   useEffect(() => {
     const updateHeroLogoOpacity = () => {
-      if (!customOrderRef.current) {
+      if (!customOrderSectionRef.current) {
         setHeroLogoOpacity(1);
         return;
       }
 
-      const fadeDistance = customOrderRef.current.offsetTop;
+      const fadeDistance = customOrderSectionRef.current.offsetTop;
 
       if (fadeDistance <= 0) {
         setHeroLogoOpacity(0);
@@ -190,7 +200,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="overflow-x-clip bg-gray-300 text-gray-900">
+    <div className="overflow-x-clip bg-black text-gray-900">
       <main className="relative isolate mb-3 h-[calc(100svh-0.75rem)] overflow-hidden">
         <div
           ref={backgroundRef}
@@ -253,74 +263,85 @@ export default function Home() {
 
       <section
         id="custom-order"
-        className="relative h-[120vh] bg-gray-300 px-6 py-20"
+        ref={customOrderSectionRef}
+        className="relative h-[120vh] overflow-hidden bg-black"
       >
-        <div ref={customOrderRef} className="h-full w-full">
-          <div className="grid h-full gap-10 lg:grid-cols-[minmax(0,1fr)_33%] lg:items-stretch">
-            <div className="flex h-full flex-col">
-              <div
-                ref={customOrderTextRef}
-                className={`reveal-slide-left ${revealedSections.customOrderText ? "is-visible" : ""}`}
-              >
-                <SectionPill>{messages.home.customOrder.pill}</SectionPill>
-                <h2 className="mt-6 max-w-3xl">
-                  <ArchivoInkBleed
-                    className="block w-full max-w-[54rem]"
-                    color="var(--kanna-ink)"
-                    lines={[...messages.home.customOrder.titleLines]}
-                  />
-                </h2>
+        <motion.div
+          className="home-custom-order-frame bg-gray-300"
+          style={{ margin: customOrderFrameMargin }}
+        >
+          <div ref={customOrderRef} className="h-full w-full px-6 py-20">
+            <div className="grid h-full gap-10 lg:grid-cols-[minmax(0,1fr)_33%] lg:items-stretch">
+              <div className="flex h-full flex-col">
+                <div
+                  ref={customOrderTextRef}
+                  className={`reveal-slide-left ${revealedSections.customOrderText ? "is-visible" : ""}`}
+                >
+                  <SectionPill>{messages.home.customOrder.pill}</SectionPill>
+                  <h2 className="mt-6 max-w-3xl">
+                    <ArchivoInkBleed
+                      className="block w-full max-w-[54rem]"
+                      color="var(--kanna-ink)"
+                      lines={[...messages.home.customOrder.titleLines]}
+                    />
+                  </h2>
+                </div>
+
+                <div className="pt-8 lg:mt-auto">
+                  <div
+                    ref={customOrderButtonRef}
+                    className="h-[15rem] w-[15rem] overflow-hidden"
+                  >
+                    <LocalizedLink
+                      to="/pre-order"
+                      className={`reveal-button-up inline-flex h-[15rem] w-[15rem] min-h-[15rem] min-w-[15rem] shrink-0 items-center justify-center rounded-full border border-transparent bg-[var(--kanna-ink)] p-0 text-center text-[2.375rem] font-semibold leading-[0.95] text-white uppercase transition hover:border-black hover:bg-transparent hover:text-black ${revealedSections.customOrderButton ? "is-visible" : ""}`}
+                    >
+                      {messages.home.customOrder.button}
+                    </LocalizedLink>
+                  </div>
+                </div>
               </div>
 
-              <div className="pt-8 lg:mt-auto">
-                <div
-                  ref={customOrderButtonRef}
-                  className="h-[15rem] w-[15rem] overflow-hidden"
+              <div
+                ref={customOrderImageRef}
+                className="relative aspect-square w-full self-end overflow-hidden lg:w-[min(80vh,100%)] lg:justify-self-end"
+              >
+                <motion.div
+                  className="absolute inset-0 overflow-hidden"
+                  initial={
+                    shouldReduceMotion
+                      ? false
+                      : { clipPath: "inset(0 0 0 100%)" }
+                  }
+                  animate={
+                    shouldReduceMotion
+                      ? { clipPath: "inset(0 0 0 0)" }
+                      : revealedSections.customOrderImage
+                        ? { clipPath: "inset(0 0 0 0)" }
+                        : { clipPath: "inset(0 0 0 100%)" }
+                  }
+                  transition={
+                    shouldReduceMotion
+                      ? { duration: 0 }
+                      : { duration: 1, ease: [0.22, 1, 0.36, 1] }
+                  }
+                  style={{ willChange: "clip-path" }}
                 >
                   <LocalizedLink
                     to="/pre-order"
-                    className={`reveal-button-up inline-flex h-[15rem] w-[15rem] min-h-[15rem] min-w-[15rem] shrink-0 items-center justify-center rounded-full border border-transparent bg-[var(--kanna-ink)] p-0 text-center text-[2.375rem] font-semibold leading-[0.95] text-white uppercase transition hover:border-black hover:bg-transparent hover:text-black ${revealedSections.customOrderButton ? "is-visible" : ""}`}
+                    className="block h-full w-full"
                   >
-                    {messages.home.customOrder.button}
+                    <img
+                      src={`${baseUrl}welding-kanna.jpg`}
+                      alt={messages.home.customOrder.imageAlt}
+                      className="h-full w-full object-cover object-bottom-right"
+                    />
                   </LocalizedLink>
-                </div>
+                </motion.div>
               </div>
             </div>
-
-            <div
-              ref={customOrderImageRef}
-              className="relative aspect-square w-full self-end overflow-hidden lg:w-[min(80vh,100%)] lg:justify-self-end"
-            >
-              <motion.div
-                className="absolute inset-0 overflow-hidden"
-                initial={
-                  shouldReduceMotion ? false : { clipPath: "inset(0 0 0 100%)" }
-                }
-                animate={
-                  shouldReduceMotion
-                    ? { clipPath: "inset(0 0 0 0)" }
-                    : revealedSections.customOrderImage
-                      ? { clipPath: "inset(0 0 0 0)" }
-                      : { clipPath: "inset(0 0 0 100%)" }
-                }
-                transition={
-                  shouldReduceMotion
-                    ? { duration: 0 }
-                    : { duration: 1, ease: [0.22, 1, 0.36, 1] }
-                }
-                style={{ willChange: "clip-path" }}
-              >
-                <LocalizedLink to="/pre-order" className="block h-full w-full">
-                  <img
-                    src={`${baseUrl}welding-kanna.jpg`}
-                    alt={messages.home.customOrder.imageAlt}
-                    className="h-full w-full object-cover object-bottom-right"
-                  />
-                </LocalizedLink>
-              </motion.div>
-            </div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       <section className="relative overflow-hidden bg-[var(--kanna-ink)] px-6 py-20 text-white">

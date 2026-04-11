@@ -142,6 +142,12 @@
   width: 1.15rem;
 }
 
+.home-custom-order-frame {
+  inset: 0;
+  overflow: hidden;
+  position: absolute;
+}
+
 .chainring-stack {
   align-items: center;
   display: flex;
