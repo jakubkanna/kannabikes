@@ -12,9 +12,7 @@ export function SiteFooter() {
   const footerHeadingSrc = pathname.startsWith("/pl")
     ? `${baseUrl}recznie-budowane-z-pasja-w-polsce-mark.svg`
     : `${baseUrl}handbuilt-with-poland-mark.svg`;
-  const [useHomeKannaState, setUseHomeKannaState] = useState(
-    stripLocalePrefix(pathname) === "/",
-  );
+  const [useHomeKannaState, setUseHomeKannaState] = useState(false);
   const footerHeadingRef = useRef<HTMLHeadingElement | null>(null);
   const [isFooterHeadingVisible, setIsFooterHeadingVisible] = useState(false);
 
@@ -28,7 +26,7 @@ export function SiteFooter() {
       const customOrderSection = document.getElementById("custom-order");
 
       if (!customOrderSection) {
-        setUseHomeKannaState(true);
+        setUseHomeKannaState(false);
         return;
       }
 
@@ -104,7 +102,7 @@ export function SiteFooter() {
 
   const footerClassName = useHomeKannaState
     ? "relative overflow-hidden bg-[var(--kanna-color)] px-4 py-20 text-[var(--kanna-ink)]"
-    : "relative overflow-hidden bg-[var(--kanna-ink)] px-4 py-20 text-white";
+    : "relative overflow-hidden bg-black px-4 py-20 text-white";
   const secondaryTextClassName = useHomeKannaState
     ? "text-[var(--kanna-ink)]"
     : "text-white";
@@ -132,7 +130,9 @@ export function SiteFooter() {
             </h2>
             <div className="grid gap-8 sm:grid-cols-3">
               <div className="text-right">
-                <p className={`text-xs uppercase ${secondaryTextClassName}`}>
+                <p
+                  className={`text-xs font-bold uppercase ${secondaryTextClassName}`}
+                >
                   {messages.footer.products}
                 </p>
                 <div className="mt-3 flex flex-col items-end gap-0.5">
@@ -148,7 +148,9 @@ export function SiteFooter() {
                 </div>
               </div>
               <div className="text-right">
-                <p className={`text-xs uppercase ${secondaryTextClassName}`}>
+                <p
+                  className={`text-xs font-bold uppercase ${secondaryTextClassName}`}
+                >
                   {messages.footer.company}
                 </p>
                 <div className="mt-3 flex flex-col items-end gap-0.5">
@@ -164,7 +166,9 @@ export function SiteFooter() {
                 </div>
               </div>
               <div className="text-right">
-                <p className={`text-xs uppercase ${secondaryTextClassName}`}>
+                <p
+                  className={`text-xs font-bold uppercase ${secondaryTextClassName}`}
+                >
                   {messages.footer.support}
                 </p>
                 <div className="mt-3 flex flex-col items-end gap-0.5">
@@ -185,7 +189,7 @@ export function SiteFooter() {
           <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
             <div />
             <p
-              className={`pt-4 self-start text-l text-right md:text-xl ${secondaryTextClassName}`}
+              className={`pt-4 self-start text-right text-sm font-bold leading-7 ${secondaryTextClassName}`}
             >
               {messages.footer.addressLines.map((line, index) => (
                 <span key={line}>
@@ -198,7 +202,10 @@ export function SiteFooter() {
         </div>
 
         <div
-          className={`flex flex-col gap-4 border-t pt-8 text-xs md:flex-row md:items-center md:justify-between ${dividerClassName} ${secondaryTextClassName}`}
+          className={
+            `flex flex-col gap-4 pt-8 text-xs md:flex-row md:items-center md:justify-between ${dividerClassName} ${secondaryTextClassName}`
+            // border-t
+          }
         >
           <p className="flex flex-wrap items-center gap-2">
             <span>{`© Kanna Bikes ${currentYear}`}</span>

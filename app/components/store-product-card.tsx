@@ -13,7 +13,7 @@ function MinimalProductAction({
     <button
       {...props}
       className={[
-        "inline-flex min-h-10 items-center justify-center border border-black/15 px-4 text-xs font-semibold uppercase text-[var(--kanna-ink)] transition hover:border-black hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-60",
+        "button-font-lato inline-flex min-h-10 items-center justify-center border border-black/15 px-4 text-xs font-semibold uppercase text-[var(--kanna-ink)] transition hover:border-black hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-60",
         className ?? "",
       ].join(" ")}
     >
@@ -35,7 +35,7 @@ function MinimalProductLink({
     <LocalizedLink
       to={to}
       className={[
-        "inline-flex min-h-10 items-center justify-center border border-black/15 px-4 text-xs font-semibold uppercase text-[var(--kanna-ink)] transition hover:border-black hover:bg-black hover:text-white",
+        "button-font-lato inline-flex min-h-10 items-center justify-center border border-black/15 px-4 text-xs font-semibold uppercase text-[var(--kanna-ink)] transition hover:border-black hover:bg-black hover:text-white",
         className ?? "",
       ].join(" ")}
     >
@@ -92,7 +92,7 @@ export function StoreProductCard({
           />
         ) : null}
         <div className="flex flex-1 flex-col p-5">
-          <h2 className="text-xl font-semibold text-[var(--kanna-ink)]">
+          <h2 className="page-heading text-3xl leading-[0.9] text-[var(--kanna-ink)]">
             {product.name}
           </h2>
           <p className="mt-2 text-sm text-stone-600">{product.price}</p>

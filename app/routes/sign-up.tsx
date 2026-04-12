@@ -82,7 +82,12 @@ export default function SignUpPage() {
         privacyAccepted: formState.privacyAccepted,
         redirectTo,
       }),
-    [formState.marketingAccepted, formState.privacyAccepted, locale, redirectTo],
+    [
+      formState.marketingAccepted,
+      formState.privacyAccepted,
+      locale,
+      redirectTo,
+    ],
   );
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -267,9 +272,9 @@ export default function SignUpPage() {
 
             {errorMessage ? (
               errorMessage !== messages.account.registrationPrivacyRequired ? (
-              <p className="mt-5 text-sm font-medium text-red-600">
-                {errorMessage}
-              </p>
+                <p className="mt-5 text-sm font-medium text-red-600">
+                  {errorMessage}
+                </p>
               ) : null
             ) : null}
 
@@ -292,7 +297,7 @@ export default function SignUpPage() {
 
           <div className="mt-10 flex items-center gap-6">
             <div className="h-px flex-1 bg-black/15" />
-            <span className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--kanna-ink)]">
+            <span className="text-sm font-semibold uppercase  text-[var(--kanna-ink)]">
               {messages.account.or}
             </span>
             <div className="h-px flex-1 bg-black/15" />

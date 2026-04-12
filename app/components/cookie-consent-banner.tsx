@@ -12,6 +12,7 @@ import {
   writeAnalyticsConsent,
   type AnalyticsConsentStatus,
 } from "~/lib/analytics";
+import { Button } from "./button";
 import { LocalizedLink } from "./localized-link";
 import { useLocale, useMessages } from "./locale-provider";
 
@@ -253,13 +254,13 @@ export function CookieConsentBanner() {
         </div>
       </div>
 
-      <button
+      <Button
         type="button"
         onClick={() => closeBanner("accepted")}
-        className="absolute bottom-5 right-5 inline-flex items-center justify-center rounded-2xl bg-[var(--kanna-ink)] px-6 py-4 text-base font-semibold text-white transition hover:bg-black md:px-8 md:py-5 md:text-lg"
+        className="absolute bottom-5 right-5 px-6 py-4 text-base md:px-8 md:py-5 md:text-lg"
       >
         {messages.cookieConsent.accept}
-      </button>
+      </Button>
     </aside>
   ) : null;
 }

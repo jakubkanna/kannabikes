@@ -92,7 +92,7 @@ export default function ShopPage({ loaderData }: Route.ComponentProps) {
             </SelectField>
           </div>
 
-          <p className="mt-8 text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
+          <p className="mt-8 text-xs font-semibold uppercase  text-stone-500">
             {messages.commerce.featuredProducts}
           </p>
           {filteredProducts.length > 0 ? (

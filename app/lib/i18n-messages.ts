@@ -468,6 +468,8 @@ export const messages = {
         contact: "Contact",
         imageAlt: "Pre-order process steps",
         intro:
+          "We will build a custom solution around your fit, riding style, and your soul. Steel, titanium, gravel, MTB - no problem.",
+        processIntro:
           "We use a proven deposit-based system to guide each order individually from first contact to final handover.",
         pill: "Custom Order",
         steps: [
@@ -974,6 +976,8 @@ export const messages = {
         contact: "Kontakt",
         imageAlt: "Etapy procesu pre-order",
         intro:
+          "Zbudujemy rozwiązanie dopasowane do Twojej pozycji, stylu jazdy i Twojej duszy. Stal, tytan, gravel, MTB - bez problemu.",
+        processIntro:
           "Korzystamy ze sprawdzonego systemu opartego na zaliczce, który prowadzi każde zamówienie od pierwszego kontaktu do finalnego odbioru.",
         pill: "Na zamówienie",
         steps: [

@@ -18,7 +18,7 @@ export function PaymentOption({
       type="button"
       onClick={onSelect}
       aria-pressed={isSelected}
-      className={`rounded-lg border px-3 py-3 text-left transition ${
+      className={`button-font-lato rounded-lg border px-3 py-3 text-left transition ${
         isSelected
           ? "border-[var(--kanna-ink)] bg-[var(--kanna-ink)] text-white"
           : "border-stone-200 bg-white text-gray-900 hover:border-stone-300"

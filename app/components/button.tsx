@@ -9,8 +9,10 @@ function joinClassNames(
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   shape?: "pill" | "square";
   size?: "md" | "sm";
-  variant?: "primary" | "secondary";
+  variant?: ButtonVariant;
 };
+
+type ButtonVariant = "primary" | "secondary" | "outline" | "link";
 
 export function getButtonClassName({
   className,
@@ -21,17 +23,28 @@ export function getButtonClassName({
   className?: string;
   shape?: "pill" | "square";
   size?: "md" | "sm";
-  variant?: "primary" | "secondary";
+  variant?: ButtonVariant;
 }) {
-  return joinClassNames(
-    "inline-flex cursor-pointer items-center justify-center font-semibold transition disabled:cursor-not-allowed disabled:opacity-60",
-    shape === "pill" ? "rounded-full" : "rounded-none",
-    size === "sm"
-      ? "min-h-11 px-5 py-2.5 text-sm"
-      : "min-h-12 px-6 py-3 text-sm",
+  const variantClassName =
     variant === "primary"
       ? "bg-[var(--kanna-ink)] text-white hover:bg-black"
-      : "border border-[var(--kanna-ink)] text-[var(--kanna-ink)] hover:border-black hover:bg-white",
+      : variant === "secondary"
+        ? "border border-[var(--kanna-ink)] text-[var(--kanna-ink)] hover:border-black hover:bg-white"
+        : variant === "outline"
+          ? "border border-current bg-transparent text-current hover:bg-transparent"
+          : "bg-transparent text-current underline underline-offset-4 hover:no-underline";
+  const sizeClassName =
+    variant === "link"
+      ? "min-h-0 p-0 text-sm"
+      : size === "sm"
+        ? "min-h-11 px-5 py-2.5 text-sm"
+        : "min-h-12 px-6 py-3 text-sm";
+
+  return joinClassNames(
+    "button-font-lato inline-flex cursor-pointer items-center justify-center font-semibold transition disabled:cursor-not-allowed disabled:opacity-60",
+    shape === "pill" ? "rounded-full" : "rounded-none",
+    sizeClassName,
+    variantClassName,
     className,
   );
 }
@@ -48,14 +61,12 @@ export function Button({
     <button
       {...props}
       type={type}
-      className={getButtonClassName(
-        {
-          className,
-          shape,
-          size,
-          variant,
-        },
-      )}
+      className={getButtonClassName({
+        className,
+        shape,
+        size,
+        variant,
+      })}
     />
   );
 }

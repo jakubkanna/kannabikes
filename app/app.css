@@ -9,6 +9,13 @@
   font-display: block;
 }
 
+@font-face {
+  font-family: "Osifont";
+  src: url("/osifont.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
 :root {
   --font-kanna: "Kanna", sans-serif;
   --kanna-color: #ffd400;
@@ -28,7 +35,9 @@
 
 .page-heading {
   font-family: var(--font-kanna);
-  font-variation-settings: "wdth" 125, "wght" 900;
+  font-variation-settings:
+    "wdth" 125,
+    "wght" 900;
   font-weight: 900;
 }
 
@@ -37,11 +46,17 @@
   padding: 2rem 1rem 3rem;
 }
 
+.button-font-lato {
+  font-family: "Lato", sans-serif;
+}
+
 [class*="shadow"] {
   box-shadow: none !important;
 }
 
-[class*="rounded"]:not([class*="rounded-full"]):not([class*="rounded-[9999px]"]) {
+[class*="rounded"]:not([class*="rounded-full"]):not(
+    [class*="rounded-[9999px]"]
+  ) {
   border-radius: 0 !important;
 }
 
@@ -142,69 +157,59 @@
   width: 1.15rem;
 }
 
-.home-custom-order-frame {
-  inset: 0;
-  overflow: hidden;
+.home-hero-pop-image {
+  transform-origin: 50% 50%;
+  will-change: height, width;
+}
+
+.home-hero-pop-lane {
+  animation: homeHeroLaneBlink 1s steps(1, end) infinite;
+  background: #ff0000;
+  pointer-events: none;
   position: absolute;
+  will-change: transform;
 }
 
-.chainring-stack {
-  align-items: center;
-  display: flex;
-  justify-content: center;
-  min-height: 22rem;
-  position: relative;
-  width: min(30rem, 100%);
+.home-hero-pop-lane-horizontal {
+  height: 1px;
+  left: 50%;
+  transform-origin: 50% 50%;
+  width: 150vmax;
 }
 
-.chainring-ring {
-  aspect-ratio: 1;
-  border-radius: 9999px;
-  position: absolute;
+.home-hero-pop-lane-vertical {
+  height: 150vmax;
+  top: 50%;
+  transform-origin: 50% 50%;
+  width: 1px;
 }
 
-.chainring-ring::before {
-  background: repeating-conic-gradient(
-    from -8deg,
-    rgba(15, 23, 42, 0.96) 0deg 5deg,
-    rgba(15, 23, 42, 0) 5deg 16deg
-  );
-  border-radius: inherit;
-  content: "";
-  inset: 0;
-  position: absolute;
+.home-hero-pop-lane-top {
+  top: 0;
 }
 
-.chainring-ring::after {
-  background: #ffffff;
-  border-radius: inherit;
-  content: "";
-  inset: 17%;
-  position: absolute;
+.home-hero-pop-lane-bottom {
+  bottom: 0;
 }
 
-.chainring-ring-lg {
-  width: min(28rem, 100%);
+.home-hero-pop-lane-left {
+  left: 0;
 }
 
-.chainring-ring-md {
-  opacity: 0.46;
-  transform: rotate(8deg) translate(18%, 20%);
-  width: min(14rem, 56%);
+.home-hero-pop-lane-right {
+  right: 0;
 }
 
-.chainring-ring-md::after {
-  inset: 24%;
-}
+@keyframes homeHeroLaneBlink {
+  0%,
+  49% {
+    opacity: 1;
+  }
 
-.chainring-ring-sm {
-  opacity: 0.18;
-  transform: rotate(-14deg) translate(-52%, -46%);
-  width: min(10rem, 38%);
-}
-
-.chainring-ring-sm::after {
-  inset: 27%;
+  50%,
+  100% {
+    opacity: 0.28;
+  }
 }
 
 @keyframes heroChevronPulse {
@@ -217,6 +222,13 @@
   50% {
     opacity: 1;
     transform: translateY(0.5rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-chevron,
+  .home-hero-pop-lane {
+    animation: none;
   }
 }
 

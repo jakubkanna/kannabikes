@@ -315,14 +315,12 @@ export function meta({ location }: Route.MetaArgs) {
   });
 }
 
-function PolicySectionBlock({
-  section,
-}: {
-  section: PolicySection;
-}) {
+function PolicySectionBlock({ section }: { section: PolicySection }) {
   return (
     <section>
-      <h2 className="text-lg font-semibold text-[var(--kanna-ink)]">{section.title}</h2>
+      <h2 className="text-lg font-semibold text-[var(--kanna-ink)]">
+        {section.title}
+      </h2>
       {section.paragraphs?.map((paragraph) => (
         <p key={paragraph} className="mt-3">
           {paragraph}
@@ -339,7 +337,9 @@ function PolicySectionBlock({
         <button
           type="button"
           data-analytics-ignore="true"
-          onClick={() => window.dispatchEvent(new Event(COOKIE_PREFERENCES_EVENT))}
+          onClick={() =>
+            window.dispatchEvent(new Event(COOKIE_PREFERENCES_EVENT))
+          }
           className="mt-4 inline-flex items-center justify-center rounded-xl border border-stone-300 px-4 py-3 text-sm font-semibold text-[var(--kanna-ink)] transition hover:border-black/70"
         >
           {section.actionLabel}
@@ -375,7 +375,7 @@ export default function PrivacyTermsPage() {
           <h1 className="page-heading mt-3 text-[2.35rem] leading-[0.88] text-[var(--kanna-ink)] md:text-[3.8rem]">
             {messages.legal.title}
           </h1>
-          <p className="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
+          <p className="mt-4 text-xs font-semibold uppercase  text-stone-500">
             {content.updatedAt}
           </p>
           <p className="mt-4 max-w-3xl text-sm leading-6 text-stone-600">

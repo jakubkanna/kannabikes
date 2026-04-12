@@ -168,7 +168,7 @@ export default function ContactPage() {
               lines={[...messages.contact.headingLines]}
             />
           </h1>
-          <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
+          <p className="mt-4 text-sm leading-6 text-stone-600 lg:w-1/2">
             {messages.contact.description}
           </p>
 

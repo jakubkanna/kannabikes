@@ -48,7 +48,7 @@ export default function AboutPage() {
             lines={[...messages.pages.about.titleLines]}
           />
         </h1>
-        <p className="mt-4 max-w-3xl text-sm leading-6 text-stone-600">
+        <p className="mt-4 text-sm leading-6 text-stone-600 lg:w-1/2">
           {messages.pages.about.body.split("Velo-art")[0]}
           <a
             href="https://archive.jakubkanna.com/works?tags=Velo-art"

@@ -15,6 +15,7 @@ type ArchivoInkBleedProps = {
   fontSize?: number;
   lines: string[];
   maxWidth?: number;
+  preserveAspectRatio?: string;
 };
 
 export function ArchivoInkBleed({
@@ -28,6 +29,7 @@ export function ArchivoInkBleed({
   fontSize = 180,
   lines,
   maxWidth = 1200,
+  preserveAspectRatio,
 }: ArchivoInkBleedProps) {
   const filterId = useId();
   const safeLines = lines.filter((line) => line.trim().length > 0);
@@ -63,6 +65,7 @@ export function ArchivoInkBleed({
       fill="none"
       overflow="visible"
       className={className}
+      preserveAspectRatio={preserveAspectRatio}
       viewBox={`0 0 ${maxWidth} ${viewBoxHeight}`}
       xmlns="http://www.w3.org/2000/svg"
     >

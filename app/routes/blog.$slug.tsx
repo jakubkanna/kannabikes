@@ -358,7 +358,7 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
         <PageContainer>
           <div className="relative z-10">
             {post.publishedAt ? (
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">
+              <p className="text-xs font-semibold uppercase  text-white/55">
                 {formatPublishedDate(post.publishedAt, loaderData.locale)}
               </p>
             ) : null}
@@ -407,7 +407,7 @@ export default function BlogPostPage({ loaderData }: Route.ComponentProps) {
               id="comments"
               className="mt-12 border-t border-black/15 pt-10"
             >
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/55">
+              <p className="text-xs font-semibold uppercase  text-black/55">
                 {messages.blog.comments}
               </p>
 

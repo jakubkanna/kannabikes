@@ -137,7 +137,7 @@ export function CartDrawer({
         className={`absolute inset-y-0 right-0 flex w-full max-w-md flex-col border-l border-stone-300 bg-stone-100 shadow-[0_0_50px_rgba(0,0,0,0.14)] transition-transform duration-300 ease-out ${isOpen ? "translate-x-0" : "translate-x-full"}`}
       >
         <div className="flex items-center justify-between border-b border-stone-300 px-5 py-4">
-          <h2 className="text-lg font-semibold text-[var(--kanna-ink)]">
+          <h2 className="text-lg font-semibold text-(--kanna-ink)">
             {messages.cart.title}
           </h2>
           <Button
@@ -193,7 +193,9 @@ export function CartDrawer({
                         >
                           {item.name}
                         </LocalizedLink>
-                        <p className="mt-1 text-sm text-gray-600">{item.price}</p>
+                        <p className="mt-1 text-sm text-gray-600">
+                          {item.price}
+                        </p>
                       </div>
                     </div>
                     <button
@@ -251,7 +253,7 @@ export function CartDrawer({
             <LocalizedLink
               to="/cart"
               onClick={onClose}
-              className="inline-flex flex-1 items-center justify-center border border-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-[var(--kanna-ink)] transition hover:bg-white"
+              className="button-font-lato inline-flex flex-1 items-center justify-center border border-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-[var(--kanna-ink)] transition hover:bg-white"
             >
               {messages.commerce.viewCart}
             </LocalizedLink>

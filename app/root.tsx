@@ -94,6 +94,7 @@ export function meta({}: Route.MetaArgs) {
 export function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const locale = getLocaleFromPath(location.pathname);
+  const isHome = stripLocalePrefix(location.pathname) === "/";
 
   return (
     <html lang={locale}>
@@ -106,8 +107,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <JsonLd data={WEBSITE_JSON_LD} />
       </head>
       <body
-        className="bg-white text-gray-900 antialiased"
-        style={{ fontFamily: '"Lato", sans-serif' }}
+        className={`relative ${isHome ? "bg-black" : "bg-white"} text-gray-900 antialiased`}
+        style={{ fontFamily: '"Osifont", sans-serif' }}
       >
         <LocaleProvider locale={locale}>{children}</LocaleProvider>
         <ScrollRestoration />
@@ -130,7 +131,8 @@ export default function App() {
     navigation.location != null &&
     (navigation.location.pathname !== pathname ||
       navigation.location.search !== search);
-  const loadingLabel = getMessages(getLocaleFromPath(nextPathname)).common.loading;
+  const loadingLabel = getMessages(getLocaleFromPath(nextPathname)).common
+    .loading;
 
   useEffect(() => {
     if (hasResolvedInitialLocale.current) {
@@ -160,8 +162,9 @@ export default function App() {
       <div
         className={[
           shouldOffsetContent ? "pt-(--site-header-height)" : "",
-          "transition-opacity duration-200 ease-out motion-reduce:transition-none",
-          isRouteLoading ? "opacity-40" : "opacity-100",
+          "relative",
+          "transition-[filter,opacity] duration-200 ease-out motion-reduce:transition-none",
+          isRouteLoading ? "opacity-40 blur-sm" : "opacity-100 blur-0",
         ]
           .filter(Boolean)
           .join(" ")}

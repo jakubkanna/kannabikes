@@ -384,7 +384,7 @@ export function OrderBikeDesignSection({
 
   const renderRidingSection = () => (
     <div className="rounded-lg border border-stone-200 bg-white p-4">
-      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
+      <h3 className="text-sm font-semibold uppercase  text-gray-500">
         {t("Riding")}
       </h3>
       <div className="mt-4 space-y-5">
@@ -435,7 +435,7 @@ export function OrderBikeDesignSection({
   );
   const renderRidingSummary = () => (
     <div className="rounded-lg border border-stone-200 bg-white p-4">
-      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
+      <h3 className="text-sm font-semibold uppercase  text-gray-500">
         {t("Riding")}
       </h3>
       <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
@@ -462,7 +462,7 @@ export function OrderBikeDesignSection({
   );
   const renderPaintjobSection = () => (
     <div className="rounded-lg border border-stone-200 bg-white p-4">
-      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
+      <h3 className="text-sm font-semibold uppercase  text-gray-500">
         {t("Paintjob")}
       </h3>
       <div className="mt-4 space-y-5">
@@ -641,7 +641,7 @@ export function OrderBikeDesignSection({
   );
   const renderPaintjobSummary = () => (
     <div className="rounded-lg border border-stone-200 bg-white p-4">
-      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
+      <h3 className="text-sm font-semibold uppercase  text-gray-500">
         {t("Paintjob")}
       </h3>
       <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
@@ -710,7 +710,7 @@ export function OrderBikeDesignSection({
   );
   const renderComponentsSummary = () => (
     <div className="rounded-lg border border-stone-200 bg-white p-4">
-      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
+      <h3 className="text-sm font-semibold uppercase  text-gray-500">
         {t("Components")}
       </h3>
       <div className="mt-4 space-y-5">
@@ -748,7 +748,7 @@ export function OrderBikeDesignSection({
   const renderBuildDataSummary = () => (
     <>
       <div className="rounded-lg border border-stone-200 bg-white p-4">
-        <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
+        <h3 className="text-sm font-semibold uppercase  text-gray-500">
           {t("Build type")}
         </h3>
         <p className="mt-3 text-sm text-gray-900">
@@ -766,7 +766,7 @@ export function OrderBikeDesignSection({
       {specificationMode === "guided_by_designer" ? (
         <>
           <div className="mt-5 rounded-lg border border-stone-200 bg-white p-4">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
+            <h3 className="text-sm font-semibold uppercase  text-gray-500">
               {t("Budget")}
             </h3>
             <p className="mt-3 text-sm text-gray-900">
@@ -776,7 +776,7 @@ export function OrderBikeDesignSection({
         </>
       ) : specificationMode === "frame_only" ? (
         <div className="mt-5 rounded-lg border border-stone-200 bg-white p-4">
-          <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
+          <h3 className="text-sm font-semibold uppercase  text-gray-500">
             {t("Notes")}
           </h3>
           <p className="mt-3 text-sm leading-6 text-gray-600">
@@ -795,7 +795,7 @@ export function OrderBikeDesignSection({
   );
   const renderGeometrySummary = () => (
     <div className="rounded-lg border border-stone-200 bg-white p-4">
-      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
+      <h3 className="text-sm font-semibold uppercase  text-gray-500">
         {t("Geometry")}
       </h3>
       <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
@@ -814,7 +814,7 @@ export function OrderBikeDesignSection({
   );
   const renderArtistMessage = () => (
     <div className="rounded-lg border border-stone-200 bg-white p-4">
-      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
+      <h3 className="text-sm font-semibold uppercase  text-gray-500">
         {t("From the artist")}
       </h3>
       <p className="mt-2 text-sm leading-6 text-gray-600">
@@ -828,7 +828,7 @@ export function OrderBikeDesignSection({
   );
   const renderFinalPriceSummary = (title = t("Amount left to pay")) => (
     <div className="rounded-lg border border-stone-200 bg-white p-4">
-      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
+      <h3 className="text-sm font-semibold uppercase  text-gray-500">
         {title}
       </h3>
       <p className="mt-3 text-sm text-gray-900">{finalAmountLabel}</p>
@@ -1137,7 +1137,7 @@ export function OrderBikeDesignSection({
 
               {showSpecificationForm ? (
                 <div className="rounded-lg border border-stone-200 bg-white p-4">
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
+                  <h3 className="text-sm font-semibold uppercase  text-gray-500">
                     {t("Specification")}
                   </h3>
                   <div className="mt-4 space-y-4">
@@ -1204,12 +1204,10 @@ export function OrderBikeDesignSection({
                                           event.target.value,
                                         )
                                       }
-                                      placeholder={
-                                        getOrderBikeDesignFieldPlaceholder(
-                                          locale,
-                                          t(field.label),
-                                        )
-                                      }
+                                      placeholder={getOrderBikeDesignFieldPlaceholder(
+                                        locale,
+                                        t(field.label),
+                                      )}
                                       className="px-3 py-2 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
                                     />
                                   )}

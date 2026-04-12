@@ -72,7 +72,7 @@ export function OrderMeasurementsSection({
         }
       >
         <div className="pt-3">
-          <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
+          <h3 className="text-sm font-semibold uppercase  text-gray-500">
             {copy.bodyData}
           </h3>
           <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-4">
@@ -95,7 +95,7 @@ export function OrderMeasurementsSection({
           </div>
         </div>
 
-        <div className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
+        <div className="mt-5 text-sm font-semibold uppercase  text-gray-500">
           {copy.measurements}
         </div>
         <div className="mt-4 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -168,7 +168,7 @@ export function OrderMeasurementsSection({
         <aside className="min-h-0 rounded-lg border border-stone-200 bg-stone-50 px-3 pb-3 pt-0 md:flex md:h-full md:flex-col md:px-4 md:pb-4 md:pt-0">
           <div className="min-h-0 md:flex-1 md:overflow-y-auto">
             <div className={isSubmitted ? "pt-3" : "pt-4"}>
-              <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
+              <h3 className="text-sm font-semibold uppercase  text-gray-500">
                 {copy.bodyData}
               </h3>
 
@@ -243,7 +243,7 @@ export function OrderMeasurementsSection({
             </div>
 
             {hasBodyData ? (
-              <h3 className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
+              <h3 className="mt-5 text-sm font-semibold uppercase  text-gray-500">
                 {copy.measurements}
               </h3>
             ) : null}

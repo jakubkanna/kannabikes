@@ -93,7 +93,7 @@ export default function CartPage() {
       <SectionStack>
         <AnimatedOrderSection className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm">
           <SectionPill>{messages.commerce.shopPill}</SectionPill>
-          <h1 className="page-heading mt-6 text-[2.35rem] leading-[0.88] text-[var(--kanna-ink)] md:text-[3.8rem]">
+          <h1 className="page-heading mt-6 text-[2.35rem] leading-[0.88] text-(--kanna-ink) md:text-[3.8rem]">
             {messages.cart.title}
           </h1>
         </AnimatedOrderSection>
@@ -142,7 +142,9 @@ export default function CartPage() {
                         >
                           {item.name}
                         </LocalizedLink>
-                        <p className="mt-2 text-sm text-gray-600">{item.price}</p>
+                        <p className="mt-2 text-sm text-gray-600">
+                          {item.price}
+                        </p>
                       </div>
                     </div>
                     <label className="flex items-center gap-3 text-sm text-gray-700">

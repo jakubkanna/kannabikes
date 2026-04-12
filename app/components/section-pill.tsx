@@ -16,6 +16,7 @@ export function SectionPill({ children, tone = "light" }: SectionPillProps) {
   return (
     <span
       className={`inline-flex rounded-full border px-1 text-xs font-medium uppercase leading-none shadow-sm ${toneClassName}`}
+      style={{ fontFamily: '"Lato", sans-serif' }}
     >
       {children}
     </span>

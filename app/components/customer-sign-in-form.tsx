@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 import { Button } from "~/components/button";
 import { InputField } from "~/components/form-field";
 import { GoogleAuthButton } from "~/components/google-auth-button";
@@ -9,7 +15,10 @@ import {
   getGoogleAuthUrl,
   normalizeFrontendRedirectPath,
 } from "~/lib/auth";
-import { loginCustomerSession, type CustomerSession } from "~/lib/customer-account";
+import {
+  loginCustomerSession,
+  type CustomerSession,
+} from "~/lib/customer-account";
 import type { Locale } from "~/lib/i18n";
 
 type CustomerSignInFormProps = {
@@ -195,12 +204,14 @@ export function CustomerSignInForm({
 
       <div
         className={
-          isPageVariant ? "mt-10 flex items-center gap-6" : "mt-6 flex items-center gap-4"
+          isPageVariant
+            ? "mt-10 flex items-center gap-6"
+            : "mt-6 flex items-center gap-4"
         }
       >
         <div className="h-px flex-1 bg-black/15" />
         <span
-          className={`font-semibold uppercase tracking-[0.18em] text-[var(--kanna-ink)] ${
+          className={`font-semibold uppercase  text-[var(--kanna-ink)] ${
             isPageVariant ? "text-sm" : "text-xs"
           }`}
         >
@@ -222,7 +233,13 @@ export function CustomerSignInForm({
         </GoogleAuthButton>
 
         {showSignUpPrompt ? (
-          <p className={isPageVariant ? "mt-10 text-sm text-[var(--kanna-ink)]" : "text-sm text-[var(--kanna-ink)]"}>
+          <p
+            className={
+              isPageVariant
+                ? "mt-10 text-sm text-[var(--kanna-ink)]"
+                : "text-sm text-[var(--kanna-ink)]"
+            }
+          >
             {messages.account.joinPrompt}{" "}
             {onRequestSignUp ? (
               <button

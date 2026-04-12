@@ -140,7 +140,7 @@ export function AccountShell({
           </Button>
         </div>
 
-        <div className="mt-8 flex flex-wrap gap-3 text-sm font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
+        <div className="button-font-lato mt-8 flex flex-wrap gap-3 text-sm font-semibold uppercase tracking-[0.08em] text-[var(--kanna-ink)]">
           {navItems.map((item) => (
             <LocalizedNavLink
               key={item.to}

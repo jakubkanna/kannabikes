@@ -822,16 +822,16 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                <button
+                <Button
                   type="submit"
                   form="store-checkout-form"
                   disabled={isSubmitting}
-                  className="mt-4 inline-flex w-full items-center justify-center rounded-md bg-[var(--kanna-ink)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:bg-stone-300"
+                  className="mt-4 w-full px-4"
                 >
                   {isSubmitting
                     ? `${messages.checkout.placeOrder}...`
                     : messages.checkout.placeOrder}
-                </button>
+                </Button>
               </aside>
             </div>
           </AnimatedOrderSection>
