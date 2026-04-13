@@ -460,7 +460,7 @@ export const messages = {
     },
     pages: {
       about: {
-        body: "Kanna Bikes was started by multidisciplinary artist Jakub Kanna. Driven by a strong connection to the bicycle world and by works such as Velo-art, along with other projects shown at the Museum of Modern Art in Warsaw and works like Fight or Flight, he decided to leave the IT industry and build his own frame. In the end, it is not easy to find a frame that fits a 6'5\" rider. Kanna Bikes is dedicated to everyone who does not feel they fit into big companies and is looking for a deeper way of experiencing the world through a bicycle.",
+        body: "It all began in 2012, when Jakub made the decision to turn from the windsurfing world to bicycles. Riding, building local trails, and, along the way, breaking more than a few bones. Worth it for that unmistakable feeling of freedom.\n\nWhat started as passion quickly evolved into a way of life. Total immersion in cycling culture. From downhill racing and enduro to dirt jumps, fixed gear city riding, and long-distance adventures. A world defined by movement, exploration, and expression.\n\nThis connection naturally expanded into the realm of art, leading to studies at the University of Arts in Poznan and a growing presence in contemporary exhibitions, including the Museum of Modern Art in Warsaw. The intersection of cycling and creativity became a foundation for projects such as Velo-art and Fight or Flight.\n\nYet one dream, born back in high school, remained unfulfilled: designing his own bicycle. In the end it's not easy to find a bike for a 196 cm (6'5\") guy. The search itself became the catalyst.\n\nFrom that need, Kanna Bikes was born as a manifestation of a lifelong pursuit of freedom, individualism, and a desire to push boundaries. A brand for those who are looking to experience the world through a bicycle.",
         pill: "About",
         titleLines: ["About"],
       },
@@ -468,13 +468,13 @@ export const messages = {
         contact: "Contact",
         imageAlt: "Pre-order process steps",
         intro:
-          "We will build a custom solution around your fit, riding style, and your soul. Steel, titanium, gravel, MTB - no problem.",
+          "We will build a custom solution around your fit, riding style, and your soul. Let us know what do you prefer - steel, titanium, gravel, MTB?",
         processIntro:
           "We use a proven deposit-based system to guide each order individually from first contact to final handover.",
         pill: "Custom Order",
         steps: [
           {
-            body: "after the initial contact, we will ask you to pay a 590 euro deposit. This gives you access to the bike configurator on our website.",
+            body: "after we talk about your preferences in general, we will ask you to pay a 590 euro deposit. This gives you access to the bike configurator on our website.",
             title: "Deposit:",
           },
           {
@@ -976,13 +976,13 @@ export const messages = {
         contact: "Kontakt",
         imageAlt: "Etapy procesu pre-order",
         intro:
-          "Zbudujemy rozwiązanie dopasowane do Twojej pozycji, stylu jazdy i Twojej duszy. Stal, tytan, gravel, MTB - bez problemu.",
+          "Zbudujemy rozwiązanie dopasowane do Twojej pozycji, stylu jazdy i Twojej duszy. Daj nam znać, co wybierasz - stal, tytan, gravel, MTB?",
         processIntro:
           "Korzystamy ze sprawdzonego systemu opartego na zaliczce, który prowadzi każde zamówienie od pierwszego kontaktu do finalnego odbioru.",
         pill: "Na zamówienie",
         steps: [
           {
-            body: "po pierwszym kontakcie poprosimy Cię o wpłatę zaliczki w wysokości 2500 pln. Dzięki temu otrzymasz dostęp do konfiguratora roweru na naszej stronie.",
+            body: "po rozmowie o Twoich ogólnych preferencjach poprosimy Cię o wpłatę zaliczki w wysokości 2500 pln. Dzięki temu otrzymasz dostęp do konfiguratora roweru na naszej stronie.",
             title: "Zaliczka:",
           },
           {

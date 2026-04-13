@@ -12,6 +12,9 @@ export function SiteFooter() {
   const footerHeadingSrc = pathname.startsWith("/pl")
     ? `${baseUrl}recznie-budowane-z-pasja-w-polsce-mark.svg`
     : `${baseUrl}handbuilt-with-poland-mark.svg`;
+  const showroomImageSrc = `${baseUrl}placeholder-showroom.jpg`;
+  const showroomMapHref =
+    "https://www.google.com/maps/search/?api=1&query=Kanna%20Bikes%20Showroom%20Placeholder%20Street%2012%2000-001%20Warsaw%20Poland";
   const [useHomeKannaState, setUseHomeKannaState] = useState(false);
   const footerHeadingRef = useRef<HTMLHeadingElement | null>(null);
   const [isFooterHeadingVisible, setIsFooterHeadingVisible] = useState(false);
@@ -188,16 +191,36 @@ export function SiteFooter() {
 
           <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
             <div />
-            <p
-              className={`pt-4 self-start text-right text-sm font-bold leading-7 ${secondaryTextClassName}`}
-            >
-              {messages.footer.addressLines.map((line, index) => (
-                <span key={line}>
-                  {index > 0 ? <br /> : null}
-                  {line}
+            <div className="flex justify-end gap-4 pt-4">
+              <p
+                className={`self-start text-right text-sm font-bold leading-7 ${secondaryTextClassName}`}
+              >
+                <span className="block text-xs leading-5 font-normal opacity-70">
+                  52.2297° N, 21.0122° E
                 </span>
-              ))}
-            </p>
+                {messages.footer.addressLines.map((line, index) => (
+                  <span key={line}>
+                    {index > 0 ? <br /> : null}
+                    {line}
+                  </span>
+                ))}
+              </p>
+              <a
+                href={showroomMapHref}
+                target="_blank"
+                rel="noreferrer"
+                className="block aspect-[4/3] h-33 shrink-0 overflow-hidden"
+                aria-label={messages.footer.addressLines.join(", ")}
+              >
+                <img
+                  src={showroomImageSrc}
+                  alt=""
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </a>
+            </div>
           </div>
         </div>
 

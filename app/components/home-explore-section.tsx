@@ -10,6 +10,7 @@ import {
 import { ArchivoInkBleed } from "~/components/archivo-ink-bleed";
 import { getButtonClassName } from "~/components/button";
 import { LocalizedLink } from "~/components/localized-link";
+import { useMessages } from "~/components/locale-provider";
 import { SectionPill } from "~/components/section-pill";
 
 const LazyHomeChainringScene = lazy(
@@ -48,7 +49,7 @@ const ExploreCard = forwardRef<HTMLElement, ExploreCardProps>(
     const cardContent = (
       <>
         {children}
-        <h3 className="flex h-[7.5rem] items-start pt-4 md:h-[10rem]">
+        <h3 className="flex h-[7.5rem] items-start px-4 pt-4 md:h-[10rem]">
           <ArchivoInkBleed
             className="block h-full w-full max-w-[42rem]"
             color="currentColor"
@@ -161,7 +162,17 @@ function ChainringCard() {
 }
 
 export function HomeExploreSection() {
+  const messages = useMessages();
   const baseUrl = import.meta.env.BASE_URL;
+  const brandName = "Kanna Bikes";
+  const aboutParagraphs = messages.pages.about.body.split("\n\n");
+  const aboutClosingParagraph =
+    aboutParagraphs[aboutParagraphs.length - 1] ?? "";
+  const brandNameIndex = aboutClosingParagraph.lastIndexOf(brandName);
+  const aboutHomeFragment =
+    brandNameIndex >= 0
+      ? aboutClosingParagraph.slice(brandNameIndex + brandName.length).trimStart()
+      : aboutClosingParagraph;
 
   return (
     <section
@@ -208,17 +219,18 @@ export function HomeExploreSection() {
           <div />
           <div className="space-y-5 text-base  text-white/75 ">
             <p>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer
-              feugiat turpis vel massa fermentum, vitae facilisis arcu
-              malesuada.
-            </p>
-            <p>
-              Suspendisse potenti. Curabitur at arcu non lectus pulvinar
-              suscipit, sed pharetra neque dignissim.
-            </p>
-            <p>
-              Praesent vitae sem et arcu interdum consequat. Donec sed tincidunt
-              erat, a cursus justo.
+              <strong className="inline-flex items-center gap-1 text-white">
+                <span
+                  aria-hidden="true"
+                  className="inline-block h-[1em] w-[1em] bg-current"
+                  style={{
+                    WebkitMask: `url(${baseUrl}kannabikes_logo.svg) center / contain no-repeat`,
+                    mask: `url(${baseUrl}kannabikes_logo.svg) center / contain no-repeat`,
+                  }}
+                />
+                {brandName}
+              </strong>{" "}
+              {aboutHomeFragment}
             </p>
             <LocalizedLink
               to="/about"

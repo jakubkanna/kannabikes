@@ -81,7 +81,7 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export function formatPageTitle(page: string) {
-  return `${SITE_NAME} – ${page}`;
+  return `${page} – ${SITE_NAME}`;
 }
 
 export function meta({}: Route.MetaArgs) {
